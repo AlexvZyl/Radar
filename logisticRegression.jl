@@ -10,7 +10,6 @@ print(unique(data.education))
 # Replace values to make learning easier
 println(data.education)
 
-
 # Rename columns
 # col_names = ["Pregnant", "Glucose", "BP", "Skin", "Insulin", "BMI", "Pedigree", "Age", "Label"]
 # rename!(data, col_names)
