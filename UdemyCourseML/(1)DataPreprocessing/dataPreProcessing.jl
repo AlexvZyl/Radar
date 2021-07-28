@@ -13,7 +13,7 @@ using DataFrames
 using CSV
 using Statistics
 
-# Find currnent directory.
+# Find current directory.
 currDir = pwd();
 
 #*=======================================================================================================
@@ -22,6 +22,7 @@ currDir = pwd();
 
 # Create dataframe.
 filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\Data.csv");
+println(filePath)
 df = DataFrame(File.(filePath))
 println(df)
 
@@ -34,6 +35,9 @@ salaryAvg = mean(skipmissing(featX.Salary))
 ageAvg =  mean(skipmissing(featX.Age))
 
 # Replace missing values.
-convert.(Float64, skipmissing(featX.Salary))  # Change variable types.
-println(eltype(featX.Salary)) 
-replace!(featX.Salary, missing=>salaryAvg)  # Replace values.
+toReplace =  convert.(Float64, skipmissing(featX.Sala))  # Change variable types.
+# replace!(featX.Salary, missing=>salaryAvg)  # Replace values.
+
+#*=======================================================================================================
+#* EOF
+#*=======================================================================================================
