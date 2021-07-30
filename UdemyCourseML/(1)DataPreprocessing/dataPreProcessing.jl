@@ -12,6 +12,7 @@ using RDatasets
 using DataFrames
 using CSV
 using Statistics
+using TableView
 
 # Find current directory.
 currDir = pwd();
@@ -21,9 +22,8 @@ currDir = pwd();
 #*=======================================================================================================
 
 # Create dataframe.
-filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\Data.csv");
-println(filePath)
-df = DataFrame(File.(filePath))
+filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\data.csv");
+df = DataFrame(CSV.File.(filePath))
 println(df)
 
 # Define variables.
@@ -35,8 +35,11 @@ salaryAvg = mean(skipmissing(featX.Salary))
 ageAvg =  mean(skipmissing(featX.Age))
 
 # Replace missing values.
-toReplace =  convert.(Float64, skipmissing(featX.Sala))  # Change variable types.
-# replace!(featX.Salary, missing=>salaryAvg)  # Replace values.
+featX.Salary =  coalesce.(featX.Salary, salaryAvg)
+featX.Age =  coalesce.(featX.Salary, ageAvg)
+println(featX)
+println(featY)
+showtable(df)
 
 #*=======================================================================================================
 #* EOF
