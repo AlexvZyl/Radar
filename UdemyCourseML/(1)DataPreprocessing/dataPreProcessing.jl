@@ -35,5 +35,5 @@ ageAvg =  mean(skipmissing(featX.Age))
 
 # Replace missing values.
 convert.(Float64, skipmissing(featX.Salary))  # Change variable types.
-println(eltype(featX.Salary)) 
+println(eltype(featX.Salary))
 replace!(featX.Salary, missing=>salaryAvg)  # Replace values.
