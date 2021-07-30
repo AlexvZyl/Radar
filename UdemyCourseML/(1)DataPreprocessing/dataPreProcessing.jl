@@ -11,11 +11,15 @@ using Plots
 using RDatasets
 using DataFrames
 using CSV
-using Statistics
 using TableView
+
+# Math and ML
+using Statistics
+using Flux
 
 # Find current directory.
 currDir = pwd();
+clearconsole()
 
 #*=======================================================================================================
 #* Main
@@ -24,22 +28,20 @@ currDir = pwd();
 # Create dataframe.
 filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\data.csv");
 df = DataFrame(CSV.File.(filePath))
-println(df)
 
 # Define variables.
-featX = df[:,1:end-1]
+featX = df[:, 1:end-1]
 featY = df.Purchased;
 
 # Find averages to replace missing values.
-salaryAvg = mean(skipmissing(featX.Salary))
-ageAvg =  mean(skipmissing(featX.Age))
+featX.Salary = coalesce.(featX.Salary, mean(skipmissing(featX.Salary)))
+featX.Age = coalesce.(featX.Age, mean(skipmissing(featX.Age)))
 
-# Replace missing values.
-featX.Salary =  coalesce.(featX.Salary, salaryAvg)
-featX.Age =  coalesce.(featX.Salary, ageAvg)
-println(featX)
-println(featY)
-showtable(df)
+# Encode Country data with one hot encoding.
+onehotCountries = transpose(Flux.onehotbatch(featX.Country, unique(featX.Country)))
+
+# Replace Country column with Onehot matrix
+select!(df, :Salary =>  => :OneHot)
 
 #*=======================================================================================================
 #* EOF
