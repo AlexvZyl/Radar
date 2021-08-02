@@ -39,7 +39,13 @@ featX.Salary =  coalesce.(featX.Salary, salaryAvg)
 featX.Age =  coalesce.(featX.Salary, ageAvg)
 println(featX)
 println(featY)
-showtable(df)
+print(append!(df,df))
+print(append!(df,df))
+print(append!(df,df))
+
+df.Country
+
+
 
 #*=======================================================================================================
 #* EOF
