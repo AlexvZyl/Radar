@@ -18,6 +18,10 @@ Repository for the Julia code used in my Master's degree.
 * Neural Networks by the coding train: [https://www.youtube.com/watch?v=XJ7HLz9VYz0&list=PLRqwX-V7Uu6aCibgK1PTWWu9by6XFdCfh].
 * Machine Learning course on Udemy: [https://www.udemy.com/course/machinelearning/learn/lecture/6087180#overview].
 
+# Notes
+
+* Which statistics package to use?  Statistics.jl, "StatsBase is most likely going to be moved in part to Statistics, and in part to other packages (like StatsModels). See e.g. [https://github.com/JuliaLang/julia/pull/27152]."
+
 # Resolving Errors
 
 * Plots.jl not building? "]add x264_jll@v2019.5.25", [https://github.com/JuliaLang/julia/issues/36893].
