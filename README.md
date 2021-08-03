@@ -9,6 +9,7 @@ Repository for the Julia code used in my Master's degree.
 * MLJ: [https://alan-turing-institute.github.io/MLJ.jl/dev].  
 * KNet: [https://denizyuret.github.io/Knet.jl/latest/].
 * Zygote: [https://fluxml.ai/Zygote.jl/latest/].
+* Data Convenience: [https://github.com/xiaodaigh/DataConvenience.jl].
 
 # Learning Resources
 
