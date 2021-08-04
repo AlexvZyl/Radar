@@ -11,14 +11,18 @@ using Plots
 using RDatasets
 using DataFrames
 using CSV
-using TableView
+# using TableView:pretty
+using DataConvenience:onehot!
+using MLDataUtils:splitobs
+using StatsBase:standardize
 
-# Math and ML
-using Statistics
+# Math, Stats and ML.
 using Flux
+using MLJ
 
 # Find current directory.
 currDir = pwd();
+# Clear the console.
 clearconsole()
 
 #*=======================================================================================================
@@ -28,21 +32,29 @@ clearconsole()
 # Create dataframe.
 filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\data.csv");
 df = DataFrame(CSV.File.(filePath))
-
-# Define variables.
-featX = df[:, 1:end-1]
-featY = df.Purchased;
+PrettyTables.pretty_table(df)
 
 # Find averages to replace missing values.
-featX.Salary = coalesce.(featX.Salary, mean(skipmissing(featX.Salary)))
-featX.Age = coalesce.(featX.Age, mean(skipmissing(featX.Age)))
+df.Salary = coalesce.(df.Salary, mean(skipmissing(df.Salary)))
+df.Age = coalesce.(df.Age, mean(skipmissing(df.Age)))
 
 # Encode Country data with one hot encoding.
-onehotCountries = transpose(Flux.onehotbatch(featX.Country, unique(featX.Country)))
+onehot!(df, :Country, outnames=Symbol.(unique(df.Country)))
+select!(df, (2:7))
 
-# Replace Country column with Onehot matrix
-select!(df, :Salary =>  => :OneHot)
+# Shuffle the dataset.
+df = df[shuffle(1:size(df, 1)),:]
+# Train/Test split.
+train, test = splitobs(df, at=0.7)
 
+# Define variables.
+trainX, trainY = train.Purchased, select(train, Not(:Purchased))
+testX, testY = test.Purchased, select(test, Not(:Purchased))
+
+# Feature scaling.
+# StatsBase.standardize()
+
+println("[INFO] Done.")
 #*=======================================================================================================
 #* EOF
 #*=======================================================================================================
