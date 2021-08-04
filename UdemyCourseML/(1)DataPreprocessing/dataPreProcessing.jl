@@ -23,7 +23,8 @@ using MLJ
 # Find current directory.
 currDir = pwd();
 # Clear the console.
-clearconsole()
+# clearconsole()
+# Console.clear()
 
 #*=======================================================================================================
 #* Main
