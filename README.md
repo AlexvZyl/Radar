@@ -18,6 +18,7 @@ Repository for the Julia code used in my Master's degree.
 * Chris Rackauckas: [https://julialang.org/jsoc/gsoc/sciml/].
 * Neural Networks by the coding train: [https://www.youtube.com/watch?v=XJ7HLz9VYz0&list=PLRqwX-V7Uu6aCibgK1PTWWu9by6XFdCfh].
 * Machine Learning course on Udemy: [https://www.udemy.com/course/machinelearning/learn/lecture/6087180#overview].
+* Statistical Learning: [https://www.statlearning.com/].
 
 # Notes
 
