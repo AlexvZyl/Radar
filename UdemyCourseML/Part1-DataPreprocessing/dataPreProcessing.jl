@@ -4,34 +4,17 @@
 #* Initialising
 #*=======================================================================================================
 
-# Drawing/Visualization packages.
-using Plots
-
-# Data.
-using RDatasets
-using DataFrames
-using CSV
-# using TableView:pretty
-using DataConvenience:onehot!
-using MLDataUtils:splitobs
-using StatsBase:standardize
-
-# Math, Stats and ML.
-using Flux
-using MLJ
-
 # Find current directory.
 currDir = pwd();
-# Clear the console.
-# clearconsole()
-# Console.clear()
+# Import packages and functions.
+include(string(currDir, "\\Utilities\\imports.jl"))
 
 #*=======================================================================================================
 #* Main
 #*=======================================================================================================
 
 # Create dataframe.
-filePath = string(currDir, "\\UdemyCourseML\\(1)DataPreprocessing\\data.csv");
+filePath = string(currDir, "\\UdemyCourseML\\Part1-DataPreprocessing\\data.csv");
 df = DataFrame(CSV.File.(filePath))
 PrettyTables.pretty_table(df)
 
