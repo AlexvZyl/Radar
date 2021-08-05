@@ -6,6 +6,8 @@
 
 # Find current directory.
 currDir = pwd();
+# Clear the console.
+clearconsole();
 # Import packages and functions.
 include(string(currDir, "\\Utilities\\imports.jl"))
 
@@ -15,6 +17,7 @@ include(string(currDir, "\\Utilities\\imports.jl"))
 
 
 
+#*=======================================================================================================
 println("[INFO] Done.")
 #*=======================================================================================================
 #* EOF

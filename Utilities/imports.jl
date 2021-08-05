@@ -4,11 +4,13 @@
 # Seems like the environemnt of Julia is still a bit deurmekaar.
 
 #*=======================================================================================================
-#* Drawing and viewing
+#* Drawing and viewing.
 #*=======================================================================================================
 
+# Normal plotting.
 using Plots
-using TableView
+# Viewing dataframes.
+using FloatingTableView
 
 #*=======================================================================================================
 #* Data handling.
@@ -18,17 +20,10 @@ using TableView
 using RDatasets
 using DataFrames
 using CSV
-using DataConvenience:onehot!
-using MLDataUtils:splitobs
-using StatsBase:standardize
-
-#*=======================================================================================================
-#* Mathematics, Statistics and Machine Learning.
-#*=======================================================================================================
-
-# Math, Stats and ML.
-using Flux
+using DataConvenience
+using MLDataUtils
 using MLJ
+using StatsBase
 
 #*=======================================================================================================
 #* EOF.
