@@ -1,30 +1,30 @@
-
-# This package is created to handle the imports of all of the packages and functions that
-# are needed to do ML in julia.
-# Seems like the environemnt of Julia is still a bit deurmekaar.
+# Preprocessing section of the course.
 
 #*=======================================================================================================
-#* Drawing and viewing.
+#* Initialising
 #*=======================================================================================================
 
-# Normal plotting.
-using Plots
-# Viewing dataframes.
-using FloatingTableView
+# Find current directory.
+currDir = pwd();
+# Clear the console.
+clearconsole();
+# Import packages and functions.
+include(string(currDir, "\\Utilities\\tools.jl"))
 
 #*=======================================================================================================
-#* Data handling.
+#* Script.
 #*=======================================================================================================
 
-# Data.
-using RDatasets
-using DataFrames
-using CSV
-using DataConvenience
-using MLDataUtils
-using MLJ
-using StatsBase
+
 
 #*=======================================================================================================
-#* EOF.
+#* Functions.
+#*=======================================================================================================
+
+
+
+#*=======================================================================================================
+println("[INFO] Done.")
+#*=======================================================================================================
+#* EOF
 #*=======================================================================================================
