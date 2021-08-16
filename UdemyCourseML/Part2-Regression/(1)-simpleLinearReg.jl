@@ -9,7 +9,7 @@ currDir = pwd();
 # Clear the console.
 clearconsole();
 # Import packages and functions.
-include(string(currDir, "\\Utilities\\tools.jl"))
+include(string(currDir, "/Utilities/tools.jl"))
 
 #*=======================================================================================================
 #* Script.
