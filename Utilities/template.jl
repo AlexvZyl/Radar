@@ -1,4 +1,4 @@
-# Preprocessing section of the course.
+# Julia ML Template.
 
 #*=======================================================================================================
 #* Initialising
@@ -7,7 +7,8 @@
 # Clear the console.
 clearconsole();
 # Import packages and functions.
-include(string(currDir, "\\Utilities\\tools.jl"))
+currDir = pwd()
+include(string(currDir, "/Utilities/imports.jl"))
 
 #*=======================================================================================================
 #* Script.

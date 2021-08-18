@@ -1,0 +1,12 @@
+name = "PreProcessing"
+uuid = "20f0dba0-5346-45f0-8b54-c225aca4f11f"
+authors = ["CAlexZA-DSP-PC <calexandervanzyl@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataConvenience = "3b531cbf-ee43-4e67-8118-dca2c9372f86"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+MLDataUtils = "cc2ba9b6-d476-5e6d-8eaf-a92d5412d41d"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"

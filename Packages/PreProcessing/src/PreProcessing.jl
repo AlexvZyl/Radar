@@ -1,36 +1,17 @@
+#*===========================================================================================================
+#* Preprocessing module.
+#*===========================================================================================================
 
-# This package is created to handle the imports of all of the packages and functions that
-# are needed to do ML in julia.
-# Seems like the environemnt of Julia is still a bit deurmekaar.
+module PreProcessing
 
-#*=======================================================================================================
-#* Drawing and viewing.
-#*=======================================================================================================
-
-# Normal plotting.
-using Plots
-# Viewing dataframes.
-using FloatingTableView
-
-#*=======================================================================================================
-#* Data handling.
-#*=======================================================================================================
-
-# Machine Learning.
-using MLDataUtils
-# using MLJ # Clashes with MLDataUtils.
-using Flux
-
-# GPU.
-using CUDA
-
-# Data.
-using RDatasets
+# Packages.
 using DataFrames
+using Statistics
+using Statistics
 using CSV
 using DataConvenience
-using StatsBase
 using Random
+using MLDataUtils
 
 #*=======================================================================================================
 #* Import file from current directory.
@@ -80,7 +61,7 @@ function featureScaling!(df::DataFrame; type::String="Std", displayBool::Bool=tr
                 colMean = mean(df[:, col])
                 colStd = std(df[:, col])
                 # Apply to rows.
-                for row in range(1, stop = nrows(df))
+                for row in range(1, stop = nrow(df))
                     df[row, col] = (df[row, col] - colMean) / colStd
                 end # loop
             end # if
@@ -94,7 +75,7 @@ function featureScaling!(df::DataFrame; type::String="Std", displayBool::Bool=tr
                 colMax = maximum(df[:, col])
                 colMin = minimum(df[:, col])
                 # Apply to rows.
-                for row in range(1, stop = nrows(df))
+                for row in range(1, stop = nrow(df))
                     df[row, col] = (df[row, col] - colMin) / (colMax - colMin)
                 end # loop
             end # if
@@ -195,6 +176,8 @@ function oneHotEncoding!(df::DataFrame, colIndex::Int; displayBool::Bool=true)
     end # If.
 
 end # Function.
+
+end # Module.
 
 #*=======================================================================================================
 #* EOF.
