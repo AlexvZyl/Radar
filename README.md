@@ -23,7 +23,7 @@ Repository for the Julia code used in my Master's degree.
 # Resolving Errors
 
 * Plots.jl not building? "]add x264_jll@v2019.5.25", [https://github.com/JuliaLang/julia/issues/36893].
-* Sometimes the packages do not build properly, just restart Julia ("CRTL + D" in the REPL, or restart IDE).
+* Sometimes the packages do not build properly, just restart Julia ("CRTL+D" in the REPL, run "exit()" or restart IDE).
 
 # Notes
 
