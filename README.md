@@ -24,9 +24,12 @@ Repository for the Julia code used in my Master's degree.
 
 * Plots.jl not building? "]add x264_jll@v2019.5.25", [https://github.com/JuliaLang/julia/issues/36893].
 * Sometimes the packages do not build properly, just restart Julia ("CRTL+D" in the REPL, run "exit()" or restart IDE).
-* 
+
 # Packages
 
+* Go to directory where the package should be with 'cd("path")'.
+* Create package with '] generate PackageName'.
+* Add dependencies by using '] activate. ' and '] add PackageName'.
 * Add local package: Pkg.develop(PackageSpec(path="directory")).
 
 # Notes
