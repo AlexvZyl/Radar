@@ -29,7 +29,7 @@ Repository for the Julia code used in my Master's degree.
 
 * Go to directory where the package should be with 'cd("path")'.
 * Create package with '] generate PackageName'.
-* Add dependencies by using '] activate. ' and '] add PackageName'.
+* Add dependencies by using '] activate .' and '] add PackageName'.
 * Add local package: Pkg.develop(PackageSpec(path="directory")).
 
 # Notes
