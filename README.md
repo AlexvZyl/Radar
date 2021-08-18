@@ -28,3 +28,4 @@ Repository for the Julia code used in my Master's degree.
 # Notes
 
 * Which statistics package to use?  Statistics.jl, "StatsBase is most likely going to be moved in part to Statistics, and in part to other packages (like StatsModels). See e.g. [https://github.com/JuliaLang/julia/pull/27152]."
+* Add local package: Pkg.develop(PackageSpec(path="directory")).
