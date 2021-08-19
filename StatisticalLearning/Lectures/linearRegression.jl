@@ -7,14 +7,21 @@
 # Clear the console.
 clearconsole();
 # Import packages and functions.
-currDir = pwd()
-include(string(currDir, "/Utilities/tools.jl"))
+using PreProcessing
+using RDatasets
+using FloatingTableView
+using Flux: onehot
 
 #*=======================================================================================================
 #* Script.
 #*=======================================================================================================
 
+# Import dataset.
+irisDataSet = dataset("datasets", "iris")
+browse(irisDataSet; newwindow=false)
 
+# Use only one feature.
+onehot()
 
 #*=======================================================================================================
 #* Functions.
