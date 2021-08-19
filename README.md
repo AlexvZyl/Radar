@@ -32,6 +32,12 @@ Repository for the Julia code used in my Master's degree.
 * Add dependencies by using '] activate .' and '] add PackageName'.
 * Add local package: Pkg.develop(PackageSpec(path="directory")).
 
+# Datasets
+
+* RDataSets.jl: Datasets used in R, [https://github.com/JuliaStats/RDatasets.jl].
+* MLDataSets.jl: Common datasets used in ML, [https://github.com/JuliaML/MLDatasets.jl].
+* GraphMLDatasets.jl: For graphing datasets, [https://github.com/yuehhua/GraphMLDatasets.jl].
+
 # Notes
 
 * Which statistics package to use?  Statistics.jl, "StatsBase is most likely going to be moved in part to Statistics, and in part to other packages (like StatsModels). See e.g. [https://github.com/JuliaLang/julia/pull/27152]."
