@@ -9,7 +9,7 @@ func(x) = 4x + 2
 x_train, x_test = hcat(0:5...), hcat(6:10...)
 y_train, y_test = func.(x_train), func.(x_test)
 
-println(ℯ)
+model = Dense(1,1)
 
 # End.
 println()
