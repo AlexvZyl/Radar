@@ -25,7 +25,7 @@ Repository for the Julia code used in my Master's degree.
 * Plots.jl not building? "]add x264_jll@v2019.5.25", [https://github.com/JuliaLang/julia/issues/36893].
 * Sometimes the packages do not build properly, just restart Julia ("CRTL+D" in the REPL, run "exit()" or restart IDE).
 * StatsFuns breaking compilation? "** incremental compilation may be fatally broken for this module **" : ]add StatsFuns0.9.3
-* CSV version 0.8.5 does something weird with Parsers.jl, bypass with "]add CSV#main"
+* CSV.jl version 0.8.5 does something weird with Parsers.jl, bypass with "]add CSV#main"
 
 # Packages
 
