@@ -1,27 +1,31 @@
-# Lecture 2.
-
 #*=======================================================================================================
 #* Initialising
 #*=======================================================================================================
 
-# Clear the console.
-clearconsole();
-# Import packages and functions.
+# Clear.
+clearconsole()
+
+# Packages.
+using GLMakie
+using DataFrames
 using PreProcessing
-using RDatasets
-using FloatingTableView
-using Flux: onehot
+
+# Makie theme.
+set_theme!(theme_dark())
 
 #*=======================================================================================================
 #* Script.
 #*=======================================================================================================
 
-# Import dataset.
-irisDataSet = dataset("datasets", "iris")
-browse(irisDataSet; newwindow=false)
+# Import data.
+wageData = dataframeFromFile("/Lectures/dataset/Wage.csv")
 
-# Use only one feature.
-onehot()
+
+
+# Makie figure.
+fig = Figure()
+
+display(fig)
 
 #*=======================================================================================================
 #* Functions.

@@ -6,12 +6,14 @@ module PreProcessing
 
 # Packages.
 using DataFrames
-using Statistics
-using Statistics
 using CSV
+using Statistics
 using DataConvenience
 using Random
 using MLDataUtils
+
+# Exports.
+export dataframeFromFile, featureScaling!, replaceMissing!, trainTestSplit, oneHotEncoding!
 
 #*=======================================================================================================
 #* Import file from current directory.
