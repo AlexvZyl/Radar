@@ -10,7 +10,7 @@ Repository for the Julia code used in my Master's degree.
 * KNet: [https://denizyuret.github.io/Knet.jl/latest/].
 * Zygote: [https://fluxml.ai/Zygote.jl/latest/].
 * Data Convenience: [https://github.com/xiaodaigh/DataConvenience.jl].
-* Viewing Dataframes: FloatingTableView, [https://github.com/pdeffebach/FloatingTableView.jl].
+* Viewing Dataframes (Julia dataframes do not display nicely in the terminal): FloatingTableView, [https://github.com/pdeffebach/FloatingTableView.jl].
 
 # Learning Resources
 
