@@ -3,7 +3,6 @@ clearconsole()
 using GLMakie
 using Random
 
-
 function demofigure()
     Random.seed!(2)
 
