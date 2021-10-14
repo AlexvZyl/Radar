@@ -10,8 +10,8 @@ Repository for the Julia code used in my Master's degree.
 * KNet: [https://denizyuret.github.io/Knet.jl/latest/].
 * Zygote: [https://fluxml.ai/Zygote.jl/latest/].
 * Data Convenience: [https://github.com/xiaodaigh/DataConvenience.jl].
-* Viewing Dataframes (Julia dataframes do not display nicely in the terminal): FloatingTableView, [https://github.com/pdeffebach/FloatingTableView.jl].
-* Makie (Plotting library with an OpenGL backend): [https://github.com/JuliaPlots/Makie.jl].
+* FloatingTableView: Julia dataframes do not display nicely in the terminal and this packages overcomes that, [https://github.com/pdeffebach/FloatingTableView.jl].
+* Makie: Plotting library with an OpenGL backend, [https://github.com/JuliaPlots/Makie.jl].
 
 # Learning Resources
 
@@ -28,7 +28,7 @@ Repository for the Julia code used in my Master's degree.
 * StatsFuns breaking compilation? "** incremental compilation may be fatally broken for this module **" : ]add StatsFuns@0.9.3
 * CSV.jl version 0.8.5 does something weird with Parsers.jl, bypass with "]add CSV#main"
 
-# Packages
+# Create Local Package
 
 * Go to directory where the package should be with 'cd("path")'.
 * Create package with '] generate PackageName'.
