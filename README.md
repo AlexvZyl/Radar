@@ -11,6 +11,7 @@ Repository for the Julia code used in my Master's degree.
 * Zygote: [https://fluxml.ai/Zygote.jl/latest/].
 * Data Convenience: [https://github.com/xiaodaigh/DataConvenience.jl].
 * Viewing Dataframes (Julia dataframes do not display nicely in the terminal): FloatingTableView, [https://github.com/pdeffebach/FloatingTableView.jl].
+* Makie (Plotting library with an OpenGL backend): [https://github.com/JuliaPlots/Makie.jl].
 
 # Learning Resources
 
