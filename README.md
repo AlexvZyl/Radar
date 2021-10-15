@@ -30,6 +30,14 @@ Repository for the Julia code used in my Master's degree.
 
 # Create Local Package
 
+*The new method uses PkgTemplates.jl, [https://github.com/invenia/PkgTemplates.jl]*
+* ] add PkgTemplates
+* using PkgTemplates
+* generate("PackageName")
+* A menu pops up, check the Dir box as a minimum.
+* Your package will be in the path.
+
+*This method has been deprecated.*
 * Go to directory where the package should be with 'cd("path")'.
 * Create package with '] generate PackageName'.
 * Add dependencies by using '] activate .' and '] add PackageName'.
