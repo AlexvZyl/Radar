@@ -39,6 +39,7 @@ A helpful article, [https://medium.com/coffee-in-a-klein-bottle/developing-your-
 * generate("PackageName")
 * A menu pops up, check the Dir box as a minimum.
 * Your package will be in the path.
+* Add the pacakge locally to environtment: Pkg.develop(PackageSpec(path="directory")).
 
 *This method has been deprecated.*
 * Go to directory where the package should be with 'cd("path")'.
