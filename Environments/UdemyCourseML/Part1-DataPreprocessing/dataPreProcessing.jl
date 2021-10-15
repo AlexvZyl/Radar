@@ -15,7 +15,7 @@ using PreProcessing
 #*=======================================================================================================
 
 # Create dataframe.
-df = PreProcessing.dataframeFromFile("/UdemyCourseML/Part1-DataPreprocessing/data.csv")
+df = PreProcessing.dataframeFromFile("\\Environments\\UdemyCourseML\\Part1-DataPreprocessing\\data.csv")
 
 # Replace missing values.
 PreProcessing.replaceMissing!(df)

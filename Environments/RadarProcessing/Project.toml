@@ -1,4 +1,5 @@
 [deps]
+BinaryProcessing = "b109eea3-bafa-4580-8072-fa1c43aec70c"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FloatingTableView = "197bc772-8d3f-4a3f-b50f-4eb5086fedbf"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
