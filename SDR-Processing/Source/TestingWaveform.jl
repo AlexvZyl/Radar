@@ -2,10 +2,13 @@ using GLMakie
 using FFTW
 set_theme!(theme_dark())
 
-nSamples = 100001
-bandwidth = 2000
+txDuration = 1
 amplitude = 1
-samplingFreq = 4000
+samplingFreq = 12000000
+bandwidth = samplingFreq / 2.1
+cyclesPerTransmission = 2400000
+nSamples =  floor( Int, (samplingFreq * txDuration) / cyclesPerTransmission )
+#nSamples = 31
 
 wave = Array{Complex}(undef, nSamples)
 gradient = bandwidth / (nSamples - 1)
@@ -40,10 +43,14 @@ legend = Legend
     [plt1, plt2],
     ["I Channel", "Q Channel"]
 )
-# Draw the FFT.
-FFT = abs.(fft(real(wave) + imag(wave)*im)) / nSamples
+
+# Zero pad before calculating the FFT.
+padCount = 1000
+zerosArray = zeros(padCount) + im*zeros(padCount)
+append!(wave, zerosArray)
+FFT = abs.(fft(real(wave) + imag(wave)*im)) / (nSamples+padCount)
 logFFT = 20* log10.(FFT/maximum(FFT))
-samplesNormalized = 0:1/(nSamples-1):1
+samplesNormalized = 0:1/((nSamples+padCount)-1):1
 Axis(f[1, 2], xlabel = "k", ylabel = "Magnitude (dB)", title = "FFT")
 lines!(samplesNormalized, logFFT, color = :blue, marksersize = 5)
 scatter!(samplesNormalized, logFFT, color = :blue, markersize = 5)
