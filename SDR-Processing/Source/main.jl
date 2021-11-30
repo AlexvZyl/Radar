@@ -8,7 +8,7 @@ using FFTW
 include("BinaryProcessor.jl")
 
 # File.
-filepath = "SDR-Processing\\Data\\Testing\\B210_SAMPLES_Example_Testing.bin"
+filepath = "SDR-Processing\\Data\\Testing\\B210_SAMPLES_Testing_0.bin"
 # Buffer size.
 fileSizeBytes = filesize(filepath)
 fileSizeFloats = floor(Int, fileSizeBytes / 4);
