@@ -24,7 +24,7 @@ end
 # Transmission
 gradient2 = (bandwidth) / (HDChirpNSamples - 1)
 index2 = 1
-for n in HSamples
+for n in HDSamples
 	FREQ = (((gradient2 * (index2-1)) - (bandwidth/2))/HDSamplingFreq)
 	HDLinearChirp[index2] = exp(n * -2 * pi * FREQ * im)
 	global index2 += 1
@@ -41,33 +41,39 @@ gradient = (bandwidth) / (chirpNSamples - 1)
 index = 1
 for n in samples
 	FREQ = ((gradient * (index-1)) - (bandwidth/2))/samplingFreq
-	linearChirp[index] = exp(n * -2 * pi * FREQ * im)
+	nonLinearChirp[index] = exp(n * -2 * pi * FREQ * im)
  	global index += 1
 end
 
 # Transmission
 gradient2 = (bandwidth) / (HDChirpNSamples - 1)
 index2 = 1
-for n in HSamples
-	FREQ = (((gradient2 * (index2-1)) - (bandwidth/2))/HDSamplingFreq)
-	HDLinearChirp[index2] = exp(n * -2 * pi * FREQ * im)
+for n in HDSamples
+	PHASE = (π / HDChirpNSamples) * (n - 1) ^ 2
+	HDNonLinearChirp[index2] = amplitude * ( cos(PHASE) + im * sin(PHASE) )
 	global index2 += 1
 end
 
 # ====================== #
-#     Draw the plot.     #
+#       Plotting         #
 # ====================== #
 
 # Create figure.
 fig = Figure()
 
-
-
-# HD TX Pulse.
-plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 40, xRange = 2)
+# HD Linear TX Pulse.
+plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 50, xRange = 2)
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
-plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="TX Linear Chirp Pulse")
-plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0, dB = true, title="TX Pusle PSD", xRange = 50, yRange = 40)
+plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="Linear Pulse")
+plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0, dB = true, title="Linear Pulse PSD", xRange = 50, yRange = 40)
+
+# HD Non Linear TX Pulse.
+plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 50, xRange = 2)
+addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
+plotSignal(fig, HDNonLinearChirp, [2,1], HDSamplingFreq, title="Non Linear Pulse")
+plotPowerSpectra(fig, HDNonLinearChirp, [2,2], HDSamplingFreq, paddingCount = 0, dB = true, title="Non Linear Pulse PSD", xRange = Inf, yRange = Inf)
+
+# Display the figure.
 display(fig)
 
 # ====================== #

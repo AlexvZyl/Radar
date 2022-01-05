@@ -82,7 +82,7 @@ if (HDChirpNSamples%2==0)
 HDPulseNSamples	       = round(Int, (maxRange / c) * HDSamplingFreq)
 if (HDPulseNSamples%2==0)
 						chirpNSamples += 1 end
-HSamples 	           = floor(-(HDChirpNSamples-1)/2):floor(((HDChirpNSamples-1)/2))
+HDSamples 	           = floor(-(HDChirpNSamples-1)/2):floor(((HDChirpNSamples-1)/2))
 HDPulseSamples 	       = floor(-(HDPulseNSamples-1)/2):floor(((HDPulseNSamples-1)/2))
 
 # ====================== #
