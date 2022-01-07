@@ -2,39 +2,7 @@
 #  P L O T T I N G  #
 # ----------------- #
 
-using GLMakie
-
-set_theme!(theme_dark())
-update_theme!(
-	Axis = (
-    	leftspinevisible = true,
-    	rightspinevisible = true,
-    	topspinevisible = true,
-    	bottomspinevisible = true,
-    	bottomspinecolor = :gray90,
-    	topspinecolor = :gray90,
-    	leftspinecolor = :gray90,
-    	rightspinecolor = :gray90
-		),
-	Legend = (
-		# framevisible = true,
-    	leftspinevisible = true,
-    	rightspinevisible = true,
-    	topspinevisible = true,
-    	bottomspinevisible = true,
-    	bottomspinecolor = :gray90,
-    	topspinecolor = :gray90,
-    	leftspinecolor = :gray90,
-    	rightspinecolor = :gray90,
-		backgroundcolor = :gray90,
-		)
-	)
-# Graph parameters.
-textSize = 23
-lineThickness = 4
-dashThickness = 2.5
-dotSize = 8
-originThickness = 2
+include("../../Utilities/MakieGL.jl")
 
 # --------------- #
 #  M O D U L E S  #
@@ -81,8 +49,6 @@ B = min(sqrt(x), 1.989)
 
 # Δ is the total change in instantaneous frequency.
 Δ = 2 * B / sqrt(4 - B^2)
-
-t_i * sqrt(Δ^2 + 4)/(2 * Δ)  #  ?
 
 # --------------------- #
 #  P H A S E   P L O T  #

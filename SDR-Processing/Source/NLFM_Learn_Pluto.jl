@@ -40,8 +40,8 @@ md"Specify the duration ``t_i`` and bandwidth ``BW`` of the chirp"
 
 # ╔═╡ 0f934d3b-b28e-4db9-9450-b04e3426443a
 begin
-	t_i = 10e-6
-	BW = 10e6
+	t_i = 3.33e-6
+	BW = 5.5e6
 end
 
 # ╔═╡ 54e9f0d5-a92e-4289-9e22-14abed95eb58
