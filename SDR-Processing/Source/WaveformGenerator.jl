@@ -6,6 +6,13 @@
 # in all of the different scripts.
 include("WaveFormData.jl")
 
+# Plotting options.
+individual = false
+# Set overlay option.
+if individual overlay = false
+else overlay = true
+end
+
 # ====================== #
 #     Linear Chirp       #
 # ====================== #
@@ -35,24 +42,30 @@ end
 #   Non Linear Chirp     #
 # ====================== #
 
-# Phase calculations.
-# x = 2
-# B = min(sqrt(x), 1.989)
-# Δ = 2 * B / sqrt(4 - B^2)  # Total change in instantaneous frequency.
+ # Δ desribes the side lobes level.
+ # Higher value = smaller sidelobes.
+ # Higher sidelobes lead to broader main lobe.
+Δ = 50e6
+# Describes the main lobe width.
+# Not used in the phase equation, but shows what
+# happens to the main lobe.
+B = ( 2Δ * sqrt( Δ^2 + 4 ) ) / ( Δ^2 + 4 )
 
-Δ = 2 #  Desribes the side lobes level.
-B = ( 2Δ * sqrt( Δ^2 + 4 ) ) / ( Δ^2 + 4 )  #  Describes the main lobe width.
-
-t_i = HDChirpNSamples / HDSamplingFreq
-function Φ(t)  #  Phase.
-	α = t_i * sqrt(Δ^2 + 4)/(2 * Δ)
-	(α - sqrt(α^2 - (t - t_i/2)^2))/Δ
+# Phase, given the time.
+function Φ(t)
+	# Transmission interval.
+	tᵢ = HDChirpNSamples / HDSamplingFreq
+	α = ( tᵢ * sqrt(Δ^2 + 4) ) / (2 * Δ)
+	β = ( tᵢ^2 * ( Δ^2 + 4 ) ) / ( 4 * Δ^2 )
+	γ = ( t - tᵢ/2 ) ^ 2
+	α - sqrt(β - γ)
 end
 
 # Signal.
 s(t; fc = 0) = exp(im*2π*(fc * t + Φ(t)*bandwidth))
 signal(t) = s(t, fc = 0)
-t = range(0, t_i, step = inv(HDSamplingFreq))
+# Time steps, given the smaples.
+t = range(0, tᵢ, step = inv(HDSamplingFreq))
 
 # Arrays containing data.
 nonLinearChirp = Array{Complex{Float32}}(undef, chirpNSamples)
@@ -77,44 +90,43 @@ end
 #       Plotting         #
 # ====================== #
 
-# # Create figure.
-# fig = Figure()
-#
-# # HD Linear TX Pulse.
-# plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 40, xRange = 4)
-# # plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 50, xRange = Inf)
-# addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
-# plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="Linear Pulse")
-# plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0,
-# 				 dB = true, title="Linear Pulse PSD", xRange = 50, yRange = 40)
-#
-# # HD Non Linear TX Pulse.
-# plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 40, xRange = 4)
-# # plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 50, xRange = Inf)
-# addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
-# plotSignal(fig, HDNonLinearChirp, [2,1], HDSamplingFreq, title="Non Linear Pulse")
-# plotPowerSpectra(fig, HDNonLinearChirp, [2,2], HDSamplingFreq, paddingCount = 0,
-# 			     dB = true, title="Non Linear Pulse PSD", xRange = 50, yRange = 40)
-#
-# # Display the figure.
-# display(fig)
+# --------------------- #
+#  I N D I V I D U A L  #
+# --------------------- #
 
+if individual
 # Create figure.
 fig = Figure()
+# HD Linear TX Pulse.
+plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 60, xRange = 4)
+addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
+plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="Linear Pulse")
+plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0,
+				 dB = true, title="Linear Pulse PSD", xRange = 50, yRange = 40)
+# HD Non Linear TX Pulse.
+plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 60, xRange = 4)
+addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
+plotSignal(fig, HDNonLinearChirp, [2,1], HDSamplingFreq, title="Non Linear Pulse")
+plotPowerSpectra(fig, HDNonLinearChirp, [2,2], HDSamplingFreq, paddingCount = 0,
+			     dB = true, title="Non Linear Pulse PSD", xRange = 50, yRange = 40)
+# Display the figure.
+display(fig)
+end
 
-# plotMatchedFilter(fig, HDLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 40, xRange = 4)
-# plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 40, xRange = 4, color = :orange, newAxis = false)
+# --------------- #
+#  O V E R L A Y  #
+# --------------- #
 
-
+if overlay
+# Create figure.
+fig = Figure()
 # Plot the mathed filter.
-ax = plotMatchedFilter(fig, HDLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 50, xRange = 5, label = "LFM")
-plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 50, xRange = 5, color = :orange, axis = ax, label = "NLFM")
+ax = plotMatchedFilter(fig, HDLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 60, xRange = 4, label = "LFM")
+plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 60, xRange = 4, color = :orange, axis = ax, label = "NLFM")
 axislegend(ax)
-
 # Add zeros for the time the radar is not transmitting.
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
 addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
-
 # PLot ther PSD's.
 ax = plotPowerSpectra(fig, HDLinearChirp, [1,1], HDSamplingFreq, paddingCount = 0,
 					  dB = true, title="PSD", xRange = 50, yRange = 40,
@@ -123,10 +135,10 @@ plotPowerSpectra(fig, HDNonLinearChirp, [1,1], HDSamplingFreq, paddingCount = 0,
 				 dB = true, title="PSD", xRange = 50, yRange = 40, color = :orange,
 				 axis = ax, label = "NLFM")
 axislegend(ax)
-
 # Display the figure.
 display(fig)
+end
 
 # ====================== #
-#  		   EOF	   	     #
 # ====================== #
+#  		   EOF	   	     #
