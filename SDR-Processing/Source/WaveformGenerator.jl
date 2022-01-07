@@ -62,8 +62,7 @@ function Φ(t)
 end
 
 # Signal.
-s(t; fc = 0) = exp(im*2π*(fc * t + Φ(t)*bandwidth))
-signal(t) = s(t, fc = 0)
+signal(t; fc = 0) = exp(im*2π*(fc * t + Φ(t)*bandwidth))
 # Time steps, given the smaples.
 t = range(0, tᵢ, step = inv(HDSamplingFreq))
 
