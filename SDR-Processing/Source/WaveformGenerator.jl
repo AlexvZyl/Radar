@@ -5,13 +5,13 @@
 # File used to be able to have the same linearChirpform description
 # in all of the different scripts.
 include("WaveFormData.jl")
+include("Utilities.jl")
+include("NLFM.jl")
 
 # Plotting options.
-individual = false
+individual = true
 # Set overlay option.
-if individual overlay = false
-else overlay = true
-end
+overlay = ! individual
 
 # ====================== #
 #     Linear Chirp       #
@@ -42,27 +42,10 @@ end
 #   Non Linear Chirp     #
 # ====================== #
 
- # Δ desribes the side lobes level.
- # Higher value = smaller sidelobes.
- # Higher sidelobes lead to broader main lobe.
-Δ = 50e6
-# Describes the main lobe width.
-# Not used in the phase equation, but shows what
-# happens to the main lobe.
-B = ( 2Δ * sqrt( Δ^2 + 4 ) ) / ( Δ^2 + 4 )
-
-# Phase, given the time.
-function Φ(t)
-	# Transmission interval.
-	tᵢ = HDChirpNSamples / HDSamplingFreq
-	α = ( tᵢ * sqrt(Δ^2 + 4) ) / (2 * Δ)
-	β = ( tᵢ^2 * ( Δ^2 + 4 ) ) / ( 4 * Δ^2 )
-	γ = ( t - tᵢ/2 ) ^ 2
-	α - sqrt(β - γ)
-end
-
+# Transmission interval.
+tᵢ = HDChirpNSamples / HDSamplingFreq
 # Signal.
-signal(t; fc = 0) = exp(im*2π*(fc * t + Φ(t)*bandwidth))
+signal(t; fc = 0) = exp(im*2π*(fc * t + Φ(t, tᵢ)*bandwidth))
 # Time steps, given the smaples.
 t = range(0, tᵢ, step = inv(HDSamplingFreq))
 
@@ -139,5 +122,5 @@ display(fig)
 end
 
 # ====================== #
-# ====================== #
 #  		   EOF	   	     #
+# ====================== #

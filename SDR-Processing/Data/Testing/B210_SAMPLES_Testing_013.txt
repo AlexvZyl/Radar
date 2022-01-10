@@ -2,7 +2,7 @@
 |                                  Details                                            |
 ---------------------------------------------------------------------------------------
 
-Time of transmission: Wed Dec  1 17:30:45 2021
+Time of transmission: Sat Jan  8 13:02:56 2022
 TX error: None
 RX error: None
 OTW format: sc16
@@ -22,22 +22,23 @@ TX sampling rate: 12 MHz
 RX sampling rate: 12 MHz
 TX wave frequency: 900 MHz
 RX wave frequency: 900 MHz
-TX gain: 50 dB
+TX gain: 80 dB
 RX gain: 0 dB
-TX filter BW: 20 MHz
-RX filter BW: 20 MHz
-Radar transmission duration: 3 s
+TX filter BW: 12 MHz
+RX filter BW: 12 MHz
+Radar transmission duration: 1 s
 Radar max range: 399.723 m
 Radar deadzone: 99.9308 m
 PRF: 375000 pulses/s
-Total pulses: 1125000
-Window function: Blackman
+Total pulses: 375000
+Wave type: Non-Linear Frequency Chirp
+Window function: None
 
 ---------------------------------------------------------------------------------------
 |                                     Note                                            |
 ---------------------------------------------------------------------------------------
 
-For Julia.
+Full radar.
 
 ---------------------------------------------------------------------------------------
 |                                      EOF                                            |
