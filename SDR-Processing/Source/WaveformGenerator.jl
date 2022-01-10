@@ -9,7 +9,7 @@ include("Utilities.jl")
 include("NLFM.jl")
 
 # Plotting options.
-individual = true
+individual = false
 # Set overlay option.
 overlay = ! individual
 

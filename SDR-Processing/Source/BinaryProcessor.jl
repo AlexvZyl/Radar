@@ -23,7 +23,6 @@ rxSignal = Ichannel + im*Qchannel
 # Plot the data.
 fig = Figure()
 plotSignal(fig, rxSignal, [1,1], 12e6, title="Signal", sampleRatio = 0.15)
-# plotFFT(fig, rxSignal, [1,2])
 display(fig)
 
 # Draw the FFT.
