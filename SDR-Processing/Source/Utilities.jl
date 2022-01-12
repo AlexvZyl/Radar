@@ -1,6 +1,9 @@
 # Makie utilities.
 include("../../Utilities/MakieGL.jl")
 
+using FFTW
+using DSP
+
 # ====================== #
 #       Functions        #
 # ====================== #
@@ -120,7 +123,7 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 
 	# Plot the response.
 	response = responseReal + im * responseImag
-	samples = -length(responseReal)/2:1:length(responseReal)/2-1
+	samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)
 	time = samples .* (fs^-1) ./ 1e-6
 	lines!(time, responseReal, color =color,  linewidth = lineThickness, label = label)
 	scatter!(time, responseReal, color =color, markersize = dotSize)

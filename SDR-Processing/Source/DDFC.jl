@@ -1,28 +1,19 @@
+#  -------------- #
+#  M O D U L E S  #
+#  -------------- #
+
 include("../../Utilities/MakieGL.jl")
 include("Utilities.jl")
 
+using Peaks
 
 # ----------------- #
 #  E Q U A T I O N  #
 # ----------------- #
 
 # Piecewise DDFC function.
-function DDFCfreq(fs::Number, ceiling::Number, M::Number)
-
-    # ------------- #
-    #  T U N I N G  #
-    # ------------- #
-
-    # HAve to be cal
-    τ = 1
-    𝒳 = 1 # Δf × δ7
-
-    # B = This is the baseband bandiwdth, but we add a non-linear
-    # part to the end of the waveform.  In the paper they restrict it
-    # to a value that is a little broader than BW/2.
-    # What they do in the paper does not make sense, so I am going to
-    # see this as a tuning parameter.
-    B = BW / 4 # Hz.
+function DDFCfreq(fs::Number, ceiling::Number, M::Number;
+                  τ::Number, 𝒳::Number, B::Number)
 
     # --------------------- #
     #  P A R A M E T E R S  #
@@ -50,7 +41,7 @@ function DDFCfreq(fs::Number, ceiling::Number, M::Number)
     # Generate a time vector.
     samples = range(1, (nSamples-1)/2)
 
-    # The mdulated waveform.
+    # The arrays.
     freq = Array{Float32}(undef, nSamples)
     time = Array{Float32}(undef, nSamples)
 
@@ -83,7 +74,7 @@ function DDFCfreq(fs::Number, ceiling::Number, M::Number)
             freq[centerSample + s] = (M*t) + ( (𝒳/den) - τ )
             freq[centerSample - s] = (M*t) - ( (𝒳/den) - τ )
 
-        # Wave should not exist at this point.
+        # Wave should not exist at this point (I think).
         else
 
             freq[centerSample + s] = 0
@@ -97,35 +88,74 @@ function DDFCfreq(fs::Number, ceiling::Number, M::Number)
     #  T I M E  #
     # --------- #
 
-    timeRange = (nSamples-1)/2 /fs
-    timeVec = range(-timeRange, timeRange, step = inv(fs))
+    time[centerSample] = 0
+    for i in range(1, trunc(Int, (nSamples-1)/2))
+        t = i /fs
+        time[centerSample + i] = t
+        time[centerSample - i] = -t
+    end
 
-    return freq, timeVec
+    return freq, time
 
 end
 
-# -------------- #
-#  T E S T I N G #
-# -------------- #
+# -------------------- #
+#  P A R A ME T E R S  #
+# -------------------- #
 
-fs = 100e6              # Sampling frequency.
-BW = fs / 2.1           # Bandiwdth.
-T = 3.333333e-6 # μs.   # Pulse length.
+fs = 200e6            # Sampling frequency.
+BW = fs / 2.1        # Bandiwdth.
+T = 0.333e-6 # μs.   # Pulse length.
+T = 200e-6 # μs.   # Pulse length.
+
 # ceiling = This is the max freq we can transmit.
 #           It has to be set to the BW.
 ceiling = BW # Hz.
 
-# Get the frequency over time.
-freq, timeVec = DDFCfreq(fs, T, ceiling)
-freq /= 10e6
-timeVec *= 10e6
+# ------------- #
+#  T U N I N G  #
+# ------------- #
 
-fig = Figure()
-axis = Axis(fig[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "DDFC Modulation",
-     titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+# Has to be designd using the paper.
+# Going to implement my own optimiser.
+τ = 0.1     # Close in SLL
+𝒳 = 1.17    # Far out SLL
+
+# B = This is the baseband bandiwdth, but we add a non-linear
+# part to the end of the waveform.  In the paper they restrict it
+# to a value that is a little broader than BW/2.
+# What they do in the paper does not make sense, so I am going to
+# see this as a tuning parameter.
+B = BW / 4 # Hz.
+
+# ----------------- #
+#  P L O T T I N G  #
+# ----------------- #
+
+# Get the frequency over time.
+freq, timeVec = DDFCfreq(fs, T, ceiling, τ=τ, 𝒳=𝒳, B=B)
+
+# Signal.
+nSamples = ceil(Int, T * fs)
+if nSamples % 2 == 0
+    nSamples += 1
+end
+signalDDFC = Array{Complex{Float32}}(undef, nSamples)
+for i in range(1, nSamples)
+    signalDDFC[i] = exp(im * 2 * pi * freq[i])
+end
+
+# Plot.
+figure = Figure()
+axis = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "DDFC Modulation",
+       titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
 plotOrigin(axis)
 lines!(timeVec, freq, color = :blue, linewidth = lineThickness, label = "Frequency")
-display(fig)
+plotMatchedFilter(figure, signalDDFC, [1,2], fs)
+display(figure)
+
+# This has to be below BW, otherwise this is an invalid waveform.
+actualBandwidth = maximum(freq)
 
 # ------- #
 #  E O F  #
