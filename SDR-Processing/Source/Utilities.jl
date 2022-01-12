@@ -57,7 +57,7 @@ end
 
 function plotFFT(fig::Figure, signal::Vector, position::Vector;
 				 paddingCount::Number=0, sampleRatio::Number=1, dB::Bool=true, title::String = "FFT",
-				 color = :blue, newAxis = true)
+				 color = :blue, axis = true)
 	# Reduce the amount of samples to be plotted.
 	IchannelScaled = real(signal)[1:1:trunc(Int, length(signal)*sampleRatio)]
 	QchannelScaled = imag(signal)[1:1:trunc(Int, length(signal)*sampleRatio)]
@@ -68,23 +68,23 @@ function plotFFT(fig::Figure, signal::Vector, position::Vector;
 	FFT = abs.(fft(IchannelScaled + QchannelScaled*im))
 	if dB
 		FFT = 20 * log10.(FFT./maximum(FFT))
-		if newAxis == true
-		ax = Axis(fig[position[1], position[2]], xlabel = "k", ylabel = "Magnitude (dB)", title = title,
-			  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-	   	plotOrigin(ax)
+		if axis == true
+			ax = Axis(fig[position[1], position[2]], xlabel = "k", ylabel = "Magnitude (dB)", title = title,
+				  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+		   	plotOrigin(ax)
 	  	end
 	else
-		if newAxis == true
-		ax = Axis(fig[position[1], position[2]], xlabel = "k", ylabel = "Amplitude", title = title,
-				  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-  	    plotOrigin(ax)
+		if axis == true
+			ax = Axis(fig[position[1], position[2]], xlabel = "k", ylabel = "Amplitude", title = title,
+					  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	  	    plotOrigin(ax)
 	    end
 	end
 	# Plot the FFT.
 	samplesNormalized = 0:1/((length(FFT))-1):1
 	lines!(samplesNormalized, FFT, color = color, linewidth = lineThickness)
 	scatter!(samplesNormalized, FFT, color = color, markersize = dotSize)
-	return FFT
+	return axis
 end
 
 # ----------------------------- #
@@ -105,7 +105,7 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	if dB
 		responseReal = real( 20 * log10.(Complex.(responseReal)./maximum(responseReal)) )
 		responseImag = imag( 20 * log10.(Complex.(responseImag)./maximum(responseImag)) )
-		# responseImag = real(20 * log10.(responseImag./maximum(responseImag)))
+		# Axis.
 		if axis == true
 			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Magnitude (dB)", title = "Matched Filter Response",
 					  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
@@ -114,7 +114,7 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 
 	# Create non DB axis.
 	else
-		if newAxis == true
+		if axis == true
 			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = "Matched Filter Response",
 					  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
 		  	plotOrigin(ax)
