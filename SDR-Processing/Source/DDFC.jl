@@ -13,8 +13,8 @@ using Optim # Remember to cite this package.
 # ----------------- #
 
 # Piecewise DDFC function.
-function DDFCfreq(fs::Number, T::Number, ceiling::Number,
-                  τ::Number, 𝒳::Number, BWtot::Number, BWbase::Number)
+function DDFCfreq(fs::Number, T::Number, τ::Number,
+                  𝒳::Number, BWtot::Number, BWbase::Number)
 
     # Amount of samples in the waveform.
     nSamples = ceil(Int, T * fs)
@@ -28,11 +28,12 @@ function DDFCfreq(fs::Number, T::Number, ceiling::Number,
     #  P A R A M E T E R S  #
     # --------------------- #
 
-    # M = baseband chirp rate.
-    M = BWbase / T  # This is no longer valid... How do we find the baseband bandwidth?
-
+    # Maximum instantaneous frequency.
+    ceiling = BWtotal / 2
+    # Baseband chirp rate.
+    M = BWbase / T
     # ζ
-    ζ = ceiling - BWtot/2 + τ
+    ζ = ceiling - BWbase/2 + τ
     # δ
     δ = 𝒳/τ - 𝒳/ζ
     # t̃
@@ -42,10 +43,10 @@ function DDFCfreq(fs::Number, T::Number, ceiling::Number,
     #  F R E Q U E N C Y  #
     # ------------------- #
 
-    # Generate a sample array.
+    # Generate a samples array.
     samples = trunc.(Int, range(1, (nSamples-1)/2))
 
-    # The arrays.
+    # The modulation data.
     freq = Array{Float32}(undef, nSamples)
     time = Array{Float32}(undef, nSamples)
 
@@ -101,42 +102,44 @@ end
 #  P A R A ME T E R S  #
 # -------------------- #
 
-T = 200e-6          # Pulse length.
+# Pulse length.
+T = 200e-6
 
-# ceiling = This is the max freq we can transmit.
-#           It has to be set to the BW.
-ceiling = 14e6 # Hz
+# Bandwidth of the tx signal.
+BWtotal = 28e6
+
+# Sampling the signal.
+timeRes = 5e-9
+fs = inv(timeRes)
+# fs = BWtotal * 4
 
 # ------------- #
 #  T U N I N G  #
 # ------------- #
 
-# Total bandwidth.
-timeRes = 5e-9
-BWtotal = inv(timeRes)
-
-# Baseband bandwidth.
+# Baseband bandwidth added as tuning parameter.
 TB = 270
 BWbase = TB / T
 
-fs = BWtotal * 2.1 # Hz
-
 # Tuning parameters suggested by the paper.
-τ = 0.15e6     # Close in SLL
-𝒳 = 1.7        # Far out SLL
+τ = 0.15     # Close in SLL
+𝒳 = 1.7      # Far out SLL
 
 # ----------------- #
 #  P L O T T I N G  #
 # ----------------- #
 
 # Get the frequency over time.
-freq, timeVec = DDFCfreq(fs, T, ceiling, τ, 𝒳, BWtotal, BWbase)
+freq, timeVec = DDFCfreq(fs, T, τ, 𝒳, BWtotal, BWbase)
 
 # Signal.
 nSamples = ceil(Int, T * fs)
+# Ensure signal is even.
 if nSamples % 2 == 0
     nSamples += 1
+    T += inv(fs)
 end
+
 signalDDFC = Array{Complex{Float32}}(undef, nSamples)
 for i in range(1, nSamples)
     signalDDFC[i] = exp(im * 2 * pi * freq[i])
@@ -153,7 +156,7 @@ plotSignal(figure, signalDDFC, [1,3], fs)
 display(figure)
 
 # This has to be below BW, otherwise this is an invalid waveform.
-actualBandwidth = maximum(freq)
+actualBandwidth = maximum(freq) * 2
 
 # ------- #
 #  E O F  #
