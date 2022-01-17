@@ -8,8 +8,11 @@ include("WaveFormData.jl")
 include("Utilities.jl")
 include("NLFM.jl")
 
+# For LPF
+using DSP
+
 # Plotting options.
-individual = false
+individual = true
 overlay = ! individual
 HD = true
 
@@ -68,6 +71,12 @@ for n in HDSamples
 	global index += 1
 end
 
+LPF = digitalfilter(Lowpass(samplingFreq/2.1, fs = samplingFreq), Butterworth(10))
+HDNonLinearChirp = filt(LPF, HDNonLinearChirp)
+
+# To see what the signal is actually going to look like we need
+# to pass it through a filter.
+
 # ====================== #
 #       Plotting         #
 # ====================== #
@@ -80,17 +89,17 @@ if individual
 # Create figure.
 fig = Figure()
 # HD Linear TX Pulse.
-plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 50, xRange = 0.66)
+plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange = 70, xRange = 0.66)
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
 plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="Linear Pulse")
 plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0,
-				 dB = true, title="Linear Pulse PSD", xRange = 50, yRange = 40)
+				 dB = true, title="Linear Pulse PSD", xRange = 200, yRange = 40)
 # HD Non Linear TX Pulse.
-plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 50, xRange = 0.66)
+plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 70, xRange = 0.66)
 addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
 plotSignal(fig, HDNonLinearChirp, [2,1], HDSamplingFreq, title="Non Linear Pulse")
 plotPowerSpectra(fig, HDNonLinearChirp, [2,2], HDSamplingFreq, paddingCount = 0,
-			     dB = true, title="Non Linear Pulse PSD", xRange = 50, yRange = 40)
+			     dB = true, title="Non Linear Pulse PSD", xRange = 200, yRange = 40)
 # Display the figure.
 display(fig)
 end
@@ -104,7 +113,7 @@ if overlay
 fig = Figure()
 # Plot the mathed filter.
 ax = plotMatchedFilter(fig, HDLinearChirp, [1,2], HDSamplingFreq, label = "LFM")
-plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 50, xRange = 0.66, color = :orange, axis = ax, label = "NLFM")
+plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 70, xRange = 0.66, color = :orange, axis = ax, label = "NLFM")
 axislegend(ax)
 # Add zeros for the time the radar is not transmitting.
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
@@ -113,7 +122,7 @@ addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
 ax = plotPowerSpectra(fig, HDLinearChirp, [1,1], HDSamplingFreq, paddingCount = 0,
 					  label = "LFM")
 plotPowerSpectra(fig, HDNonLinearChirp, [1,1], HDSamplingFreq, paddingCount = 0,
-				 dB = true, title="PSD", xRange = 100, yRange = 50, color = :orange,
+				 dB = true, title="PSD", xRange = 200, yRange = 50, color = :orange,
 				 axis = ax, label = "NLFM")
 axislegend(ax)
 # Display the figure.

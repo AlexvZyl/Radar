@@ -2,7 +2,7 @@
 |                                  Details                                            |
 ---------------------------------------------------------------------------------------
 
-Time of transmission: Sat Jan  8 13:02:56 2022
+Time of transmission: Mon Jan 17 13:31:44 2022
 TX error: None
 RX error: None
 OTW format: sc16
@@ -18,27 +18,28 @@ The .bin file does not contain any type of headers, it is just IQ samples.
 |                               Radar Settings                                        |
 ---------------------------------------------------------------------------------------
 
-TX sampling rate: 12 MHz
-RX sampling rate: 12 MHz
+TX sampling rate: 30 MHz
+RX sampling rate: 30 MHz
 TX wave frequency: 900 MHz
 RX wave frequency: 900 MHz
-TX gain: 80 dB
+Wave bandwidth: 14.2857 MHz
+TX gain: 60 dB
 RX gain: 0 dB
-TX filter BW: 12 MHz
-RX filter BW: 12 MHz
-Radar transmission duration: 1 s
-Radar max range: 399.723 m
-Radar deadzone: 99.9308 m
-PRF: 375000 pulses/s
-Total pulses: 375000
-Wave type: Non-Linear Frequency Chirp
+TX filter BW: 30 MHz
+RX filter BW: 30 MHz
+Transmission duration: 5 s
+PRF: 150000 pulses/s
+Total pulses: 750000
+Radar max range: 999.308 m
+Radar deadzone: 499.654 m
+Wave type: Linear Frequency Chirp
 Window function: None
 
 ---------------------------------------------------------------------------------------
 |                                     Note                                            |
 ---------------------------------------------------------------------------------------
 
-Full radar.
+CHanged wave type to LFM
 
 ---------------------------------------------------------------------------------------
 |                                      EOF                                            |

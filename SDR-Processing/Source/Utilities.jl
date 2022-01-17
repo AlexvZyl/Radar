@@ -92,12 +92,17 @@ end
 # ----------------------------- #
 
 # Impulse response of the signal.
-function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Number; sampleratio::Number=1, dB::Bool=true,
-							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "")
+function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
+							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
+							secondSignal = false, nSamples = false)
 	ax = nothing
 
 	# Matched filter response.
-	response = xcorr(signal, signal)
+	if secondSignal != false
+		response = xcorr(signal, secondSignal)
+	else
+		response = xcorr(signal, signal)
+	end
 	responseReal = real(response)
 	responseImag = imag(response)
 
@@ -123,7 +128,11 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 
 	# Plot the response.
 	response = responseReal + im * responseImag
-	samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)
+	if (length(responseReal) % 2 == 1)
+		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)
+	else
+		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)-1
+	end
 	time = samples .* (fs^-1) ./ 1e-6
 	lines!(time, responseReal, color =color,  linewidth = lineThickness, label = label)
 	scatter!(time, responseReal, color =color, markersize = dotSize)
