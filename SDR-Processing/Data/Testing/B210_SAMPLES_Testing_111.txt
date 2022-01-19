@@ -1,0 +1,47 @@
+---------------------------------------------------------------------------------------
+|                                  Details                                            |
+---------------------------------------------------------------------------------------
+
+Time of transmission: Tue Jan 18 16:41:10 2022
+TX error: None
+RX error: None
+OTW format: sc16
+CPU format: fc32
+
+The data is packed as I Q I Q samples.
+Each sample size is given by the CPU format.
+OTW format is not required for parsing the .bin file, 
+since this describes how data is transferred on the SDR.
+The .bin file does not contain any type of headers, it is just IQ samples.
+
+---------------------------------------------------------------------------------------
+|                               Radar Settings                                        |
+---------------------------------------------------------------------------------------
+
+TX sampling rate: 23 MHz
+RX sampling rate: 23 MHz
+TX wave frequency: 900 MHz
+RX wave frequency: 900 MHz
+Wave bandwidth: 10.9524 MHz
+TX gain: 60 dB
+RX gain: 22 dB
+TX filter BW: 22 MHz
+RX filter BW: 22 MHz
+Transmission duration: 1 s
+PRF: 150327 pulses/s
+Total pulses: 150327
+Radar max range: 990.618 m
+Radar deadzone: 495.309 m
+Wave type: Linear Frequency Chirp
+Window function: None
+
+---------------------------------------------------------------------------------------
+|                                     Note                                            |
+---------------------------------------------------------------------------------------
+
+Done
+
+---------------------------------------------------------------------------------------
+|                                      EOF                                            |
+---------------------------------------------------------------------------------------
+

@@ -11,8 +11,9 @@ const c = 299792458
 txDuration   	= 1
 amplitude    	= 1
 samplingFreq 	= 23e6
-deadZone     	= 500
-maxRange     	= 600
+# samplingFreq 	= 100e6
+deadZone     	= 500# * 17
+maxRange     	= 1000# * 17
 txFreq  		= 900e6
 
 # ====================== #
@@ -35,7 +36,8 @@ pulseSamples 			= floor(-(pulseNSamples-1)/2):floor(((pulseNSamples-1)/2))
 # -------------------
 # HD TX Pulse
 # -------------------
-HDSamplingFreq 	       = samplingFreq * 10
+# HDSamplingFreq 	       = samplingFreq * 100
+HDSamplingFreq		   = samplingFreq
 HDChirpNSamples 	   = round(Int, (deadZone * 2 / c) * HDSamplingFreq)
 if (HDChirpNSamples%2==0)
 						HDChirpNSamples += 1 end

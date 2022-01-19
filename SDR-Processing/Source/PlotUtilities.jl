@@ -34,6 +34,7 @@ function plotSignal(fig::Figure, signal::Vector, position::Vector, fs::Number;
 	# Reduce the amount of samples to be plotted.
 	IchannelScaled = real(signal)[1:1:trunc(Int, length(signal)*sampleRatio)]
 	QchannelScaled = imag(signal)[1:1:trunc(Int, length(signal)*sampleRatio)]
+	signalTot = IchannelScaled + im * QchannelScaled
 	# Signal axis.
 	ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = title,
 	          titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
@@ -42,10 +43,12 @@ function plotSignal(fig::Figure, signal::Vector, position::Vector, fs::Number;
 	# Signal.
 	samples = 0:1:length(IchannelScaled)-1
 	time = samples .* (fs^-1) ./ 1e-6
-	plotILines = lines!(time, IchannelScaled, color = :blue, linewidth = lineThickness, label = "I Channel")
-	plotIScat = scatter!(time, IchannelScaled, color = :blue, markersize = dotSize)
+	plotQLines = lines!(time, abs.(signalTot), color = :red, linewidth = lineThickness, label = "Envelope")
+	plotQScat = scatter!(time, abs.(signalTot), color = :red, markersize = dotSize)
 	plotQLines = lines!(time, QchannelScaled, color = :orange, linewidth = lineThickness, label = "Q Channel")
 	plotQScat = scatter!(time, QchannelScaled, color = :orange, markersize = dotSize)
+	plotILines = lines!(time, IchannelScaled, color = :blue, linewidth = lineThickness, label = "I Channel")
+	plotIScat = scatter!(time, IchannelScaled, color = :blue, markersize = dotSize)
 	xlims!(0, time[end])
 	# Add legend.
 	axislegend(ax)
@@ -81,7 +84,8 @@ function plotFFT(fig::Figure, signal::Vector, position::Vector;
 	    end
 	end
 	# Plot the FFT.
-	samplesNormalized = 0:1/((length(FFT))-1):1
+	fftStep = 1/((length(FFT)))
+	samplesNormalized = 0:fftStep:1-fftStep
 	lines!(samplesNormalized, FFT, color = color, linewidth = lineThickness)
 	scatter!(samplesNormalized, FFT, color = color, markersize = dotSize)
 	return axis
@@ -105,11 +109,12 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	end
 	responseReal = real(response)
 	responseImag = imag(response)
-
+	responseAbs = abs.(response)
 	# Create DB axis.
 	if dB
 		responseReal = real( 20 * log10.(Complex.(responseReal)./maximum(responseReal)) )
 		responseImag = imag( 20 * log10.(Complex.(responseImag)./maximum(responseImag)) )
+		responseAbs = 20 * log10.( responseAbs./maximum(responseAbs) )
 		# Axis.
 		if axis == true
 			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Magnitude (dB)", title = "Matched Filter Response",
@@ -127,15 +132,15 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	end
 
 	# Plot the response.
-	response = responseReal + im * responseImag
+
 	if (length(responseReal) % 2 == 1)
 		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)
 	else
 		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)-1
 	end
 	time = samples .* (fs^-1) ./ 1e-6
-	lines!(time, responseReal, color =color,  linewidth = lineThickness, label = label)
-	scatter!(time, responseReal, color =color, markersize = dotSize)
+	lines!(time, responseAbs, color =color,  linewidth = lineThickness, label = label)
+	scatter!(time, responseAbs, color =color, markersize = dotSize)
 
 	# Set the x range.
 	if xRange != Inf
@@ -162,19 +167,26 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
 						  scatterPlot::Bool = false, xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true,
 						  label = "")
 	ax = nothing
-
 	# Reduce the amount of samples to be plotted.
 	signalScaled = signal[1:1:trunc(Int, length(signal)*sampleRatio)]
 	# Pad the signal.
-	zerosVec = zeros(paddingCount) + im*zeros(paddingCount)
-	append!(signalScaled, zerosVec)
+	if paddingCount != 0
+		zerosVec = zeros(paddingCount) + im*zeros(paddingCount)
+		append!(signalScaled, zerosVec)
+	end
 	# Calculate FFT.
 	signalFFT = abs.(fft(real(signalScaled) + im*imag(signalScaled)))
 	# Shift the FFT to display positive frequencies.
 	fftLength = length(signalFFT)
-	fftY = signalFFT[ceil(Int, fftLength/2):end]
-	append!(fftY, signalFFT[1:ceil(Int, fftLength/2)])
-
+	if fftLength % 2 == 1
+		fftCenter = trunc(Int, (fftLength-1)/2) + 1
+		fftY = signalFFT[fftCenter : end]
+		append!(fftY, signalFFT[1 : fftCenter + 1])
+	else
+		fftCenter = trunc(Int, (fftLength)/2)
+		fftY = signalFFT[fftCenter + 1 : end]
+		append!(fftY, signalFFT[1 : fftCenter])
+	end
 	# Create dB axis.
 	if dB
 		fftY = 20 * log10.(fftY./maximum(fftY))
@@ -194,11 +206,24 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
 		end
 	end
 
+	# Create the frequencies vector.
+	if fftLength % 2 == 1
+		frequencies = collect(-fftCenter:1:0) / fftCenter * fs
+		toAppend = collect(1:1:fftCenter) / fftCenter * fs
+		append!(frequencies, toAppend)
+		frequencies /= 4e6
+	else
+		frequencies = collect(-fftCenter:1:-1) / fftCenter * fs
+		toAppend = collect(1:1:fftCenter) / fftCenter * fs
+		append!(frequencies, toAppend)
+		frequencies /= 4e6
+	end
+
 	# Plot the PSD.
-	samplesNormalized = 0:1/((length(fftY))-1):1
-	frequencies = (-fs/2:fs/fftLength:fs/2) / 1e6
 	lines!(frequencies, fftY, color = color, linewidth = lineThickness, label = label)
-	if scatterPlot scatter!(samplesNormalized, fftY, color = color, markersize = dotSize) end
+	if scatterPlot
+		scatter!(frequencies, fftY, color = color, markersize = dotSize)
+	end
 
 	# Set the X Range.
 	if xRange != Inf
@@ -216,12 +241,24 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
 	return ax
 end
 
-# ----------- #
-#  M I X E R  #
-# ----------- #
+function plotIQCircle(figure::Figure, signal::Vector, position::Vector;
+					  axis::Axis=false, color=:blue, label="Signal")
 
-function mixSignal(Signal1::Vector, Signal2::Vector)
+  	# Setup axis.
+	ax = nothing
+	if axis == false
+		ax = Axis(  figure[position[1], positionp[2]], xlabel = "I Channel", ylabel = "Q Channel", title = "I vs Q",
+            		titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	else
+		ax = axis
+	end
 
+	# Plot the IQ data.
+	normFactor = maximum(max.(maximum(real(signal)), imag(signal)))
+	scatter!(real(signal)/normFactor, imag(signal)/normFactor,
+			 color = color, markersize = dotSize, label=label)
+
+	 return ax
 end
 
 # ====================== #

@@ -11,11 +11,6 @@ include("NLFM.jl")
 # For LPF
 using DSP
 
-# Plotting options.
-individual = true
-overlay = ! individual
-HD = true
-
 # ====================== #
 #     Linear Chirp       #
 # ====================== #
@@ -23,21 +18,12 @@ HD = true
 linearChirp = Array{Complex{Float32}}(undef, chirpNSamples)
 HDLinearChirp = Array{Complex{Float32}}(undef, HDChirpNSamples)
 
-# Linear Waveform generation.
-# gradient = (bandwidth) / (chirpNSamples - 1)
-# index = 1
-# for n in samples
-# 	FREQ = ((gradient * (index-1)) - (bandwidth/2))/samplingFreq
-# 	linearChirp[index] = exp(n * -2 * pi * FREQ * im)
-#  	global index += 1
-# end
-
 # HD Linear Waveform generation.
 gradient2 = (bandwidth) / (HDChirpNSamples - 1)
 index2 = 1
 for n in HDSamples
-	FREQ = (((gradient2 * (index2-1)) - (bandwidth/2))/HDSamplingFreq)
-	HDLinearChirp[index2] = exp(n * 2 * pi * FREQ * im)
+	linearFREQ = (((gradient2 * (index2-1)) - (bandwidth/2))/HDSamplingFreq)
+	HDLinearChirp[index2] = exp(n * 2 * pi * linearFREQ * im)
 	global index2 += 1
 end
 
@@ -46,46 +32,52 @@ end
 # ====================== #
 
 # Transmission interval.
-tᵢ = HDChirpNSamples / HDSamplingFreq
-# Signal.
-signal(t; fc = 0) = exp(im*2π*(fc * t + Φ(t, tᵢ)*bandwidth))
+tᵢ = (HDChirpNSamples+1) / HDSamplingFreq
 # Time steps, given the smaples.
-t = range(0, tᵢ, step = inv(HDSamplingFreq))
+timePositive = collect((1:1:HDChirpNSamples)) / HDSamplingFreq
 
 # Arrays containing data.
 nonLinearChirp = Array{Complex{Float32}}(undef, chirpNSamples)
 HDNonLinearChirp = Array{Complex{Float32}}(undef, HDChirpNSamples)
 
-# Non Linear Waveform Generation.
-# index = 1
-# for n in samples
-# 	PHASE = Φ(n / samplingFreq)
-# 	nonLinearChirp[index] = amplitude * ( cos(PHASE) + im * sin(PHASE) )
-#  	global index += 1
-# end
+# ------------------- #
+#  F R E Q U E N C Y  #
+# ------------------- #
 
-# HD Non Linear Waveform generation.
-index = 1
-for n in HDSamples
-	HDNonLinearChirp[index] = signal(t[index])
-	global index += 1
+FREQ = fᵢ.(timePositive, tᵢ, bandwidth)
+FREQ *= 1e6
+display(FREQ)
+offset = (HDChirpNSamples-1) / 2
+for i in 0:1:HDChirpNSamples-1
+	n = i - offset
+	local k = (n * FREQ[i+1]) / samplingFreq
+	HDNonLinearChirp[i+1] = exp(2 * pi * im * k)
 end
 
-LPF = digitalfilter(Lowpass(samplingFreq/2.1, fs = samplingFreq), Butterworth(10))
-HDNonLinearChirp = filt(LPF, HDNonLinearChirp)
-
-# To see what the signal is actually going to look like we need
-# to pass it through a filter.
+# Plot NLFM.
+figure = Figure()
+axis = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "NLFM",
+       titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+plotOrigin(axis)
+scatter!(timePositive*1e6, FREQ/1e6, color = :blue, linewidth = lineThickness, label = "Frequency")
+display(figure)
 
 # ====================== #
 #       Plotting         #
 # ====================== #
 
-# --------------------- #
+# Plotting options.
+individual = false
+individual = true
+overlay = ! individual
+overlay = false
+
 #  I N D I V I D U A L  #
+# --------------------- #
 # --------------------- #
 
 if individual
+
 # Create figure.
 fig = Figure()
 # HD Linear TX Pulse.
@@ -93,15 +85,16 @@ plotMatchedFilter(fig, HDLinearChirp, [1,3], HDSamplingFreq, dB = true, yRange =
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
 plotSignal(fig, HDLinearChirp, [1,1], HDSamplingFreq, title="Linear Pulse")
 plotPowerSpectra(fig, HDLinearChirp, [1,2], HDSamplingFreq, paddingCount = 0,
-				 dB = true, title="Linear Pulse PSD", xRange = 200, yRange = 40)
+				 dB = true, title="Linear Pulse PSD", xRange = HDSamplingFreq/2e6, yRange = 40)
 # HD Non Linear TX Pulse.
 plotMatchedFilter(fig, HDNonLinearChirp, [2,3], HDSamplingFreq, dB = true, yRange = 70, xRange = 0.66)
 addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)
 plotSignal(fig, HDNonLinearChirp, [2,1], HDSamplingFreq, title="Non Linear Pulse")
 plotPowerSpectra(fig, HDNonLinearChirp, [2,2], HDSamplingFreq, paddingCount = 0,
-			     dB = true, title="Non Linear Pulse PSD", xRange = 200, yRange = 40)
+dB = true, title="Non Linear Pulse PSD", xRange = HDSamplingFreq/2e6, yRange = 40)
 # Display the figure.
 display(fig)
+
 end
 
 # --------------- #
@@ -109,6 +102,7 @@ end
 # --------------- #
 
 if overlay
+
 # Create figure.
 fig = Figure()
 # Plot the mathed filter.
@@ -127,6 +121,7 @@ plotPowerSpectra(fig, HDNonLinearChirp, [1,1], HDSamplingFreq, paddingCount = 0,
 axislegend(ax)
 # Display the figure.
 display(fig)
+
 end
 
 # ====================== #
