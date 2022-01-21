@@ -10,13 +10,18 @@ include("PowerSpectra.jl")
 # ================================= #
 
 function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
-                        syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32;
+                        syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32,
+                        dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
                         axis = false, label="Doppler FFT", nWaveSamples=false)
     
+    # Calculate the PRF.
+    pulseTime = pulseLengthSamples / fs
+    PRF = 1 / pulseTime
+
     # Get the Doppler FFT.
     frequencies = Any
-    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, fs)
+    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF)
 
     # Create the axis.
     ax = nothing
@@ -35,7 +40,14 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # ------------------------- #
 
     # Range vector.
-    rangeVector = ( 0:1:trunc(Int, length(dopplerFFTMatrix[1,:])-1) ) / fs / 2 * c
+    # The offset of 0.5 is there to ensure the bind start at 0,
+    # and not have it sit around 0.
+    rangeLength = trunc(Int32, length(dopplerFFTMatrix[:,1]))
+    if rangeLength %2 == 1
+        rangeVector = (   0:1:rangeLength     ) / fs / 2 * c
+    else
+        rangeVector = ( 0.5:1:rangeLength-0.5 ) / fs / 2 * c
+    end
     
     # Range data reduction.
     if xRange != Inf
@@ -56,21 +68,9 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # Is the vector odd?
     odd = (length(frequencies)%2 == 1)
 
-    # Calculate the velocity vector.
-    totalPulses = length(dopplerFFTMatrix[1,:])
-    pulseTime = pulseLengthSamples / fs
-    PRF = 1 / pulseTime
-    # This should change to an N bit fft.
-    Nfft = totalPulses
-    velocityResolution = (PRF / (2 * Nfft)) / (c / (2 * fc))
-    # Populate velocity vector.
-    if odd
-        range = (Nfft-1) / 2
-        velocityVector = collect(-range:1:range) * velocityResolution
-    else
-        range = Nfft / 2
-        velocityVector = collect(-range:1:range) * velocityResolution
-    end
+    # Calculate the velocities.
+    λ = c / fc
+    velocityVector =  ( frequencies * λ ) / 2
     
     # Velocity data reduction.
     if yRange != Inf
@@ -81,17 +81,18 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         else
             velocityCenterSample = floor(Int32, length(velocityVector)/2)
         end
-        fd = (yRange * fc * 2 ) / c
-        velocitySample = ceil(Int32, length(velocityVector) * ( fd / maximum(velocityVector)))
+
+        # The frequency where the sample sits.
+        velocitySample = ceil(Int32, length(velocityVector)/2 * ( yRange / maximum(velocityVector)))
 
         # Reduce the data to be plotted.
         if velocitySample < velocityCenterSample 
             if odd
-                velocityVector = velocityVector[velocityCenterSample-velocitySample:1:velocityCenterSample+velocitySample]
-                dopplerFFTMatrix = dopplerFFTMatrix[:, velocityCenterSample-velocitySample:1:velocityCenterSample+velocitySample]
+                velocityVector = velocityVector[velocityCenterSample-velocitySample+1:1:velocityCenterSample+velocitySample-1]
+                dopplerFFTMatrix = dopplerFFTMatrix[:, velocityCenterSample-velocitySample+1:1:velocityCenterSample+velocitySample-1]
             else
-                velocityVector = velocityVector[velocityCenterSample-velocitySample+1:1:velocityCenterSample+velocitySample]
-                dopplerFFTMatrix = dopplerFFTMatrix[:, velocityCenterSample-velocitySample+1:1:velocityCenterSample+velocitySample+1]
+                velocityVector = velocityVector[velocityCenterSample-velocitySample:1:velocityCenterSample+velocitySample+1]
+                dopplerFFTMatrix = dopplerFFTMatrix[:, velocityCenterSample-velocitySample:1:velocityCenterSample+velocitySample+1]
             end
         end
 
@@ -103,12 +104,17 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     
     # Plot heatmap with dB scale.
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
-    heatmap!(rangeVector, velocityVector, dopplerFFTMatrix)
+    hm = heatmap!(figure[position[1], position[2]], 
+                  rangeVector, velocityVector, dopplerFFTMatrix,
+                  colorrange = dBRange, colormap = :afmhot)
+
+    # Plot the colorbar.
+    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
     # Plot a line at the deadzone.
     if nWaveSamples != false
         deadZoneRange = (nWaveSamples / (2 * fs) ) * c
-        vlines!(ax, deadZoneRange, color=:white, linewidth = 5, label="Deadzone")
+        vlines!(ax, deadZoneRange, color=:red, linewidth = 3.5, label="Deadzone")
         if axis == false
             axislegend(ax)
         end
@@ -132,7 +138,7 @@ end
 
 # Calculate the Doppler FFT of the given signal.
 # Will most likely be a pulse compressed signal that is passed.
-function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, fs::Int32)
+function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number)
 
     # First we have to find the first peak to sync the tx & receive signal.
     toSearch = abs.(signal[syncRange[1]:1:syncRange[2]])
@@ -154,10 +160,25 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
     frequencies = Any
     fftMatrix = Array{Float32}(undef, pulseLengthSamples, totalPulses)
     for s in 1:1:pulseLengthSamples
-        fftMatrix[s,:], frequencies = powerSpectra(pulseMatrix[s,:], fs)
+        pulseMatrix[s,:] = blackmanWindow!(pulseMatrix[s,:])
+        fftMatrix[s,:], frequencies = powerSpectra(pulseMatrix[s,:], PRF)
     end
     
     return fftMatrix, frequencies
+
+end
+
+# =================== #
+#  W I N D O W I N G  #
+# =================== #
+
+function blackmanWindow!(signal::Vector)
+
+    # Apply the blackman window.
+    nSamples = length(signal)
+    samples = collect(0:1:nSamples-1)
+    blackman(n, N) = 0.42 - 0.5 * cos((2 * pi * n) / (N - 1)) + 0.08 * cos(((4 * pi * n) / (N - 1)));
+    signal .*= blackman.(samples, nSamples) 
 
 end
 

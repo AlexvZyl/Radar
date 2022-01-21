@@ -13,19 +13,20 @@ include("PulseCompression.jl")
 # ===================== #
 
 # Create the LFM signal.
-nSamplesWave 	= trunc(Int32, 77)
-nSamplesPulse 	= trunc(Int32, 153)
+nSamplesWave 	= trunc(Int32, 7)
+nSamplesPulse 	= trunc(Int32, 38)
 fs 				= trunc(Int32, 23e6)
 fc 				= 900e6
 BW 				= fs / 2.1
 # Specify as 0 to load all of the data.
-pulsesToLoad 	= 1060
+pulsesToLoad 	= 600000
+PRF 			= 605263
 
 # ======================= #
 #  B I N A R Y   D A T A  #
 # ======================= #
 
-file 			= "../SDR-Interface/build/Data/Testing/B210_SAMPLES_Testing_106.bin"
+file 			= "../SDR-Interface/build/Data/Testing/B210_SAMPLES_Testing_126.bin"
 rxSignal 		= loadDataFromBin(file, pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
 
 # =============================== #
@@ -51,8 +52,8 @@ if LFM
     PCsignal = pulseCompression(rxSignal, txSignal)
 	# Plot the Doppler Spectogram.
     figure = Figure()
-	plotDopplerFFT(figure, PCsignal, [1,1], [1,300], fc, fs, nSamplesPulse, 
-				   xRange = 990, yRange = 30, nWaveSamples=nSamplesWave)
+	plotDopplerFFT(figure, PCsignal, [1,1], [1,nSamplesPulse*10], fc, fs, nSamplesPulse, [0,100], 
+				   xRange = Inf, yRange = 60, nWaveSamples=nSamplesWave)
     display(figure)
 
 end

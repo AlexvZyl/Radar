@@ -74,7 +74,7 @@ function plotSNR(Range::Vector, SNR::Vector)
   f = Figure()
   ax = Axis(f[1, 1], xlabel = "Range (m)", ylabel = "SNR (dB)", title = "Radar Range Equation",
             titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-  xlims!(ax, 0, maxRange)
+  
   ylims!(ax, -20, 100)
   vlines!(ax, 0, color = :white, linewidth=originThickness)
   hlines!(ax, 0, color = :white, linewidth=originThickness)
