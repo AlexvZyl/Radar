@@ -1,3 +1,7 @@
+# --------------- #
+#  G L M A K I E  #
+# --------------- #
+
 using GLMakie
 set_theme!(theme_dark())
 update_theme!(
@@ -25,9 +29,17 @@ update_theme!(
 		backgroundcolor = :gray90,
 		)
 	)
-# Graph parameters.
+
+# --------------------- #
+#  P A R A M E T E R S  #
+# --------------------- #
+
 textSize = 23
 lineThickness = 4
 dashThickness = 2.5
 dotSize = 8
 originThickness = 2
+
+# ------- #
+#  E O F  #
+# ------- #

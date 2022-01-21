@@ -2,24 +2,35 @@
 #  R E A D   D A T A  #
 # ------------------- #
 
-function loadDataFromBin(file::String; loadRatio::Number=1)
+function loadDataFromBin(file::String; 
+						 pulsesToLoad::Number=0, samplesPerPulse::Number=0)
 
-	# Data sizes.
-	fileSizeBytes = filesize(file)
-	fileSizeFloats = trunc(Int, (fileSizeBytes / 4))
-	fileSizeSamples = fileSizeFloats / 2
+	
 
-	# Read the raw data.
-	rawData = Array{Float32}(undef, fileSizeFloats)
+	# If a certain amount of pulses that were specified.
+	if pulsesToLoad != 0
+
+		rawData = Array{Float32}(undef, pulsesToLoad*samplesPerPulse*2)
+
+	# Load all of the data.
+	else
+
+		# Data sizes.
+		fileSizeBytes = filesize(file)
+		fileSizeFloats = trunc(Int, (fileSizeBytes / 4))
+		# Read the raw data.
+		rawData = Array{Float32}(undef, fileSizeFloats)
+
+	end
+	
+	# Read the file.
 	read!(file, rawData)
 
-	# Load channel data.
-	samplesToLoad = trunc(Int, fileSizeFloats*loadRatio)
-	if samplesToLoad % 2 == 1
-		samplesToLoad += 1
-	end
-	Ichannel = rawData[1:2:samplesToLoad]
-	Qchannel = rawData[2:2:samplesToLoad]
+	# Load the channels.
+	Ichannel = rawData[1:2:end]
+	Qchannel = rawData[2:2:end]
+	
+	# Create and return complex vector.
 	return Ichannel + im*Qchannel
 
 end

@@ -4,7 +4,10 @@
 
 function createLFM(BW::Number, fs::Number, nSamples::Number)
 
+    # Calculate LFM parameter.
     freqGradient = BW / (nSamples-1)
+
+    # Data vectors.
     freqVector = Array{Float32}(undef, nSamples)
     wave = Array{Complex{Float32}}(undef, nSamples)
 
