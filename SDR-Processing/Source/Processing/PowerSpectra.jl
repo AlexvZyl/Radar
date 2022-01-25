@@ -63,7 +63,7 @@ end
 #  P O W E R   S P E C T R A   C A L C U L A T I O N  #
 # --------------------------------------------------- #
 
-function powerSpectra(signal::Vector, fs::Number; 
+function powerSpectra(signal::Vector, fs::Number, returnFrequencies::Bool; 
                       paddingCount::Number=0)
 
     #  P A D D I N G  #
@@ -88,7 +88,7 @@ function powerSpectra(signal::Vector, fs::Number;
         fftCenter = ceil(Int, (fftLength)/2)
         fftY = [ signalFFT[fftCenter+1 : end] ; signalFFT[1 : fftCenter] ]
         # Frequencies.
-        frequencies = collect(-fftCenter+1:1:fftCenter-1) / fftCenter / 2 * fs
+        frequencies = (-fftCenter+1:1:fftCenter-1) / fftCenter / 2 * fs
     
     # Even FFT's.
     else
@@ -97,11 +97,16 @@ function powerSpectra(signal::Vector, fs::Number;
         fftHalve = trunc(Int, (fftLength)/2)
         fftY = [ signalFFT[fftHalve+2 : end] ; signalFFT[1 : fftHalve+1] ]
         # Frequencies
-        frequencies = collect(-fftHalve+1:1:fftHalve) / fftHalve / 2 * fs
+        frequencies = (-fftHalve+1:1:fftHalve) / fftHalve / 2 * fs
         
     end
     
-    return fftY, frequencies
+    # Return types.
+    if returnFrequencies == true
+        return fftY, frequencies
+    else
+        return fftY
+    end
 
 end
 

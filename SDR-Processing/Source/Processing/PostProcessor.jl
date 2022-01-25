@@ -5,55 +5,130 @@
 include("../PlotUtilities.jl")
 include("BinaryProcessor.jl")
 include("../Waveforms/LFM.jl")
+include("../Waveforms/NLFM.jl")
 include("DopplerFFT.jl")
 include("PulseCompression.jl")
 
-# ===================== #
-#  P A R A M E T E R S  #
-# ===================== #
+# ================= #
+#  S E T T I N G S  #
+# ================= #
 
-# Create the LFM signal.
-nSamplesWave 	= trunc(Int32, 7)
-nSamplesPulse 	= trunc(Int32, 38)
-fs 				= trunc(Int32, 23e6)
-fc 				= 900e6
-BW 				= fs / 2.1
-# Specify as 0 to load all of the data.
-pulsesToLoad 	= 600000
-PRF 			= 605263
+# Specify as 0 to load all the data.
+pulsesToLoad 	= 10000
+folder 			= "RietVleiTestingDay1"
+fileNumber 		= "041"
+# fileNumber 		= "043"
+
+# =========== #
+#  F I L E S  #
+# =========== #
+
+# path 			= "GitHub/SDR-Interface/build/Data/"
+path 			= "../SDR-Interface/build/Data/"
+filePrefix 		= "B210_SAMPLES_" * folder * "_"
+file 			= path * folder * "/" * filePrefix * fileNumber
+fileBin 		= file * ".bin"
+fileTxt			= file * ".txt"	
+
+# =========================== #
+#  M E T A D A T A   F I L E  #
+# =========================== #
+
+# Get the value from the string given the position.
+function parseNumber(string::String, startIndex::Number)
+
+	stringAns = ""
+	index = startIndex
+	while(string[index]!=' ')
+		stringAns = stringAns * string[index]
+		index += 1
+	end
+	return parse(Float32, stringAns)
+
+end
+
+# Variables used.
+fs=0; fc=0; nSamplesPulse=0; nSamplesWave=0; PRF=0; LFM=false; NLFM=false;
+
+# Iterate over the file lines.
+for line in eachline(abspath(fileTxt))
+
+	# Sampling rate.
+	if isnothing(findfirst("TX sampling rate", line)) == false
+
+		global fs 				= trunc(Int32, parseNumber(line, 19)*1e6)
+		
+	# Center frequency.
+	elseif isnothing(findfirst("TX wave frequency", line)) == false
+		
+		global fc 				= parseNumber(line, 20)*1e6
+
+	# Wave samples.
+	elseif isnothing(findfirst("Radar Waveform Samples", line)) == false
+
+		global nSamplesWave 	= trunc(Int32, parseNumber(line, 25))
+
+	# Pulse samples.
+	elseif isnothing(findfirst("Radar Pulse Samples", line)) == false
+
+		global nSamplesPulse 	= trunc(Int32, parseNumber(line, 22))
+
+	# PRF 
+	elseif isnothing(findfirst("PRF", line)) == false
+
+		global PRF	 			= parseNumber(line, 6)
+
+	# Waveform type.
+	elseif isnothing(findfirst("Wave type", line)) == false
+
+		# LFM.
+		if isnothing(findfirst("Linear Frequency Chirp", line)) == false
+
+			global LFM = true
+			global NLFM = false
+
+		# NFLM.
+		elseif isnothing(findfirst("Non-Linear Frequency Chirp", line)) == false
+
+			global LFM = false
+			global NFLM = true
+
+		end
+		
+	end
+
+end
+
+BW 				= fs / 2.1		
 
 # ======================= #
-#  B I N A R Y   D A T A  #
+#  B I N A R Y   F I L E  #
 # ======================= #
 
-file 			= "../SDR-Interface/build/Data/Testing/B210_SAMPLES_Testing_126.bin"
-rxSignal 		= loadDataFromBin(file, pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
+rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
 
 # =============================== #
 #  P O S T   P R O C E S S I N G  #
-# =============================== #
+# =============================== #	
 
 # --------- #
 #   L F M   #
 # --------- #
 
-LFM = true
-# LFM = false
-
 if LFM
 
 	#  W A V E F O R M  #
 
-	txSignal = createLFM(BW, fs, nSamplesWave)
+	local txSignal = generateLFM(BW, fs, nSamplesWave)
 
 	#  P R O C E S S I N G  #
 
-	# Processing.
     PCsignal = pulseCompression(rxSignal, txSignal)
-	# Plot the Doppler Spectogram.
     figure = Figure()
-	plotDopplerFFT(figure, PCsignal, [1,1], [1,nSamplesPulse*10], fc, fs, nSamplesPulse, [0,100], 
-				   xRange = Inf, yRange = 60, nWaveSamples=nSamplesWave)
+	plotSignal(figure, rxSignal, [1,1], fs)
+	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*1], fc, fs, nSamplesPulse, [0,40], 
+				#    xRange = 10, yRange = Inf, nWaveSamples=nSamplesWave)
     display(figure)
 
 end
@@ -62,43 +137,28 @@ end
 #  N L F M  #
 # --------- #
 
-# NLFM = ! LFM
-#
-# if NLFM
-#
-# 	fs = 23e6
-# 	bw = fs / 2.1
-# 	nSamples = 77
-# 	tᵢ = nSamples / fs
-# 	# Transmission interval.
-# 	# Time steps, given the smaples.
-# 	timePositive = collect((0:1:nSamples-1)) / fs
-# 	txSignal = Array{Complex{Float32}}(undef, nSamples)
-# 	PHASE = Φ.(timePositive, tᵢ, bandwidth)
-# 	txSignal = exp.(2 * pi * im * bw * PHASE)
-#
-# 	# Plot NLFM.
-# 	figure = Figure()
-#
-#     # Plot the signal.
-# 	# plotSignal(figure, txSignal, [1,1], fs)
-#     plotSignal(figure, rxSignal, [1,1], fs, sampleRatio = 0.2)
-#     plotMatchedFilter(figure, rxSignal, [1,2], fs, secondSignal = txSignal, yRange = 45, xRange = 50)
-# 	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
-#
-# 	# I vs Q plots.
-# 	# ax = Axis(  figure[1,2], xlabel = "I Channel", ylabel = "Q Channel", title = "I vs Q",
-# 	#             titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-# 	# rxNormFactor = maximum(max.(maximum(real(rxSignal)), imag(rxSignal)))
-# 	# txNormFactor = maximum(max.(maximum(real(txSignal)), imag(txSignal)))
-# 	# scatter!(real(rxSignal)/rxNormFactor, imag(rxSignal)/rxNormFactor,
-# 	# 		 color = :blue, markersize = dotSize, label="RX Signal")
-# 	# scatter!(real(txSignal)/txNormFactor, imag(txSignal)/txNormFactor,
-# 	# 		 color = :red, markersize = dotSize, label="TX Signal")
-#  	# axislegend(ax)
-#     display(figure)
-#
-# end
+if NLFM
+
+	#  W A V E F R O M  #
+
+	local txSignal = generateNLFM(BW, fs, nSamplesWave)
+
+	#  P R O C E S S I N G  #
+
+	# Plot NLFM.
+	
+    # Plot the signal.
+	PCsignal = pulseCompression(rxSignal, txSignal)
+
+	figure = Figure()
+    # plotSignal(figure, txSignal, [1,1], fs)
+	# plotPowerSpectra(figure, txSignal, [1,2], fs)
+	plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1,nSamplesPulse*5], fc, fs, nSamplesPulse, [0,100], 
+				#    xRange = Inf, yRange = 60, nWaveSamples=nSamplesWave)
+    display(figure)
+
+end
 
 # ======= #
 #  E O F  #

@@ -45,7 +45,7 @@ end
  # Δ desribes the side lobes level.
  # Higher value = smaller sidelobes.
  # Higher sidelobes lead to broader main lobe.
-Δ = 23e6 / 2
+Δ = 50e6
 # Describes the main lobe width.
 # Not used in the phase equation, but shows what
 # happens to the main lobe.
@@ -79,11 +79,8 @@ HDNonLinearChirp = Array{Complex{Float32}}(undef, HDChirpNSamples)
 # end
 
 # HD Non Linear Waveform generation.
-index = 1
-for n in HDSamples
-	HDNonLinearChirp[index] = signal(t[index])
-	global index += 1
-end
+HDNonLinearChirp = signal.(t)
+
 
 # ====================== #
 #       Plotting         #
@@ -122,7 +119,7 @@ fig = Figure()
 # Plot the mathed filter.
 ax = plotMatchedFilter(fig, HDLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 60, xRange = 4, label = "LFM")
 plotMatchedFilter(fig, HDNonLinearChirp, [1,2], HDSamplingFreq, dB = true, yRange = 60, xRange = 4, color = :orange, axis = ax, label = "NLFM")
-axislegend(ax)
+# axislegend(ax)
 # Add zeros for the time the radar is not transmitting.
 addZeros!(HDLinearChirp, HDPulseNSamples-HDChirpNSamples)
 addZeros!(HDNonLinearChirp, HDPulseNSamples-HDChirpNSamples)

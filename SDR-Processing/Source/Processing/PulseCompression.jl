@@ -51,6 +51,7 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	else
 		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)-1
 	end
+	
 	time = samples .* (fs^-1) ./ 1e-6
 	lines!(time, responseAbs, color =color,  linewidth = lineThickness, label = label)
 	scatter!(time, responseAbs, color =color, markersize = dotSize)

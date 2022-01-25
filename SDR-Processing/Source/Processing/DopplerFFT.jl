@@ -4,6 +4,12 @@
 
 include("../PlotUtilities.jl")
 include("PowerSpectra.jl")
+include("../WindowFunctions/Blackman.jl")
+include("../WindowFunctions/Chebychev.jl")
+
+# Testing.
+# using Plots
+# gr()
 
 # ================================= #
 #  D O P P L E R   F F T   P L O T  #
@@ -40,12 +46,12 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # ------------------------- #
 
     # Range vector.
-    # The offset of 0.5 is there to ensure the bind start at 0,
-    # and not have it sit around 0.
     rangeLength = trunc(Int32, length(dopplerFFTMatrix[:,1]))
     if rangeLength %2 == 1
         rangeVector = (   0:1:rangeLength     ) / fs / 2 * c
     else
+        # The offset of 0.5 is there to ensure the bin starts at 0,
+        # and not have it sit around 0.
         rangeVector = ( 0.5:1:rangeLength-0.5 ) / fs / 2 * c
     end
     
@@ -106,15 +112,17 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
     hm = heatmap!(figure[position[1], position[2]], 
                   rangeVector, velocityVector, dopplerFFTMatrix,
-                  colorrange = dBRange, colormap = :afmhot)
+                  colorrange = dBRange)# colormap = :afmhot)
+
+    # heatmap(rangeVector, velocityVector, dopplerFFTMatrix)
 
     # Plot the colorbar.
-    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
     # Plot a line at the deadzone.
     if nWaveSamples != false
         deadZoneRange = (nWaveSamples / (2 * fs) ) * c
-        vlines!(ax, deadZoneRange, color=:red, linewidth = 3.5, label="Deadzone")
+        vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
         if axis == false
             axislegend(ax)
         end
@@ -159,26 +167,16 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
     # Now take the fft over the pulses.
     frequencies = Any
     fftMatrix = Array{Float32}(undef, pulseLengthSamples, totalPulses)
+    # Make this call to get the frequencies for the window.
+    ans, frequencies = powerSpectra(pulseMatrix[1,:], PRF, true)
+    # window = generateChebychevWindow(frequencies, -50)
+    window = kaiser((length(pulseMatrix[1,:])), 3)
     for s in 1:1:pulseLengthSamples
-        pulseMatrix[s,:] = blackmanWindow!(pulseMatrix[s,:])
-        fftMatrix[s,:], frequencies = powerSpectra(pulseMatrix[s,:], PRF)
+        pulseMatrix[s,:] .*= window
+        fftMatrix[s,:] = powerSpectra(pulseMatrix[s,:], PRF, false)
     end
     
     return fftMatrix, frequencies
-
-end
-
-# =================== #
-#  W I N D O W I N G  #
-# =================== #
-
-function blackmanWindow!(signal::Vector)
-
-    # Apply the blackman window.
-    nSamples = length(signal)
-    samples = collect(0:1:nSamples-1)
-    blackman(n, N) = 0.42 - 0.5 * cos((2 * pi * n) / (N - 1)) + 0.08 * cos(((4 * pi * n) / (N - 1)));
-    signal .*= blackman.(samples, nSamples) 
 
 end
 

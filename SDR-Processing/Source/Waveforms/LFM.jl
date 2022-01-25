@@ -2,7 +2,7 @@
 #  W A V E F O R M  #
 # ----------------- #
 
-function createLFM(BW::Number, fs::Number, nSamples::Number)
+function generateLFM(BW::Number, fs::Number, nSamples::Number)
 
     # Calculate LFM parameter.
     freqGradient = BW / (nSamples-1)
