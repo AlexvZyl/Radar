@@ -8,6 +8,8 @@ include("../Waveforms/LFM.jl")
 include("../Waveforms/NLFM.jl")
 include("DopplerFFT.jl")
 include("PulseCompression.jl")
+include("Synchroniser.jl")
+include("PulseMatrix.jl")
 
 # ================= #
 #  S E T T I N G S  #
@@ -15,9 +17,8 @@ include("PulseCompression.jl")
 
 # Specify as 0 to load all the data.
 pulsesToLoad 	= 10000
-folder 			= "RietVleiTestingDay1"
-fileNumber 		= "041"
-# fileNumber 		= "043"
+folder 			= "Testing"
+fileNumber 		= "108"
 
 # =========== #
 #  F I L E S  #
@@ -120,15 +121,29 @@ if LFM
 	#  W A V E F O R M  #
 
 	local txSignal = generateLFM(BW, fs, nSamplesWave)
-
+	
 	#  P R O C E S S I N G  #
-
+	
     PCsignal = pulseCompression(rxSignal, txSignal)
+
+	# P L O T T I N G  #
+
     figure = Figure()
-	plotSignal(figure, rxSignal, [1,1], fs)
+
+	# plotSignal(figure, rxSignal, [1,1], fs)
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
-	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*1], fc, fs, nSamplesPulse, [0,40], 
-				#    xRange = 10, yRange = Inf, nWaveSamples=nSamplesWave)
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,125], 
+				#    xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave)
+	# syncedPCSignal = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse])
+	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
+	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
+
+	ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total OcScurances", title = "RX Noise",
+			  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+		  	plotOrigin(ax)
+	hist!(real(rxSignal), bins = 4000)
+	hist!(imag(rxSignal), bins = 4000)
+
     display(figure)
 
 end

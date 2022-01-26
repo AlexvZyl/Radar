@@ -6,10 +6,7 @@ include("../PlotUtilities.jl")
 include("PowerSpectra.jl")
 include("../WindowFunctions/Blackman.jl")
 include("../WindowFunctions/Chebychev.jl")
-
-# Testing.
-# using Plots
-# gr()
+include("Synchroniser.jl")
 
 # ================================= #
 #  D O P P L E R   F F T   P L O T  #
@@ -22,29 +19,17 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                         axis = false, label="Doppler FFT", nWaveSamples=false)
     
     # Calculate the PRF.
-    pulseTime = pulseLengthSamples / fs
-    PRF = 1 / pulseTime
+    PRI = (pulseLengthSamples) / fs
+    PRF = 1 / PRI
 
     # Get the Doppler FFT.
     frequencies = Any
     dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF)
-
-    # Create the axis.
-    ax = nothing
-    # If no axis was specified.
-    if axis == false
-        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label,
-                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-        plotOrigin(ax)
-    # If an axis has been specified.
-    else
-        ax = axis
-    end
-
+    
     # ------------------------- #
     #  R A N G E   V E C T O R  #
     # ------------------------- #
-
+    
     # Range vector.
     rangeLength = trunc(Int32, length(dopplerFFTMatrix[:,1]))
     if rangeLength %2 == 1
@@ -57,40 +42,40 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     
     # Range data reduction.
     if xRange != Inf
-
+        
         # Find the sample value that has to been plotted to.
         rangeSample = ceil(Int32, (xRange / c) * 2 * fs)
         if rangeSample < length(rangeVector)
             rangeVector = rangeVector[1:1:rangeSample]
             dopplerFFTMatrix = dopplerFFTMatrix[1:1:rangeSample, :]        
         end
-
+        
     end
-
+    
     # ------------------------------- #
     #  V E L O C I T Y   V E C T O R  #
     # ------------------------------- #
-
+    
     # Is the vector odd?
     odd = (length(frequencies)%2 == 1)
-
+    
     # Calculate the velocities.
     λ = c / fc
     velocityVector =  ( frequencies * λ ) / 2
     
     # Velocity data reduction.
     if yRange != Inf
-
+        
         # Find the sample value that has to been plotted to.
         if odd
             velocityCenterSample = ceil(Int32, length(velocityVector)/2)
         else
             velocityCenterSample = floor(Int32, length(velocityVector)/2)
         end
-
+        
         # The frequency where the sample sits.
         velocitySample = ceil(Int32, length(velocityVector)/2 * ( yRange / maximum(velocityVector)))
-
+        
         # Reduce the data to be plotted.
         if velocitySample < velocityCenterSample 
             if odd
@@ -101,12 +86,24 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                 dopplerFFTMatrix = dopplerFFTMatrix[:, velocityCenterSample-velocitySample:1:velocityCenterSample+velocitySample+1]
             end
         end
-
+        
     end
-
+    
     # ----------------- #
     #  P L O T T I N G  #
     # ----------------- #
+
+    # Create the axis.
+    ax = nothing
+    # If no axis was specified.
+    if axis == false
+        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label,
+                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+        plotOrigin(ax)
+    # If an axis has been specified.
+    else
+        ax = axis
+    end
     
     # Plot heatmap with dB scale.
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
@@ -117,7 +114,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # heatmap(rangeVector, velocityVector, dopplerFFTMatrix)
 
     # Plot the colorbar.
-    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
     # Plot a line at the deadzone.
     if nWaveSamples != false
@@ -148,10 +145,8 @@ end
 # Will most likely be a pulse compressed signal that is passed.
 function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number)
 
-    # First we have to find the first peak to sync the tx & receive signal.
-    toSearch = abs.(signal[syncRange[1]:1:syncRange[2]])
-    peakIndex = argmax(toSearch)
-    syncedSignal = signal[peakIndex:1:end]
+    # First sync the signal.
+    syncedSignal = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
 
     # Now we need to create a matrix of aligned pulses.
     totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)

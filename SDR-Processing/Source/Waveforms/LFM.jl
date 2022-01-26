@@ -4,6 +4,10 @@
 
 function generateLFM(BW::Number, fs::Number, nSamples::Number)
 
+    if nSamples == 1
+        return [1+0*im]
+    end
+
     # Calculate LFM parameter.
     freqGradient = BW / (nSamples-1)
 
