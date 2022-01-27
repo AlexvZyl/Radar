@@ -16,7 +16,8 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                         syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32,
                         dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
-                        axis = false, label="Doppler FFT", nWaveSamples=false)
+                        axis = false, label="Doppler FFT", nWaveSamples=false,
+                        plotDCBin::Bool = false)
     
     # Calculate the PRF.
     PRI = (pulseLengthSamples) / fs
@@ -104,14 +105,21 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     else
         ax = axis
     end
-    
+
     # Plot heatmap with dB scale.
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
     hm = heatmap!(figure[position[1], position[2]], 
                   rangeVector, velocityVector, dopplerFFTMatrix,
-                  colorrange = dBRange)# colormap = :afmhot)
+                  colorrange = dBRange)
 
-    # heatmap(rangeVector, velocityVector, dopplerFFTMatrix)
+    # Create a second axis to show the frequencies.
+    ax2 = Axis(figure[position[1], position[2]], xlabel = "", ylabel = "Frequency (Hz)", title = "",
+                titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, yaxisposition = :right,
+                xgridvisible = false, ygridvisible = false,
+                yrectzoom = false, xrectzoom = false)
+    hidespines!(ax2)
+    hidexdecorations!(ax2)
+    linkaxes!(ax, ax2)
 
     # Plot the colorbar.
     cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
@@ -124,7 +132,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
             axislegend(ax)
         end
     end 
-
+    
     # Set the X Range.
     if xRange != Inf
         xlims!(0, ((rangeSample-1)*c)/(fs * 2))
@@ -133,6 +141,36 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # Set the Y range.
     if yRange != Inf
         ylims!(-yRange, yRange)
+    end
+
+    # ------------- #
+    #  D C   B I N  #
+    # ------------- #
+
+    if plotDCBin
+
+        # Axis.
+        dcAxis = Axis(figure[position[1]+1, :], xlabel = "Distance (m)", ylabel = "Magnitude (dB)", title = "DC Bin (0 m/s)",
+                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, xgridvisible = false)
+        plotOrigin(dcAxis)
+
+        # Find the DC bin location.
+        velocitiesLength = length(dopplerFFTMatrix[1,:])
+        dcBin = 0
+        if odd 
+            dcBin = ceil(Int, velocitiesLength/2)
+        else
+            dcBin = trunc(Int, length(velocitiesLength/2))
+        end
+        lines!(rangeVector, dopplerFFTMatrix[:,dcBin], linewidth = lineThickness)
+
+        dcAxis = Axis(figure[position[1]+2, :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
+                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, xgridvisible = false)
+        plotOrigin(dcAxis)
+
+        middle = length(dopplerFFTMatrix[:,1]/2)
+        lines!(velocityVector, dopplerFFTMatrix[middle,:], linewidth = lineThickness)
+
     end
 
 end

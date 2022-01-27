@@ -11,14 +11,17 @@ include("PulseCompression.jl")
 include("Synchroniser.jl")
 include("PulseMatrix.jl")
 
+using Statistics
+using SharedArrays
+
 # ================= #
 #  S E T T I N G S  #
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 10000
+pulsesToLoad 	= 0
 folder 			= "Testing"
-fileNumber 		= "108"
+fileNumber 		= "046"
 
 # =========== #
 #  F I L E S  #
@@ -121,28 +124,62 @@ if LFM
 	#  W A V E F O R M  #
 
 	local txSignal = generateLFM(BW, fs, nSamplesWave)
+
+	# totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
+	# rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
+	# signalMean = mean(rxMatrix, dims=2)
 	
 	#  P R O C E S S I N G  #
 	
     PCsignal = pulseCompression(rxSignal, txSignal)
+	# PCsignal = PCsignal[1:1:end-6]
+	# PCMatrix = reshape((PCsignal), nSamplesPulse, :)
+	# pcMean = mean(PCMatrix, dims=2)
+
+	# figure = Figure()
+	# ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total", title = "RX Noise",
+			#   titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	# lines!(abs.(signalMean[:,1]))
+	# lines!(abs.(pcMean[:,1]))
+	# ax2 = Axis(figure[1, 2], xlabel = "Amplitude (V)", ylabel = "Total", title = "RX Noise",
+	# titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	# heatmap!(abs.(rxMatrix))
+	# display(figure)
 
 	# P L O T T I N G  #
 
     figure = Figure()
 
+	# fftMatrix = dopplerFFT(rxSignal, [1, nSamplesPulse*2], nSamplesPulse, PRF)
+	# velocityBinCount = length(fftMatrix[])
+
+	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
+
+	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [50,120], 
+				   xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave, plotDCBin = true)
+				   
+	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
+	# Imean = mean(real(rxSignal))
+	# Qmean = mean(imag(rxSignal))
+	Imean = -2.59602e-06 -3.15151e-06 
+	Qmean = -2.11107e-06 -1.80966e-06 
+	# rxSignal = rxSignal .- (Imean + im*Qmean)
+
+	# plotPowerSpectra(figure, rxSignal, [1,2], fs)
+
 	# plotSignal(figure, rxSignal, [1,1], fs)
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
-	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,125], 
+    # PCsignal = pulseCompression(rxSignal, txSignal)
+	# plotDopplerFFT(figure, PCsignal, [2,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,120], 
 				#    xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave)
 	# syncedPCSignal = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse])
 	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
-	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
 
-	ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total OcScurances", title = "RX Noise",
-			  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-		  	plotOrigin(ax)
-	hist!(real(rxSignal), bins = 4000)
-	hist!(imag(rxSignal), bins = 4000)
+	# ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total OcScurances", title = "RX Noise",
+			#   titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	# plotOrigin(ax)
+	# hist!(real(rxSignal), bins = 100)
+	# hist!(imag(rxSignal), bins = 100)
 
     display(figure)
 
