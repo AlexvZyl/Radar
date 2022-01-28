@@ -19,7 +19,7 @@ function loadDataFromBin(file::String;
 		fileSizeBytes = filesize(file)
 		fileSizeFloats = trunc(Int, (fileSizeBytes / 4))
 		# Read the raw data.
-		rawData = Array{Float32}(undef, fileSizeFloats)
+		rawData = Array{Float64}(undef, fileSizeFloats)
 
 	end
 	

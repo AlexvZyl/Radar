@@ -19,9 +19,9 @@ using SharedArrays
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 0
+pulsesToLoad 	= 100
 folder 			= "Testing"
-fileNumber 		= "046"
+fileNumber 		= "047"
 
 # =========== #
 #  F I L E S  #
@@ -155,8 +155,8 @@ if LFM
 
 	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
 
-	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [50,120], 
-				   xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave, plotDCBin = true)
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [50,120], 
+				#    xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave, plotDCBin = true)
 				   
 	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
 	# Imean = mean(real(rxSignal))
@@ -167,7 +167,7 @@ if LFM
 
 	# plotPowerSpectra(figure, rxSignal, [1,2], fs)
 
-	# plotSignal(figure, rxSignal, [1,1], fs)
+	plotSignal(figure, rxSignal, [1,1], fs)
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
     # PCsignal = pulseCompression(rxSignal, txSignal)
 	# plotDopplerFFT(figure, PCsignal, [2,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,120], 
