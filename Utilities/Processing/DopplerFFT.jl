@@ -112,15 +112,15 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                   rangeVector, velocityVector, dopplerFFTMatrix,
                   colorrange = dBRange)
 
-    # Create a second axis to show the frequencies.
-    ax2 = Axis(figure[position[1], position[2]], xlabel = "", ylabel = "Frequency (Hz)", title = "",
-                titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, yaxisposition = :right,
-                xgridvisible = false, ygridvisible = false,
-                yrectzoom = false, xrectzoom = false)
-    hidespines!(ax2)
-    hidexdecorations!(ax2)
-    linkaxes!(ax, ax2)
-
+    λ = c / fc
+    freqIncrement = 100 * λ / 2 # Hz
+    hValue = freqIncrement
+    while(hValue < yRange )
+        hlines!(ax, hValue, color = :grey90, linewidth=0.5)
+        hlines!(ax, -hValue, color = :grey90, linewidth=0.5)
+        hValue += freqIncrement
+    end
+                
     # Plot the colorbar.
     cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
@@ -157,10 +157,11 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         # Find the DC bin location.
         velocitiesLength = length(dopplerFFTMatrix[1,:])
         dcBin = 0
+        odd = (velocitiesLength%2 == 1)
         if odd 
             dcBin = ceil(Int, velocitiesLength/2)
         else
-            dcBin = trunc(Int, length(velocitiesLength/2))
+            dcBin = floor(Int, velocitiesLength/2)
         end
         lines!(rangeVector, dopplerFFTMatrix[:,dcBin], linewidth = lineThickness)
 
@@ -170,6 +171,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
 
         middle = length(dopplerFFTMatrix[:,1]/2)
         lines!(velocityVector, dopplerFFTMatrix[middle,:], linewidth = lineThickness)
+        xlims!(-yRange, yRange)
 
     end
 
@@ -188,7 +190,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
 
     # Now we need to create a matrix of aligned pulses.
     totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)
-    pulseMatrix = Array{Complex{Float32}}(undef, pulseLengthSamples, totalPulses)
+    pulseMatrix = Array{Complex{Float64}}(undef, pulseLengthSamples, totalPulses)
 
     # Iterate for every pulse.
     for i in 1:1:totalPulses
@@ -199,7 +201,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
 
     # Now take the fft over the pulses.
     frequencies = Any
-    fftMatrix = Array{Float32}(undef, pulseLengthSamples, totalPulses)
+    fftMatrix = Array{Float64}(undef, pulseLengthSamples, totalPulses)
     # Make this call to get the frequencies for the window.
     ans, frequencies = powerSpectra(pulseMatrix[1,:], PRF, true)
     # window = generateChebychevWindow(frequencies, -50)

@@ -19,9 +19,9 @@ using SharedArrays
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 100
-folder 			= "Testing"
-fileNumber 		= "047"
+pulsesToLoad 	= 0
+folder 			= "FopenLab"
+fileNumber 		= "005"
 
 # =========== #
 #  F I L E S  #
@@ -51,9 +51,6 @@ function parseNumber(string::String, startIndex::Number)
 
 end
 
-# Variables used.
-fs=0; fc=0; nSamplesPulse=0; nSamplesWave=0; PRF=0; LFM=false; NLFM=false;
-
 # Iterate over the file lines.
 for line in eachline(abspath(fileTxt))
 
@@ -82,6 +79,16 @@ for line in eachline(abspath(fileTxt))
 
 		global PRF	 			= parseNumber(line, 6)
 
+	# DC Offset
+	elseif isnothing(findfirst("DC Frequency Offset", line)) == false
+
+		global dcFreqShift	 	= parseNumber(line, 22)
+
+	# Wave bandwidth.
+	elseif isnothing(findfirst("Wave bandwidth", line)) == false
+
+		global BW	 			= parseNumber(line, 17) * 1e6
+
 	# Waveform type.
 	elseif isnothing(findfirst("Wave type", line)) == false
 
@@ -103,8 +110,6 @@ for line in eachline(abspath(fileTxt))
 
 end
 
-BW 				= fs / 2.1		
-
 # ======================= #
 #  B I N A R Y   F I L E  #
 # ======================= #
@@ -123,7 +128,7 @@ if LFM
 
 	#  W A V E F O R M  #
 
-	local txSignal = generateLFM(BW, fs, nSamplesWave)
+	local txSignal = generateLFM(BW, fs, nSamplesWave, dcFreqShift)
 
 	# totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 	# rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
@@ -131,7 +136,7 @@ if LFM
 	
 	#  P R O C E S S I N G  #
 	
-    PCsignal = pulseCompression(rxSignal, txSignal)
+    # PCsignal = pulseCompression(rxSignal, txSignal)
 	# PCsignal = PCsignal[1:1:end-6]
 	# PCMatrix = reshape((PCsignal), nSamplesPulse, :)
 	# pcMean = mean(PCMatrix, dims=2)
@@ -155,23 +160,21 @@ if LFM
 
 	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
 
-	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [50,120], 
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [20,120], 
 				#    xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave, plotDCBin = true)
 				   
 	# plotPowerSpectra(figure, rxSignal, [1,1], fs)
-	# Imean = mean(real(rxSignal))
-	# Qmean = mean(imag(rxSignal))
-	Imean = -2.59602e-06 -3.15151e-06 
-	Qmean = -2.11107e-06 -1.80966e-06 
+	# Imean = -4.1903e-06
+	# Qmean = -9.71446e-07
 	# rxSignal = rxSignal .- (Imean + im*Qmean)
 
 	# plotPowerSpectra(figure, rxSignal, [1,2], fs)
 
-	plotSignal(figure, rxSignal, [1,1], fs)
+	# plotSignal(figure, rxSignal, [1,1], fs)
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
-    # PCsignal = pulseCompression(rxSignal, txSignal)
-	# plotDopplerFFT(figure, PCsignal, [2,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,120], 
-				#    xRange = Inf, yRange = 40, nWaveSamples=nSamplesWave)
+    PCsignal = pulseCompression(rxSignal, txSignal)
+	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [10,70], 
+				   xRange = Inf, yRange = 600, nWaveSamples=nSamplesWave, plotDCBin = false)
 	# syncedPCSignal = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse])
 	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
 

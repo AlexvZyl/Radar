@@ -2,7 +2,7 @@
 #  W A V E F O R M  #
 # ----------------- #
 
-function generateLFM(BW::Number, fs::Number, nSamples::Number)
+function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Number)
 
     if nSamples == 1
         return [1+0*im]
@@ -12,8 +12,8 @@ function generateLFM(BW::Number, fs::Number, nSamples::Number)
     freqGradient = BW / (nSamples-1)
 
     # Data vectors.
-    freqVector = Array{Float32}(undef, nSamples)
-    wave = Array{Complex{Float32}}(undef, nSamples)
+    freqVector = Array{Float64}(undef, nSamples)
+    wave = Array{Complex{Float64}}(undef, nSamples)
 
     # Create freq vector.
     for n in 0:1:nSamples-1
@@ -25,7 +25,7 @@ function generateLFM(BW::Number, fs::Number, nSamples::Number)
     for n in 0:1:nSamples-1
         index = n - offset
         k = (index * freqVector[n+1]) / fs
-        wave[n+1] = exp(2 * pi * im * k)
+        wave[n+1] = exp(pi * im * k)
     end
 
     return wave

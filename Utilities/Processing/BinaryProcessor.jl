@@ -10,14 +10,14 @@ function loadDataFromBin(file::String;
 	# If a certain amount of pulses that were specified.
 	if pulsesToLoad != 0
 
-		rawData = Array{Float32}(undef, pulsesToLoad*samplesPerPulse*2)
+		rawData = Array{Float64}(undef, pulsesToLoad*samplesPerPulse*2)
 
 	# Load all of the data.
 	else
 
 		# Data sizes.
 		fileSizeBytes = filesize(file)
-		fileSizeFloats = trunc(Int, (fileSizeBytes / 4))
+		fileSizeFloats = trunc(Int, (fileSizeBytes / 8))
 		# Read the raw data.
 		rawData = Array{Float64}(undef, fileSizeFloats)
 
