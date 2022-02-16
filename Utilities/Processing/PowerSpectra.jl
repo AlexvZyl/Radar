@@ -2,7 +2,7 @@
 #  I N C L U D E S  #
 # ----------------- # 
 
-include("../PlotUtilities.jl")
+include("../MakieGL/PlotUtilities.jl")
 
 # ------------------------------------- #
 #  P O W E R   S P E C T R A   P L O T  #
@@ -21,26 +21,24 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
     if dB
         fftY = 20 * log10.(fftY./maximum(fftY))
         if axis == true
-            ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Magnitude (dB)", title = title,
-            titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+            ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Magnitude (dB)", title = title)
             plotOrigin(ax)
         end
 
         # Create non dB axis.
         else
-            fftY /= fftLength
+            fftY /= maximum(fftY)
         if axis == true
-            ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Amplitude", title = title,
-            titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+            ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Normalised Amplitude", title = title)
             plotOrigin(ax)
         end 
     end
 
     # Plot the PSD.
     lines!(frequencies/1e6, fftY, color = color, linewidth = lineThickness, label = label)
-    if scatterPlot
+    # if scatterPlot
         scatter!(frequencies/1e6, fftY, color = color, markersize = dotSize)
-    end
+    # end
 
     # Set the X Range.
     if xRange != Inf

@@ -6,6 +6,8 @@
 # in all of the different scripts.
 include("WaveFormData.jl")
 
+tᵢ = HDPulseNSamples / HDSamplingFreq
+
 # Plotting options.
 individual = false
 # Set overlay option.
@@ -58,7 +60,7 @@ function Φ(t)
 	α = ( tᵢ * sqrt(Δ^2 + 4) ) / (2 * Δ)
 	β = ( tᵢ^2 * ( Δ^2 + 4 ) ) / ( 4 * Δ^2 )
 	γ = ( t - tᵢ/2 ) ^ 2
-	α - sqrt(β - γ)
+	α - sqrt(complex(β - γ))
 end
 
 # Signal.

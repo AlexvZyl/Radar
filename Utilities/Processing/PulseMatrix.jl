@@ -2,7 +2,7 @@
 #  I N C L U D E S  #
 # ----------------- # 
 
-include("../PlotUtilities.jl")
+include("../MakieGL/PlotUtilities.jl")
 
 # ----------------------- #
 #  P L O T   P U L S E S  #

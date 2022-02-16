@@ -2,8 +2,8 @@
 #  M O D U L E S  #
 #  -------------- #
 
-include("../../../Utilities/MakieGL.jl")
-include("../PlotUtilities.jl")
+include("../../../Utilities/MakieGL/MakieGL.jl")
+include("../../../Utilities/MakieGL/PlotUtilities.jl")
 
 using Peaks
 using Optim # Remember to cite this package.

@@ -2,7 +2,7 @@
 #  S E T U P  #
 # =========== #
 
-include("../PlotUtilities.jl")
+include("../MakieGL/PlotUtilities.jl")
 include("PowerSpectra.jl")
 include("../WindowFunctions/Blackman.jl")
 include("../WindowFunctions/Chebychev.jl")
@@ -163,14 +163,18 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         else
             dcBin = floor(Int, velocitiesLength/2)
         end
+        bin = dopplerFFTMatrix[:,dcBin]
         lines!(rangeVector, dopplerFFTMatrix[:,dcBin], linewidth = lineThickness)
+        ylims!(0, 130)
 
         dcAxis = Axis(figure[position[1]+2, :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
                   titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, xgridvisible = false)
         plotOrigin(dcAxis)
 
         middle = length(dopplerFFTMatrix[:,1]/2)
-        lines!(velocityVector, dopplerFFTMatrix[middle,:], linewidth = lineThickness)
+        middleLine = dopplerFFTMatrix[middle,:]
+        lines!(velocityVector, middleLine, linewidth = lineThickness)
+        ylims!(0, 110)
         xlims!(-yRange, yRange)
 
     end

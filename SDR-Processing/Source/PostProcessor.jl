@@ -2,14 +2,10 @@
 #  I N C L U D E S  #
 # ================= #
 
-include("../PlotUtilities.jl")
-include("BinaryProcessor.jl")
-include("../Waveforms/LFM.jl")
-include("../Waveforms/NLFM.jl")
-include("DopplerFFT.jl")
-include("PulseCompression.jl")
-include("Synchroniser.jl")
-include("PulseMatrix.jl")
+include("../../Utilities/MakieGL/PlotUtilities.jl")
+include("Waveforms/LFM.jl")
+include("Waveforms/NLFM.jl")
+include("../../Utilities/Processing/ProcessingHeader.jl")
 
 using Statistics
 using SharedArrays
@@ -20,8 +16,8 @@ using SharedArrays
 
 # Specify as 0 to load all the data.
 pulsesToLoad 	= 0
-folder 			= "FopenLab"
-fileNumber 		= "005"
+folder 			= "Testing"
+fileNumber 		= "087"
 
 # =========== #
 #  F I L E S  #
@@ -37,6 +33,8 @@ fileTxt			= file * ".txt"
 # =========================== #
 #  M E T A D A T A   F I L E  #
 # =========================== #
+
+dcFreqShift = 0
 
 # Get the value from the string given the position.
 function parseNumber(string::String, startIndex::Number)
@@ -173,8 +171,8 @@ if LFM
 	# plotSignal(figure, rxSignal, [1,1], fs)
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
     PCsignal = pulseCompression(rxSignal, txSignal)
-	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [10,70], 
-				   xRange = Inf, yRange = 600, nWaveSamples=nSamplesWave, plotDCBin = false)
+	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,90], 
+				   xRange = Inf, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = true)
 	# syncedPCSignal = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse])
 	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
 

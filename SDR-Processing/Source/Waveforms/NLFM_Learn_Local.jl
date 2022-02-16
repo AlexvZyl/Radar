@@ -2,7 +2,7 @@
 #  P L O T T I N G  #
 # ----------------- #
 
-include("../../../Utilities/MakieGL.jl")
+include("../../../Utilities/MakieGL/MakieGL.jl")
 
 # --------------- #
 #  M O D U L E S  #

@@ -1,5 +1,5 @@
 # Makie utilities.
-include("../../Utilities/MakieGL.jl")
+include("MakieGL.jl")
 
 using FFTW
 using DSP
@@ -22,8 +22,8 @@ end
 
 # Plot the origin on the graph.
 function plotOrigin(ax::Axis)
-	vlines!(ax, 0, color = :white, linewidth=originThickness)
-	hlines!(ax, 0, color = :white, linewidth=originThickness)
+	vlines!(ax, 0, color = originColor, linewidth=originThickness)
+	hlines!(ax, 0, color = originColor, linewidth=originThickness)
 end
 
 # ------------- #
@@ -38,8 +38,7 @@ function plotSignal(fig::Figure, signal::Vector, position::Vector, fs::Number;
 	QchannelScaled = imag(signal)[1:1:trunc(Int, length(signal)*sampleRatio)]
 	signalTot = IchannelScaled + im * QchannelScaled
 	# Signal axis.
-	ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = title,
-	          titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+	ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = title)
 	# Plot the origin.
 	plotOrigin(ax)
 	# Signal.

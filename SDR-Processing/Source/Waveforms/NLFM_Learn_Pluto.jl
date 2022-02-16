@@ -40,12 +40,15 @@ md"Specify the duration ``t_i`` and bandwidth ``BW`` of the chirp"
 
 # ╔═╡ 0f934d3b-b28e-4db9-9450-b04e3426443a
 begin
-	t_i = 3.33e-6
-	BW = 5.5e6
+	# t_i = 3.33e-6
+	t_i = 50e-6
+	# BW = 5.5e6
+	BW = 50e6
 end
 
 # ╔═╡ 54e9f0d5-a92e-4289-9e22-14abed95eb58
-fs = 100e6
+fs = 110e6
+# fs = 50e6
 
 # ╔═╡ cae2e53e-b7d9-48a5-8e85-b7682b09704f
 md"""
@@ -79,10 +82,15 @@ t_i * sqrt(Δ^2 + 4)/(2 * Δ)
 function Φ(t)
 	α = t_i * sqrt(Δ^2 + 4)/(2 * Δ)
 	(α - sqrt(α^2 - (t - t_i/2)^2))/Δ
+	   # α = t .- ( t_i/2 )
+   # β = ( t_i^2 * (Δ^2+4) ) / ( 4*Δ^2 )
+   # γ = ( t .- t_i/2 ) .^ 2
+   # α ./ sqrt.(β .- γ)
 end
 
 # ╔═╡ 4ebf026b-5867-4c2a-9130-4b283e22f824
 s(t; fc = 0) = exp(im*2π*(fc * t + Φ(t)*BW))
+# s(t; fc = 0) = exp(im*2π*Φ(t)/fs)
 
 # ╔═╡ a540da18-4ceb-424d-bdfd-7cb58256c328
 t = range(0, t_i, step = inv(fs))
@@ -774,9 +782,9 @@ uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 
 [[deps.Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "7937eda4681660b4d6aeeecc2f7e1c81c8ee4e2f"
+git-tree-sha1 = "887579a3eb005446d514ab7aeac5d1d027658b8f"
 uuid = "e7412a2a-1a6e-54c0-be00-318e2571c051"
-version = "1.3.5+0"
+version = "1.3.5+1"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1236,9 +1244,9 @@ version = "1.6.38+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
-git-tree-sha1 = "c45f4e40e7aafe9d086379e5578947ec8b95a8fb"
+git-tree-sha1 = "b910cb81ef3fe6e78bf6acee440bda86fd6ae00c"
 uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
-version = "1.3.7+0"
+version = "1.3.7+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]

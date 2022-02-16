@@ -2,7 +2,7 @@
 #  I N C L U D E S  #
 # ----------------- #
 
-include("../../../Utilities/MakieGL.jl")
+include("../MakieGL/MakieGL.jl")
 
 # -------------- #
 #  P C   P L O T #
@@ -11,7 +11,7 @@ include("../../../Utilities/MakieGL.jl")
 # Impulse response of the signal.
 function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
 							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
-							secondSignal = false, nSamples = false)
+							secondSignal = false, nSamples = false, title="Matched Filter Response")
 	ax = nothing
 
 	# PC the signal.
@@ -20,41 +20,34 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	else
 		response = pulseCompression(signal, secondSignal)
 	end
-	responseReal = real(response)
-	responseImag = imag(response)
 	responseAbs = abs.(response)
 
 	# Create DB axis.
 	if dB
-		responseReal = real( 20 * log10.(Complex.(responseReal)./maximum(responseReal)) )
-		responseImag = imag( 20 * log10.(Complex.(responseImag)./maximum(responseImag)) )
 		responseAbs = 20 * log10.( responseAbs./maximum(responseAbs) )
-		# Axis.
+		# Create new axis.
 		if axis == true
-			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Magnitude (dB)", title = "Matched Filter Response",
-					  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Magnitude (dB)", title = title)
 		  	plotOrigin(ax)
 	  	end
 
-	# Create non DB axis.
-	else
-		if axis == true
-			ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = "Matched Filter Response",
-					  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
-		  	plotOrigin(ax)
-	  	end
+	# Create new, non DB axis.
+	elseif axis == true
+		ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = title)
+		plotOrigin(ax)
+
 	end
 
 	# Plot the response.
-	if (length(responseReal) % 2 == 1)
-		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)
+	if (length(responseAbs) % 2 == 1)
+		samples = -floor(Int, length(responseAbs)/2):1:floor(Int, length(responseAbs)/2)
 	else
-		samples = -floor(Int, length(responseReal)/2):1:floor(Int, length(responseReal)/2)-1
+		samples = -floor(Int, length(responseAbs)/2):1:floor(Int, length(responseAbs)/2)-1
 	end
 	
 	time = samples .* (fs^-1) ./ 1e-6
-	lines!(time, responseAbs, color =color,  linewidth = lineThickness, label = label)
-	scatter!(time, responseAbs, color =color, markersize = dotSize)
+	lines!(time, responseAbs, color = color,  linewidth = lineThickness, label = label)
+	scatter!(time, responseAbs, color = color, markersize = dotSize)
 
 	# Set the x range.
 	if xRange != Inf
