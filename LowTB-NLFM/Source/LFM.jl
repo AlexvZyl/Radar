@@ -8,7 +8,8 @@ using CairoMakie
 #  W A V E F O R M  #
 # ----------------- #
 
-function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Number; plot::Bool = false, fig::Figure)
+function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Number; plot::Bool = false, fig::Figure, color = :blue, label = "", axis = false,
+                    title = "Linear Frequency Modulation")
 
     if nSamples == 1
         return [1+0*im]
@@ -36,13 +37,25 @@ function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Numb
 
     # Plot the frequencies.
     if plot
-        ax = Axis(fig[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "Linear Frequency Modulation")
-        plotOrigin(ax)        
-        timeVec = (-offset:1:offset) / fs 
-        lines!(timeVec * 1e6, freqVector / 1e6, linewidth = lineThickness, color = :blue)
+
+        if axis == false
+
+            ax = Axis(fig[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
+            plotOrigin(ax)        
+            timeVec = (0:1:nSamples-1) / fs 
+            scatterlines!(timeVec * 1e6, freqVector / 1e6, linewidth = lineThickness, color = color, fxaa = true, markersize = dotSize, label = label)
+            axis = ax
+        
+        else 
+            
+            timeVec = (0:1:nSamples-1) / fs 
+            scatterlines!(timeVec * 1e6, freqVector / 1e6, linewidth = lineThickness, color = color, fxaa = true, markersize = dotSize, label = label)
+            
+        end
+
     end
 
-    return wave
+    return wave, axis
 
 end
 

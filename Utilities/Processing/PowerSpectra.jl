@@ -34,11 +34,11 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
         end 
     end
 
-    # Plot the PSD.
-    lines!(frequencies/1e6, fftY, color = color, linewidth = lineThickness, label = label)
-    # if scatterPlot
-        scatter!(frequencies/1e6, fftY, color = color, markersize = dotSize)
-    # end
+    if axis != true
+        ax = axis
+    end
+
+    scatterlines!(frequencies/1e6, fftY, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
     # Set the X Range.
     if xRange != Inf

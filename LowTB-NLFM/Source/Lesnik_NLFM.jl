@@ -22,18 +22,13 @@ function fᵢ(t, tᵢ, Δ)
 
    α = t .- ( tᵢ/2 )
    β = ( tᵢ^2 * (Δ^2+4) ) / ( 4*Δ^2 )
-   γ = ( t .- tᵢ/2 ) .^ 2
+   γ = α .^ 2
    α ./ sqrt.(β .- γ)
 
 end
 
 # Phase, given the time.
 function Φ(t, tᵢ, Δ)
-
-   # α = ( tᵢ * sqrt(Δ^2 + 4) ) / ( 2 * Δ )
-   # β = ( tᵢ^2 * (Δ^2+4) ) / ( 4*Δ^2 )
-   # γ = ( t .- tᵢ/2 ) .^ 2
-   # α .- sqrt.(β .- γ)
 
    α = tᵢ * sqrt(Δ^2 + 4)/(2 * Δ)
 	(α - sqrt(α^2 - (t - tᵢ/2)^2))/Δ
@@ -72,35 +67,51 @@ end
 
 # Generate the NLFM waveform.
 function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Number; 
-                            plot::Bool = false, figure::Figure)
+                            plot::Bool = false, figure::Figure, axis = false, label = "",
+                            title = "Leśnik NLFM Frequencies")
 
    # ----------- #
    #  P H A S E  #
    # ----------- #
 
    # Calculate the phase.
-   # tᵢ += inv(fs)
-   timeVec = (1:1:nSamples-1) / fs
-   freqVec = fᵢ.(timeVec, tᵢ, Δ)
+   tᵢ -=  inv(fs)
+   Δ /= 1e6  # They used normalised frequencies?...
+   nSamples -= 1
+   timeVec = (0:1:nSamples) / fs
+   freqVec = fᵢ.(timeVec, tᵢ, Δ) .* 1e6
 
+   t = range(0, tᵢ, step = inv(fs))
+   PHASE = Φ.(t, tᵢ, Δ)
+
+   Δ *= 1e6
+   
+   offset = (nSamples-1) / 2
+   
    # Plot the generated phase.
    if plot
-      ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "Lesnik NLFM Frequencies")
-      lines!(timeVec * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue)
-      plotOrigin(ax)
-   end
-
-   # ----------------- #
-   #  W A V E F O R M  #
-   # ----------------- #
+      
+      if axis == false
+         
+         timeVec2 = (0:1:nSamples) / fs
+         ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
+         scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         plotOrigin(ax)
+         axis = ax   
+         
+      else 
+         
+         timeVec2 = (0:1:nSamples) / fs
+         scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         plotOrigin(axis)
    
-   # l = floor(Int, nSamples/2)
-   # samplesVec = -l:1:l
-   # samplesVec = 0:1:nSamples-1
-   # return exp.(im * samplesVec .* wₙ)
-   # return exp.(2 * pi * im * samplesVec .* freqI ./ fs)
-   # return exp.(im * 2π * phase * BW)
-
+      end
+      
+   end
+   
+   # Waveform.
+   return exp.(im * 2π * PHASE * Δ), axis
+   
 end
 
 # ======= # 

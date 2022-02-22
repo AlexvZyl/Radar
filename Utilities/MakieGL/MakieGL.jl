@@ -54,12 +54,19 @@ update_theme!(
     	topspinecolor = :black,
     	leftspinecolor = :black,
     	rightspinecolor = :black,
-		xgridcolor = :gray70, 
-		ygridcolor = :gray70,
+		xgridcolor = :gray80, 
+		ygridcolor = :gray80,
 		cycle = [],
 		yticklabelpad = 20,
-		ylabelpadding = 15
-		),
+		ylabelpadding = 20,
+		xtickwidth = 3,
+		ytickwidth = 3,
+		xticksize = 24,
+		yticksize = 24,
+		xtickalign = 0,
+		ytickalign = 1,
+		spinewidth = 3
+	),
 	Legend = (
     	leftspinevisible = true,
     	rightspinevisible = true,
@@ -70,14 +77,16 @@ update_theme!(
     	leftspinecolor = :gray90,
     	rightspinecolor = :gray90,
 		backgroundcolor = :gray90,
-		),
+		framewidth = 2
+	),
 	fontsize = 65,
 	textcolor = :black,
-	font ="Fonts/ComputerModern/cmunrm.ttf",
+	font = "Fonts/ComputerModern/cmunrm.ttf",
+	figure_padding = (0, 50, 0, 0)
 )
 
 originColor = :black
-lineThickness = 6
+lineThickness = 1
 dashThickness = 2.5
 dotSize = 8
 originThickness = 2

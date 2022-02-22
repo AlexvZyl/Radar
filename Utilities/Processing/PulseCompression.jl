@@ -16,7 +16,7 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 
 	# PC the signal.
 	if secondSignal == false
-		response = xcorr(signal, signal)
+		response = xcorr(signal, reverse(signal))
 	else
 		response = pulseCompression(signal, secondSignal)
 	end
@@ -46,8 +46,8 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 	end
 	
 	time = samples .* (fs^-1) ./ 1e-6
-	lines!(time, responseAbs, color = color,  linewidth = lineThickness, label = label)
-	scatter!(time, responseAbs, color = color, markersize = dotSize)
+	# lines!(time, responseAbs, color = color,  linewidth = lineThickness, label = label)
+	scatterlines!(time, responseAbs, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
 	# Set the x range.
 	if xRange != Inf
