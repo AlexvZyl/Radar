@@ -77,17 +77,14 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
    # Calculate the phase.
    tᵢ -=  inv(fs)
    Δ /= 1e6  # They used normalised frequencies?...
-   nSamples -= 1
-   timeVec = (0:1:nSamples) / fs
+   timeVec = (0:1:nSamples-1) / fs
    freqVec = fᵢ.(timeVec, tᵢ, Δ) .* 1e6
 
    t = range(0, tᵢ, step = inv(fs))
    PHASE = Φ.(t, tᵢ, Δ)
 
    Δ *= 1e6
-   
-   offset = (nSamples-1) / 2
-   
+      
    # Plot the generated phase.
    if plot
       
@@ -95,7 +92,8 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
          
          timeVec2 = (0:1:nSamples) / fs
          ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
-         scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         # scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         scatterlines!(timeVec2 * 1e6, PHASE * 1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
          plotOrigin(ax)
          axis = ax   
          
@@ -103,17 +101,22 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
          
          timeVec2 = (0:1:nSamples) / fs
          scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         # scatterlines!(timeVec2 * 1e6, PHASE, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
          plotOrigin(axis)
-   
+         
       end
       
    end
    
    # Waveform.
+   offset = (nSamples-1) / 2
+   n = (-offset:1:offset)
+   t = n ./ fs     
+
    return exp.(im * 2π * PHASE * Δ), axis
    
 end
-
+ 
 # ======= # 
 #  E O F  #
 # ======= #

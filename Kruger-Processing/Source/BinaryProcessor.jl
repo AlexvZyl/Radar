@@ -169,7 +169,7 @@ function readBinaryFile(filePath::String; draw::Bool=false)
             ["I Channel", "Q Channel"]
         )
         display(f)
-    end # If.
+    end # If
 
     # Return the dataframe containin the file information.
     return rawDataDF
