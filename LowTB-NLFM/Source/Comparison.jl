@@ -4,23 +4,25 @@ include("LFM.jl")
 include("DeWitte_NLFM.jl")
 include("Lesnik_NLFM.jl")
 include("vanZyl_NLFM.jl")
+include("P4_PHASE_CODED.jl")
 include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
+include("Sigmoid.jl")
 
 # ----------- #
 #  S E T U P  #
 # ----------- #
 
 # Waveform parameters.
-BW = 50e6
-# BW = 20e6
+# BW = 50e6
+BW = 20e6
+# fs = 110e6
 fs = 50e6
-t_i = 50e-6
-# t_i = 3.3e-6
+# t_i = 50e-6
+t_i = 3.3e-6
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
     nSamples += 1
-    t_i += inv(fs)
 end
 
 # Makie setup.
@@ -40,33 +42,35 @@ figure = Figure(resolution = (1920, 1080))
 # ----------------- #
 
 # Tuning parameters suggested by the paper.
-τ = 0.15e6    # Close in SLL
-𝒳 = 1.7      # Far out SLL
-TB = 270
-t_i = 200e-6
-ceiling = 14e6
-B = TB / t_i
-fs = 400e6
-nSamples = ceil(Int, fs * t_i)
-if nSamples % 2 == 0
-    nSamples += 1
-    t_i += inv(fs)
-end
+# τ = 0.15e6   # Close in SLL
+# 𝒳 = 1.7      # Far out SLL
+# TB = 270
+# t_i = 200e-6
+# # t_i = 50e-6
+# ceiling = 14e6
+# B = TB / t_i
+# # B = 2e6
+# fs = 110e6
+# nSamples = ceil(Int, fs * t_i)
+# if nSamples % 2 == 0
+#     nSamples += 1
+#     t_i += inv(fs)
+# end
 
-DeWitte, ax = generateDeWitte(fs, B, ceiling, t_i, nSamples, 𝒳, τ, figure = figure, plot = false)
+# DeWitte, NULL = generateDeWitte(fs, B, ceiling, t_i, nSamples, 𝒳, τ, figure = figure, plot = false)
 # plotSignal(figure, DeWitte, [1,1], fs)
 
-ax = plotPowerSpectra(figure, DeWitte, [1,1], fs, dB = false, label = "LFM", title="Power Spectrums", color = :orange)
-# response, ax = plotMatchedFilter(figure, DeWitte, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :orange)
+# ax = plotPowerSpectra(figure, DeWitte, [1,1], fs, dB = false, label = "LFM", title="Power Spectrums", color = :orange)
+# response, ax = plotMatchedFilter(figure, DeWitte, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "De Witte", color = :orange)
 
 # ------------- #
 #  L E S N I K  #
 # ------------- #
 
-# 50 Mhz LFM
+# BW Mhz LFM
 # plot = true
-# LFM, ax = generateLFM(BW, fs, nSamples, 0, plot = plot, fig = figure, color = :orange, label = "LFM", axis = false, title="Frequencies")
-# Lesnik, ax  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label ="Leśnik", title ="Frequencies")
+LFM, NULL = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, color = :orange, label = "LFM", title="Frequencies")
+Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label ="Leśnik", title ="Frequencies", plot = false)
 
 # 2 MHz LFM
 # wave, ax = generateLFM(2e6, fs, nSamples, 0, plot = true, fig = figure, color = :orange, label = "LFM", axis = false, title="Frequencies")
@@ -75,25 +79,35 @@ ax = plotPowerSpectra(figure, DeWitte, [1,1], fs, dB = false, label = "LFM", tit
 # plotSignal(figure, Lesnik, [1,1], fs)
 
 # Matched filters.
-# response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, title = "Matched Filter Response", label = "LFM", color = :orange)
-# plotMatchedFilter(figure, Lesnik, [1,1], fs, yRange = Inf, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik")
+response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red)
+lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik", axis = ax)
 
 # Power spectrums.
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrums", color = :orange)
 # ax = plotPowerSpectra(figure, Lesnik, [1,1], fs, dB = false, label = "Leśnik", title="Power Spectrums", color = :blue)#, xRange = 110 / 50 * 2)
 
+# --------------------------- #
+#  P 4   P H A S E   C O D E  #
+# --------------------------- #
+
+# p4Phase, ax = generateP4Code(fs, BW, nSamples, plot = false, figure = figure)
+# plotMatchedFilter(figure, p4Phase, [1,1], fs, yRange = Inf, title = "P4 Phase Code Matched Filter Response", color = :blue, label = "")
+# plotPowerSpectra(figure, p4Phase, [1,1], fs, dB = false, label = "", title="P4 Phase Power Spectrum", color = :blue)
+
 # --------------- #
-#  V A N   Z Y L  #
+#  S I G M O I D  #
 # --------------- #
 
-
+sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure)
+# plotSignal(figure, sigmoidWave, [1,1], fs)
+sigmoidmf, ax =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 90, title = "Sigmoid NLFM Matched Filter Response", color = :orange, label = "Sigmoid", axis = ax)
 
 # ----------- # 
 #  S E T U P  #
 # ----------- # 
 
 # axislegend(ax, valign = :bottom)
-# axislegend(ax)
+axislegend(ax)
 save("TEST.pdf", figure)
 
 # ------- #

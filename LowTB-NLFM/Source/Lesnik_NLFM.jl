@@ -35,36 +35,6 @@ function Φ(t, tᵢ, Δ)
 
 end
 
-# function ωₜ(t, tᵢ, Δ)
-
-#    # Constants used to make writing the equation easier.
-#    C2 = ( tᵢ^2 * (Δ^2+4) ) / ( 4*Δ^2 )
-#    C3 = tᵢ / 2
-
-#    # ωₙ is calculated by taking the integral of the phase.
-#    # This was calculated by hand and is now implemented here.
-#    T1 = ( C2 .- ( t .- C3 ) .^2 ) .^ (-0.5)
-#    T2 = ( t .- C3 )
-#    T1 .* T2
-
-# end
-
-# function fₜ(t, tᵢ, Δ)
-
-#    # Constants.
-#    C1 = tᵢ / 2
-#    C2 = ( tᵢ^2 * (Δ^2+4) ) / ( 4*Δ^2 ) 
-
-#    # Terms.
-#    T1 = t .* ( C2 .- (t.-C1).^2 ) .^ (-0.5)
-#    T2 = ( t .- C1 ) .^ 2
-#    T3 = ( C2 .- (t.-C1).^2 ) .^ (-1.5)
-
-#    # Frequency.
-#    T1 .- T2 .* T3
-
-# end
-
 # Generate the NLFM waveform.
 function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Number; 
                             plot::Bool = false, figure::Figure, axis = false, label = "",
@@ -84,16 +54,21 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
    PHASE = Φ.(t, tᵢ, Δ)
 
    Δ *= 1e6
+
+   # Waveform.
+   offset = (nSamples-1) / 2
+   n = (-offset:1:offset)
+   t = n ./ fs     
       
    # Plot the generated phase.
    if plot
       
       if axis == false
          
-         timeVec2 = (0:1:nSamples) / fs
          ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
-         # scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
-         scatterlines!(timeVec2 * 1e6, PHASE * 1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         # scatterlines!(timeVec * 1e6, freqVec / 1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         scatterlines!(n, freqVec .* t, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+         scatterlines!(n, PHASE * Δ, linewidth = lineThickness, color = :orange, markersize = dotSize, label = label)
          plotOrigin(ax)
          axis = ax   
          
@@ -107,11 +82,6 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
       end
       
    end
-   
-   # Waveform.
-   offset = (nSamples-1) / 2
-   n = (-offset:1:offset)
-   t = n ./ fs     
 
    return exp.(im * 2π * PHASE * Δ), axis
    

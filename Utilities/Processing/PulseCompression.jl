@@ -12,7 +12,12 @@ include("../MakieGL/MakieGL.jl")
 function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
 							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
 							secondSignal = false, nSamples = false, title="Matched Filter Response")
-	ax = nothing
+
+	if axis == true
+		ax = Nothing
+	else
+		ax = axis
+	end
 
 	# PC the signal.
 	if secondSignal == false
