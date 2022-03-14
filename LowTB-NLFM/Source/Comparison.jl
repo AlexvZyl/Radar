@@ -8,6 +8,7 @@ include("P4_PHASE_CODED.jl")
 include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
 include("Sigmoid.jl")
+include("Utilities.jl")
 
 # ----------- #
 #  S E T U P  #
@@ -69,7 +70,7 @@ figure = Figure(resolution = (1920, 1080))
 
 # BW Mhz LFM
 # plot = true
-LFM, NULL = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, color = :orange, label = "LFM", title="Frequencies")
+# LFM, NULL = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, color = :orange, label = "LFM", title="Frequencies")
 Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label ="Leśnik", title ="Frequencies", plot = false)
 
 # 2 MHz LFM
@@ -79,8 +80,9 @@ Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label
 # plotSignal(figure, Lesnik, [1,1], fs)
 
 # Matched filters.
-response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red)
-lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik", axis = ax)
+# response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red)
+lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik")
+println(calculateSideLobeLevel(lesnikMF, 3))
 
 # Power spectrums.
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrums", color = :orange)
@@ -98,17 +100,21 @@ lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLF
 #  S I G M O I D  #
 # --------------- #
 
-sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure)
+# sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure)
 # plotSignal(figure, sigmoidWave, [1,1], fs)
-sigmoidmf, ax =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 90, title = "Sigmoid NLFM Matched Filter Response", color = :orange, label = "Sigmoid", axis = ax)
+# sigmoidmf, NULL =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 90, title = "Sigmoid NLFM Matched Filter Response", color = :orange, label = "Sigmoid")
+# SLL = calculateSideLobeLevel(sigmoidmf, 3)
+# println(SLL)
 
 # ----------- # 
 #  S E T U P  #
 # ----------- # 
 
 # axislegend(ax, valign = :bottom)
-axislegend(ax)
+# axislegend(ax)
 save("TEST.pdf", figure)
+# save("Sigmoid_LowTB.pdf", figure)
+# save("Sigmoid_HighTB.pdf", figure)
 
 # ------- #
 #  L F M  #
@@ -122,10 +128,7 @@ save("TEST.pdf", figure)
 #  L E S N I K  #
 # ------------- #
 
-# save("Lesnik_FREQ.pdf", figure)
-# save("Lesnik_PC.pdf", figure)
-# save("Lesnik_PowerSpectrum.pdf", figure)
-# save("Lesnik_FREQ_50MHz.pdf", figure)
+# save("Lesnik_FREQ.pdf", figure)>)
 # save("Lesnik_PC_50MHz.pdf", figure)
 # save("Lesnik_PowerSpectrum_50MHz.pdf", figure)
 # save("Lesnik_FREQ_LTB.pdf", figure)
