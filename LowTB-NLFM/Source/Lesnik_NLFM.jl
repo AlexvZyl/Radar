@@ -37,7 +37,7 @@ end
 
 # Generate the NLFM waveform.
 function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Number; 
-                            plot::Bool = false, figure::Figure, axis = false, label = "",
+                            plot::Bool = false, figure = false, axis = false, label = "",
                             title = "Leśnik NLFM Frequencies")
 
    # ----------- #
@@ -85,6 +85,80 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
 
    return exp.(im * 2π * PHASE * Δ), axis
    
+end
+
+
+function lesnikSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::Real, lobeCount::Real;
+                        figure = false, plot::Bool = false, axis = false, label = "Leśnik", title = "Leśnik SLL over TBP",
+                        color = :blue, parameter::Real = 2e6)
+
+       # Prepare data.
+       SLLvector = Array{Float32}(undef, tbSamples)
+       TBPvector = Array{Float32}(undef, tbSamples)
+       tiIncrements = (tiRange[2] - tiRange[1]) / tbSamples
+       bwIncrements = (bwRange[2] - bwRange[1]) / tbSamples
+       tiVector = tiRange[1]:tiIncrements:tiRange[2]
+       bwVector = bwRange[1]:bwIncrements:bwRange[2]
+   
+       # Create vector.
+       for i in 1:1:(tbSamples)
+           nSamples = floor(Int, tiVector[i] * fs)
+           signal, null = generateLesnikNLFM(bwVector[i], fs, nSamples, tiVector[i], plot = false)
+           mf = plotMatchedFilter(0, signal, [], fs, plot = false)
+           SLLvector[i] = calculateSideLobeLevel(mf, lobeCount)
+           TBPvector[i] = bwVector[i] * tiVector[i] 
+       end
+   
+       # Plotting.
+       if plot
+           if axis == false
+               ax = Axis(figure[1, 1], xlabel = "TBP (Hz * s)", ylabel = "SLL (dB)", title = title)
+               scatterlines!(TBPvector, SLLvector, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+               plotOrigin(ax)
+               tbpInc = bwIncrements * tiIncrements
+               xlims!(TBPvector[1] - tbpInc, TBPvector[tbSamples] + tbpInc)
+           else
+               ax = axis
+           end
+       else
+           ax = nothing
+       end 
+   
+       # Done.
+       return TBPvector, SLLvector, ax
+
+end
+
+function lesnikPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount;
+                     axis = false, title = "Leśnik Plane", plot = true, figure = false)
+
+   # Parameter vector.
+   parameterIncrements = ( parameterRange[2] - parameterRange[1] ) / (parameterSamples-1)
+   parameterVector = collect(parameterRange[1]:parameterIncrements:parameterRange[2])
+
+   # Generate matrix.
+   TBPvector = Array{Float32}(undef, tbSamples)
+   sigmoidSLLTBPMatrix = Array{Float32}(undef, 0)
+   for pScale in parameterVector
+      TBPvector, SLLVector, ax = lesnikSLLvsTBP(fs, tiRange, bwRange, tbSamples, lobeCount, plot = false)
+      append!(sigmoidSLLTBPMatrix, SLLVector)
+   end
+   sigmoidSLLTBPMatrix = reshape(sigmoidSLLTBPMatrix, (tbSamples, parameterSamples))
+
+   # Axis.
+   if axis == false
+      ax = Axis3(figure[1, 1], xlabel = "TBP (Hz * s)", ylabel = "Parameter",zlabel = "SLL (dB)", title = title)
+   else
+      ax = axis
+   end
+   # Plot.
+   if plot
+      surface!(TBPvector, parameterVector, sigmoidSLLTBPMatrix)
+      xlims!(TBPvector[1], TBPvector[tbSamples])
+   end
+   # Done.
+   return sigmoidSLLTBPMatrix, TBPvector, ax
+
 end
  
 # ======= # 

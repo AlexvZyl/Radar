@@ -3,7 +3,6 @@
 include("LFM.jl")
 include("DeWitte_NLFM.jl")
 include("Lesnik_NLFM.jl")
-include("vanZyl_NLFM.jl")
 include("P4_PHASE_CODED.jl")
 include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
@@ -14,27 +13,38 @@ include("Utilities.jl")
 #  S E T U P  #
 # ----------- #
 
-# Waveform parameters.
-# BW = 50e6
+figure = Figure(resolution = (1920, 1080))
+
+# GENERAL WAVE DATA #
+
+# # BW = 50e6
 BW = 20e6
-# fs = 110e6
-fs = 50e6
-# t_i = 50e-6
-t_i = 3.3e-6
+fs = 23e6
+# # fs = 110e6
+# fs = 50e6
+t_i = 50e-6
+# t_i = 3.3e-6
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
     nSamples += 1
 end
 
-# Makie setup.
-figure = Figure(resolution = (1920, 1080))
+# SLL VS TBP #
+
+# fs = 220e6
+# tiRange = [60e-6, 60e-6]
+# bwRange = [1e6, 50e6]
+# parameterRange = [0.1, 1]
+# parameterSamples = 30
+# tbSamples = 200
+# lobeCount = 5
 
 # ------------------ #
 #  L I N E A R  F M  #
 # ------------------ #
 
-# LFM = generateLFM(BW, fs, nSamples, 0, plot = true, fig = figure)
-# response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, title = "LFM Matched Filter Response", label = "LFM")
+LFM, ax = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure)
+response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 50, title = "LFM Matched Filter Response", label = "LFM")
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="LFM Power Spectrum")
 # plotSignal(figure, LFM, [1,1], fs)
 
@@ -44,7 +54,7 @@ figure = Figure(resolution = (1920, 1080))
 
 # Tuning parameters suggested by the paper.
 # τ = 0.15e6   # Close in SLL
-# 𝒳 = 1.7      # Far out SLL
+# 𝒳 = 1.7      # Far out SLL\
 # TB = 270
 # t_i = 200e-6
 # # t_i = 50e-6
@@ -71,7 +81,7 @@ figure = Figure(resolution = (1920, 1080))
 # BW Mhz LFM
 # plot = true
 # LFM, NULL = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, color = :orange, label = "LFM", title="Frequencies")
-Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label ="Leśnik", title ="Frequencies", plot = false)
+# Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label ="Leśnik", title ="Frequencies", plot = false)
 
 # 2 MHz LFM
 # wave, ax = generateLFM(2e6, fs, nSamples, 0, plot = true, fig = figure, color = :orange, label = "LFM", axis = false, title="Frequencies")
@@ -81,12 +91,15 @@ Lesnik, NULL  = generateLesnikNLFM(BW, fs, nSamples, t_i, figure = figure, label
 
 # Matched filters.
 # response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red)
-lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik")
-println(calculateSideLobeLevel(lesnikMF, 3))
+# lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Leśnik NLFM Matched Filter Response", color = :blue, label = "Leśnik")
+# println(calculateSideLobeLevel(lesnikMF, 3))
 
 # Power spectrums.
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrums", color = :orange)
 # ax = plotPowerSpectra(figure, Lesnik, [1,1], fs, dB = false, label = "Leśnik", title="Power Spectrums", color = :blue)#, xRange = 110 / 50 * 2)
+
+# SLL vs TBP
+# lesnikPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, plot = true, figure = figure)
 
 # --------------------------- #
 #  P 4   P H A S E   C O D E  #
@@ -100,11 +113,14 @@ println(calculateSideLobeLevel(lesnikMF, 3))
 #  S I G M O I D  #
 # --------------- #
 
-# sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure)
+# sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = true, figure = figure, scalingParameter = 1)
 # plotSignal(figure, sigmoidWave, [1,1], fs)
 # sigmoidmf, NULL =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 90, title = "Sigmoid NLFM Matched Filter Response", color = :orange, label = "Sigmoid")
 # SLL = calculateSideLobeLevel(sigmoidmf, 3)
 # println(SLL)
+
+# Plot plance.
+# sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
 
 # ----------- # 
 #  S E T U P  #
@@ -112,9 +128,17 @@ println(calculateSideLobeLevel(lesnikMF, 3))
 
 # axislegend(ax, valign = :bottom)
 # axislegend(ax)
-save("TEST.pdf", figure)
+# save("TEST.pdf", figure)
 # save("Sigmoid_LowTB.pdf", figure)
 # save("Sigmoid_HighTB.pdf", figure)
+
+# ----------------------------- #
+#  L F M   P R O C E S S I N G  #
+# ----------------------------- #
+
+# save("LFM_PROC_PowerSpectra.pdf", figure)
+save("LFM_PROC_PC.pdf", figure)
+# save("LFM_PROC_FREQ.pdf", figure)
 
 # ------- #
 #  L F M  #

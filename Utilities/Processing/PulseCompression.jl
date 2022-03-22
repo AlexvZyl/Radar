@@ -9,9 +9,9 @@ include("../MakieGL/MakieGL.jl")
 # -------------- #
 
 # Impulse response of the signal.
-function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
+function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
 							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
-							secondSignal = false, nSamples = false, title="Matched Filter Response")
+							secondSignal = false, nSamples = false, title="Matched Filter Response", plot::Bool = true)
 
 	if axis == true
 		ax = Nothing
@@ -26,6 +26,12 @@ function plotMatchedFilter(fig::Figure, signal::Vector, position::Vector, fs::Nu
 		response = pulseCompression(signal, secondSignal)
 	end
 	responseAbs = abs.(response)
+
+	# Return if plot not wanted.
+	if plot == false
+		responseAbs = 20 * log10.( responseAbs./maximum(responseAbs) )
+		return responseAbs
+	end
 
 	# Create DB axis.
 	if dB

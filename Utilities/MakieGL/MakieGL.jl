@@ -3,6 +3,7 @@
 # ----------------------------- #
 
 # using GLMakie
+
 using CairoMakie
 CairoMakie.activate!(type = "pdf")
 
@@ -19,6 +20,34 @@ CairoMakie.activate!(type = "pdf")
 #     	topspinecolor = :gray90,
 #     	leftspinecolor = :gray90,
 #     	rightspinecolor = :gray90,
+# 		cycle = [],
+# 		),
+# 	Axis3 = (
+# 		# Visibility.
+#     	xspinesvisible = true,
+#     	yspinesvisible = true,	
+# 		zspinesvisible = true,	
+# 		# Colors.
+#     	xspinecolor_1 = :gray90,
+# 		xspinecolor_2 = :gray90,
+# 		xspinecolor_3 = :gray90,
+# 		yspinecolor_1 = :gray90,
+# 		yspinecolor_2 = :gray90,
+# 		yspinecolor_3 = :gray90,
+# 		zspinecolor_1 = :gray90,
+# 		zspinecolor_2 = :gray90,
+# 		zspinecolor_3 = :gray90,
+# 		# Label padding.
+# 		xlabeloffset = 70,
+# 		ylabeloffset = 70,
+# 		zlabeloffset = 70,
+# 		# Ticks.
+# 		xticksvisible = true,
+# 		yticksvisible = true,
+# 		zticksvisible = true,
+# 		xtickcolor = :grey90,
+# 		ytickcolor = :grey90,
+# 		ztickcolor = :grey90,
 # 		cycle = []
 # 		),
 # 	Legend = (
@@ -32,7 +61,7 @@ CairoMakie.activate!(type = "pdf")
 #     	rightspinecolor = :gray90,
 # 		backgroundcolor = :gray90,
 # 		),
-# 	fontsize = 50,
+# 	# fontsize = 50,
 # 	textcolor = :gray90
 # )
 
@@ -42,7 +71,7 @@ CairoMakie.activate!(type = "pdf")
 # dotSize = 8
 # originThickness = 2
 
-#  D E F A U L T   T H E M E  #
+#  PUBLISH THEME  #
 
 update_theme!(
 	Axis = (
