@@ -15,9 +15,10 @@ using SharedArrays
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 0
-folder 			= "Testing"
-fileNumber 		= "087"
+pulsesToLoad 	= 3
+# REMEMBER: The Doppler FFT removes two pulses.
+folder 			= "Thesis_Processing_Data"
+fileNumber 		= "001"
 
 # =========== #
 #  F I L E S  #
@@ -122,7 +123,7 @@ rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samp
 #   L F M   #
 # --------- #
 
-if LFM
+if LFM 
 
 	#  W A V E F O R M  #
 
@@ -151,7 +152,7 @@ if LFM
 
 	# P L O T T I N G  #
 
-    figure = Figure()
+    figure = Figure(resolution = (1920, 1080))
 
 	# fftMatrix = dopplerFFT(rxSignal, [1, nSamplesPulse*2], nSamplesPulse, PRF)
 	# velocityBinCount = length(fftMatrix[])
@@ -166,14 +167,14 @@ if LFM
 	# Qmean = -9.71446e-07
 	# rxSignal = rxSignal .- (Imean + im*Qmean)
 
-	# plotPowerSpectra(figure, rxSignal, [1,2], fs)
+	# plotPowerSpectra(figure, rxSignal, [1,1], fs, title = "LFM Frequency Spectrum", dB = false)
 
-	# plotSignal(figure, rxSignal, [1,1], fs)
-	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
+	# plotSignal(figure, rxSignal, [1,1], fs, title = "LFM Received Signal")
+	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, dB = true, title = "LFM Matched Filter Response", timeFromZero = true)
     PCsignal = pulseCompression(rxSignal, txSignal)
-	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,90], 
-				   xRange = Inf, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = true)
-	# syncedPCSignal = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse])
+	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [-40,70], 
+				#    xRange = 15000, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = false)
+	syncedPCSignal, ax = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse], plot = true, figure = figure)
 	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
 
 	# ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total OcScurances", title = "RX Noise",
@@ -182,7 +183,7 @@ if LFM
 	# hist!(real(rxSignal), bins = 100)
 	# hist!(imag(rxSignal), bins = 100)
 
-    display(figure)
+    # display(figure)
 
 end
 
@@ -203,7 +204,7 @@ if NLFM
     # Plot the signal.
 	PCsignal = pulseCompression(rxSignal, txSignal)
 
-	figure = Figure()
+	figure = Figure(resolution = (1920, 1080))
     # plotSignal(figure, txSignal, [1,1], fs)
 	# plotPowerSpectra(figure, txSignal, [1,2], fs)
 	plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal)
@@ -212,6 +213,16 @@ if NLFM
     display(figure)
 
 end
+
+# ------------------------- #
+#  S A V I N G   P L O T S  #
+# ------------------------- #
+
+# save("LFM_REALDATA_SIGNAL.pdf", figure)
+# save("LFM_REALDATA_SPECTRUM.pdf", figure)
+# save("LFM_REALDATA_MF.pdf", figure)
+save("LFM_REALDATA_MFSYNCED.pdf", figure)
+# save("LFM_REALDATA_DOPPLERFFT.pdf", figure)
 
 # ======= #
 #  E O F  #

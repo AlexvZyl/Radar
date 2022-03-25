@@ -98,8 +98,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     ax = nothing
     # If no axis was specified.
     if axis == false
-        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label,
-                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
+        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
         plotOrigin(ax)
     # If an axis has been specified.
     else

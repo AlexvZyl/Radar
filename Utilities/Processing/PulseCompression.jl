@@ -11,12 +11,22 @@ include("../MakieGL/MakieGL.jl")
 # Impulse response of the signal.
 function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sampleRatio::Number=1, dB::Bool=true,
 							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
-							secondSignal = false, nSamples = false, title="Matched Filter Response", plot::Bool = true)
+							secondSignal = false, nSamples = false, title="Matched Filter Response", plot::Bool = true,
+							timeFromZero::Bool = false)
 
 	if axis == true
 		ax = Nothing
 	else
 		ax = axis
+	end
+
+	nSamples = length(signal)
+	odd = (nSamples%2) == 1
+	waveHalf = 0
+	if odd
+		waveHalf = (nSamples-1)/2
+	else
+		waveHalf = nSamples/2
 	end
 
 	# PC the signal.
@@ -56,8 +66,11 @@ function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sa
 		samples = -floor(Int, length(responseAbs)/2):1:floor(Int, length(responseAbs)/2)-1
 	end
 	
-	time = samples .* (fs^-1) ./ 1e-6
-	# lines!(time, responseAbs, color = color,  linewidth = lineThickness, label = label)
+	if !timeFromZero
+		time = samples .* (fs^-1) ./ 1e-6
+	else
+		time = (0:1:(length(samples)-1)) / fs * 1e6
+	end
 	scatterlines!(time, responseAbs, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
 	# Set the x range.
@@ -82,7 +95,7 @@ end
 
 function pulseCompression(txSignal::Vector, rxSignal::Vector)
 
-	return xcorr(txSignal, rxSignal)
+	return xcorr(txSignal, rxSignal, padmode = :none)
 
 end
 

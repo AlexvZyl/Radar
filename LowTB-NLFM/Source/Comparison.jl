@@ -1,5 +1,8 @@
 # Script used to compare the results of the different waveforms.
 
+# Phase Noise cancellation met DC offset.
+# NLFM van Dr Steyn.
+
 include("LFM.jl")
 include("DeWitte_NLFM.jl")
 include("Lesnik_NLFM.jl")
@@ -128,7 +131,7 @@ response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 5
 
 # axislegend(ax, valign = :bottom)
 # axislegend(ax)
-# save("TEST.pdf", figure)
+save("TEST.pdf", figure)
 # save("Sigmoid_LowTB.pdf", figure)
 # save("Sigmoid_HighTB.pdf", figure)
 
@@ -137,7 +140,7 @@ response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 5
 # ----------------------------- #
 
 # save("LFM_PROC_PowerSpectra.pdf", figure)
-save("LFM_PROC_PC.pdf", figure)
+# save("LFM_PROC_PC.pdf", figure)
 # save("LFM_PROC_FREQ.pdf", figure)
 
 # ------- #
