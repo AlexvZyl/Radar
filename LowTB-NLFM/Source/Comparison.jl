@@ -20,13 +20,13 @@ figure = Figure(resolution = (1920, 1080))
 
 # GENERAL WAVE DATA #
 
-# # BW = 50e6
 BW = 20e6
-fs = 23e6
-# # fs = 110e6
-# fs = 50e6
-t_i = 50e-6
-# t_i = 3.3e-6
+# BW = 120e6
+fs = 50e6
+# fs = 23e6
+# fs = 110e6
+# t_i = 50e-6
+t_i = 3.3e-6
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
     nSamples += 1
@@ -34,21 +34,25 @@ end
 
 # SLL VS TBP #
 
-# fs = 220e6
-# tiRange = [60e-6, 60e-6]
-# bwRange = [1e6, 50e6]
-# parameterRange = [0.1, 1]
-# parameterSamples = 30
-# tbSamples = 200
-# lobeCount = 5
+fs = 120e6
+tiRange = [60e-6, 60e-6]
+bwRange = [0.01e6, 50e6]
+parameterRange = [0.1, 1] 
+# parameterSamples = 10
+# tbSamples = 100
+parameterSamples = 13
+tbSamples = 3
+lobeCount = 1
+# BW = minimum(bwRange)
+# t_i = minimum(tiRange)
 
 # ------------------ #
 #  L I N E A R  F M  #
 # ------------------ #
 
-LFM, ax = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure)
-response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 50, title = "LFM Matched Filter Response", label = "LFM")
-# ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="LFM Power Spectrum")
+# LFM, ax = generateLFM(BW, fs, nSamples, 0, plot = true, fig = figure, label = "LFM", title = "Frequencies", color = :orange)
+# response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, title = "Matched Filter Response", label = "LFM", color = :orange)
+# ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrum", color = :orange)
 # plotSignal(figure, LFM, [1,1], fs)
 
 # ----------------- # 
@@ -60,11 +64,9 @@ response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 5
 # 𝒳 = 1.7      # Far out SLL\
 # TB = 270
 # t_i = 200e-6
-# # t_i = 50e-6
 # ceiling = 14e6
 # B = TB / t_i
-# # B = 2e6
-# fs = 110e6
+# fs = 400e6
 # nSamples = ceil(Int, fs * t_i)
 # if nSamples % 2 == 0
 #     nSamples += 1
@@ -116,24 +118,36 @@ response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, xRange = 5
 #  S I G M O I D  #
 # --------------- #
 
-# sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = true, figure = figure, scalingParameter = 1)
-# plotSignal(figure, sigmoidWave, [1,1], fs)
-# sigmoidmf, NULL =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 90, title = "Sigmoid NLFM Matched Filter Response", color = :orange, label = "Sigmoid")
+# plotSigmoid()
+# sigmoidWave, MULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 1, color = :blue, label = "Logit" )
+# plotPowerSpectra(figure, sigmoidWave, [1,1], fs, dB = false, label = "Logit", axis = ax)
+# plotSignal(figure, sigmoidWave, [1,3], fs)
+# sigmoidmf, ax =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 80, title = "Sigmoid NLFM Matched Filter Response", color = :blue, label = "Logit")
 # SLL = calculateSideLobeLevel(sigmoidmf, 3)
 # println(SLL)
 
 # Plot plance.
-# sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
+sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
 
 # ----------- # 
 #  S E T U P  #
 # ----------- # 
 
+# display(figure)
 # axislegend(ax, valign = :bottom)
 # axislegend(ax)
-save("TEST.pdf", figure)
-# save("Sigmoid_LowTB.pdf", figure)
-# save("Sigmoid_HighTB.pdf", figure)
+# save("TEST.pdf", figure)
+
+# --------------- #
+#  S I G M O I D  #
+# --------------- #
+
+# save("Sigmoid_General.pdf", figure)
+save("Sigmoid_Plane.pdf", figure)
+# save("Sigmoid_NLFM_LTB_FREQ.pdf", figure)
+# save("Sigmoid_NLFM_LTB_MF.pdf", figure)
+# save("Sigmoid_NLFM_LTB_POWERSPECTRUM.pdf", figure)
+# save("Sigmoid_Plane.pdf", figure)
 
 # ----------------------------- #
 #  L F M   P R O C E S S I N G  #
@@ -169,7 +183,6 @@ save("TEST.pdf", figure)
 # save("DeWitte_FREQ.pdf", figure)
 # save("DeWitte_PC.pdf", figure)
 # save("DeWitte_PowerSpectrum.pdf", figure)
-# display(figure)
 
 # ------- #
 #  E O F  #

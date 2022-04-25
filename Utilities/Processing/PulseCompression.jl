@@ -95,7 +95,7 @@ end
 
 function pulseCompression(txSignal::Vector, rxSignal::Vector)
 
-	return xcorr(txSignal, rxSignal, padmode = :none)
+	return xcorr(txSignal, rxSignal)
 
 end
 

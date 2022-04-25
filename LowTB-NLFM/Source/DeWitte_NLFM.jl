@@ -148,10 +148,6 @@ function generateDeWitte(fs::Number, B::Number, ceiling::Number, T::Number, nSam
         ax = nothing
     end 
 
-    # n = (-offset:1:offset)
-    # fw = freq ./ fs
-    # return exp.(im * 2π .* fw .* n), ax
-
     return exp.(im * 2π * phase), ax
 
 end

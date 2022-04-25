@@ -23,7 +23,7 @@ function syncPulseCompressedSignal(signal::Vector, pulseLengthSamples::Number, s
 
     #  Create new axis.
     ax = nothing
-    if axis == false
+    if axis == false && plot
         # dB.
         if dB
             syncedSignal ./= maximum(syncedSignal)
@@ -38,23 +38,27 @@ function syncPulseCompressedSignal(signal::Vector, pulseLengthSamples::Number, s
         ax = axis
     end
 
-    # Take time from zero.
-	if timeFromZero
-		time = collect((0:1:(length(syncedSignal)-1)) / fs)
-	end
-	scatterlines!(time * 1e6, syncedSignal, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
+    if plot
 
-	# Set the x range.
-	if xRange != Inf
-		xlims!(-xRange/2, xRange/2)
-	end
+        # Take time from zero.
+        if timeFromZero
+            time = collect((0:1:(length(syncedSignal)-1)) / fs)
+        end
+        scatterlines!(time * 1e6, syncedSignal, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
-	# Set the y range.
-	if yRange != Inf
-		if dB ylims!(-yRange, 0)
-		else ylims!(-yRange/2, yRange/2)
-		end
-	end
+        # Set the x range.
+        if xRange != Inf
+            xlims!(-xRange/2, xRange/2)
+        end
+
+        # Set the y range.
+        if yRange != Inf
+            if dB ylims!(-yRange, 0)
+            else ylims!(-yRange/2, yRange/2)
+            end
+        end
+
+    end
 
 	# Return the axis to be used by other plots.
 	return syncedSignal, ax

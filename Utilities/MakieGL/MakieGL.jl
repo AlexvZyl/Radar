@@ -3,6 +3,7 @@
 # ----------------------------- #
 
 glmakie = false
+# glmakie = true
 cairomakie = !glmakie
 
 if glmakie
@@ -103,8 +104,43 @@ if cairomakie
 			yticksize = 24,
 			xtickalign = 0,
 			ytickalign = 1,
-			spinewidth = 3
+			spinewidth = 3,
+			fontsize = 65,
 		),
+		Axis3 = (
+			# Visibility.
+	    	xspinesvisible = true,
+	    	yspinesvisible = true,	
+			zspinesvisible = true,	
+			# Colors.
+	    	xspinecolor_1 = :black,
+			xspinecolor_2 = :black,
+			xspinecolor_3 = :black,
+			yspinecolor_1 = :black,
+			yspinecolor_2 = :black,
+			yspinecolor_3 = :black,
+			zspinecolor_1 = :black,
+			zspinecolor_2 = :black,
+			zspinecolor_3 = :black,
+			xgridcolor = :gray80, 
+			ygridcolor = :gray80,
+			zgridcolor = :gray80,
+			# Label padding.
+			xlabeloffset = 130,
+			ylabeloffset = 130,
+			zlabeloffset = 130,
+			titlegap = -150,
+			# Ticks.
+			xticksvisible = true,
+			yticksvisible = true,
+			zticksvisible = true,
+			xtickcolor = :grey10,
+			ytickcolor = :grey10,
+			ztickcolor = :grey10,
+			cycle = [],
+			viewmode = :fit,
+			fontsize = 65,
+			),
 		Legend = (
 			leftspinevisible = true,
 			rightspinevisible = true,
@@ -115,9 +151,9 @@ if cairomakie
 			leftspinecolor = :gray90,
 			rightspinecolor = :gray90,
 			backgroundcolor = :gray90,
-			framewidth = 2
+			framewidth = 2,
+			fontsize = 65,
 		),
-		fontsize = 65,
 		textcolor = :black,
 		font = "Fonts/ComputerModern/cmunrm.ttf",
 		figure_padding = (0, 50, 0, 0)

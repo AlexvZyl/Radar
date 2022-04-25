@@ -15,10 +15,10 @@ using SharedArrays
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 3
+pulsesToLoad 	= 0
 # REMEMBER: The Doppler FFT removes two pulses.
-folder 			= "Thesis_Processing_Data"
-fileNumber 		= "001"
+folder 			= "RietVleiDay2"
+fileNumber 		= "008"
 
 # =========== #
 #  F I L E S  #
@@ -123,7 +123,7 @@ rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samp
 #   L F M   #
 # --------- #
 
-if LFM 
+if LFM
 
 	#  W A V E F O R M  #
 
@@ -172,10 +172,10 @@ if LFM
 	# plotSignal(figure, rxSignal, [1,1], fs, title = "LFM Received Signal")
 	# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, dB = true, title = "LFM Matched Filter Response", timeFromZero = true)
     PCsignal = pulseCompression(rxSignal, txSignal)
-	# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [-40,70], 
-				#    xRange = 15000, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = false)
-	syncedPCSignal, ax = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse], plot = true, figure = figure)
-	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
+	plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [-40,70], 
+				   xRange = 15000, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = true)
+	# syncedPCSignal, ax = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse], plot = true, figure = figure)
+ 	# plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
 
 	# ax = Axis(figure[1, 1], xlabel = "Amplitude (V)", ylabel = "Total OcScurances", title = "RX Noise",
 			#   titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
@@ -221,8 +221,11 @@ end
 # save("LFM_REALDATA_SIGNAL.pdf", figure)
 # save("LFM_REALDATA_SPECTRUM.pdf", figure)
 # save("LFM_REALDATA_MF.pdf", figure)
-save("LFM_REALDATA_MFSYNCED.pdf", figure)
+# save("LFM_REALDATA_MFSYNCED.pdf", figure)
 # save("LFM_REALDATA_DOPPLERFFT.pdf", figure)
+# save("PhaseNoise_REALDATA_DIRECT.pdf", figure)
+save("PhaseNoise_REALDATA_VELD.pdf", figure)
+
 
 # ======= #
 #  E O F  #

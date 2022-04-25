@@ -94,53 +94,53 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     #  P L O T T I N G  #
     # ----------------- #
 
-    # Create the axis.
-    ax = nothing
-    # If no axis was specified.
-    if axis == false
-        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
-        plotOrigin(ax)
-    # If an axis has been specified.
-    else
-        ax = axis
-    end
+    # # Create the axis.
+    # ax = nothing
+    # # If no axis was specified.
+    # if axis == false
+    #     ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
+    #     plotOrigin(ax)
+    # # If an axis has been specified.
+    # else
+    #     ax = axis
+    # end
 
-    # Plot heatmap with dB scale.
+    # # Plot heatmap with dB scale.
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
-    hm = heatmap!(figure[position[1], position[2]], 
-                  rangeVector, velocityVector, dopplerFFTMatrix,
-                  colorrange = dBRange)
+    # hm = heatmap!(figure[position[1], position[2]], 
+    #               rangeVector, velocityVector, dopplerFFTMatrix,
+    #               colorrange = dBRange)
 
-    λ = c / fc
-    freqIncrement = 100 * λ / 2 # Hz
-    hValue = freqIncrement
-    while(hValue < yRange )
-        hlines!(ax, hValue, color = :grey90, linewidth=0.5)
-        hlines!(ax, -hValue, color = :grey90, linewidth=0.5)
-        hValue += freqIncrement
-    end
+    # λ = c / fc
+    # freqIncrement = 100 * λ / 2 # Hz
+    # hValue = freqIncrement
+    # while(hValue < yRange )
+    #     hlines!(ax, hValue, color = :grey90, linewidth=0.5)
+    #     hlines!(ax, -hValue, color = :grey90, linewidth=0.5)
+    #     hValue += freqIncrement
+    # end
                 
-    # Plot the colorbar.
-    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+    # # Plot the colorbar.
+    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
-    # Plot a line at the deadzone.
-    if nWaveSamples != false
-        deadZoneRange = (nWaveSamples / (2 * fs) ) * c
-        vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
-        if axis == false
-            axislegend(ax)
-        end
-    end 
+    # # Plot a line at the deadzone.
+    # if nWaveSamples != false
+    #     deadZoneRange = (nWaveSamples / (2 * fs) ) * c
+    #     vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
+    #     if axis == false
+    #         axislegend(ax)
+    #     end
+    # end 
     
-    # Set the X Range.
-    if xRange != Inf
-        xlims!(0, ((rangeSample-1)*c)/(fs * 2))
-    end
+    # # Set the X Range.
+    # if xRange != Inf
+    #     xlims!(0, ((rangeSample-1)*c)/(fs * 2))
+    # end
 
-    # Set the Y range.
-    if yRange != Inf
-        ylims!(-yRange, yRange)
-    end
+    # # Set the Y range.
+    # if yRange != Inf
+    #     ylims!(-yRange, yRange)
+    # end
 
     # ------------- #
     #  D C   B I N  #
@@ -148,32 +148,31 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
 
     if plotDCBin
 
-        # Axis.
-        dcAxis = Axis(figure[position[1]+1, :], xlabel = "Distance (m)", ylabel = "Magnitude (dB)", title = "DC Bin (0 m/s)",
-                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, xgridvisible = false)
+        # # DC Bin.
+        # dcAxis = Axis(figure[position[1]+1, :], xlabel = "Distance (m)", ylabel = "Magnitude (dB)", title = "DC Bin (0 m/s)",
+        #           xgridvisible = false)
+        # plotOrigin(dcAxis)
+        # velocitiesLength = length(dopplerFFTMatrix[1,:])
+        # dcBin = 0
+        # odd = (velocitiesLength%2 == 1)
+        # if odd 
+        #     dcBin = ceil(Int, velocitiesLength/2)
+        # else
+        #     dcBin = floor(Int, velocitiesLength/2)
+        # end
+        # bin = dopplerFFTMatrix[:,dcBin]
+        # scatterlines!(rangeVector, dopplerFFTMatrix[:,dcBin], markersize = dotSize, linewidth = lineThickness)
+        # ylims!(0, 130)
+
+
+        # Middle range line.
+        dcAxis = Axis(figure[position[1], :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
+                      xgridvisible = false)
         plotOrigin(dcAxis)
-
-        # Find the DC bin location.
-        velocitiesLength = length(dopplerFFTMatrix[1,:])
-        dcBin = 0
-        odd = (velocitiesLength%2 == 1)
-        if odd 
-            dcBin = ceil(Int, velocitiesLength/2)
-        else
-            dcBin = floor(Int, velocitiesLength/2)
-        end
-        bin = dopplerFFTMatrix[:,dcBin]
-        lines!(rangeVector, dopplerFFTMatrix[:,dcBin], linewidth = lineThickness)
-        ylims!(0, 130)
-
-        dcAxis = Axis(figure[position[1]+2, :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
-                  titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize, xgridvisible = false)
-        plotOrigin(dcAxis)
-
         middle = length(dopplerFFTMatrix[:,1]/2)
         middleLine = dopplerFFTMatrix[middle,:]
-        lines!(velocityVector, middleLine, linewidth = lineThickness)
-        ylims!(0, 110)
+        scatterlines!(velocityVector, middleLine, markersize = dotSize, linewidth = lineThickness)
+        # ylims!(0, 120)
         xlims!(-yRange, yRange)
 
     end
@@ -189,7 +188,8 @@ end
 function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number)
 
     # First sync the signal.
-    syncedSignal = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
+    # println(pulseLengthSamples)
+    syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
 
     # Now we need to create a matrix of aligned pulses.
     totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)
@@ -213,7 +213,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
         pulseMatrix[s,:] .*= window
         fftMatrix[s,:] = powerSpectra(pulseMatrix[s,:], PRF, false)
     end
-    
+
     return fftMatrix, frequencies
 
 end
