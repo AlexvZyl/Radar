@@ -11,6 +11,7 @@ include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
 include("Sigmoid.jl")
 include("Utilities.jl")
+include("Bezier.jl")
 
 # ----------- #
 #  S E T U P  #
@@ -107,13 +108,18 @@ lobeCount = 3
 # SLL vs TBP
 # lesnikPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, plot = true, figure = figure)
 
-# --------------------------- #
-#  P 4   P H A S E   C O D E  #
-# --------------------------- #
+# ------------- #
+#  B E Z I E R  #
+# ------------- #
 
-# p4Phase, ax = generateP4Code(fs, BW, nSamples, plot = false, figure = figure)
-# plotMatchedFilter(figure, p4Phase, [1,1], fs, yRange = Inf, title = "P4 Phase Code Matched Filter Response", color = :blue, label = "")
-# plotPowerSpectra(figure, p4Phase, [1,1], fs, dB = false, label = "", title="P4 Phase Power Spectrum", color = :blue)
+vertices = [ Vertex2D(-1,-1), 
+             Vertex2D(-0.5,-0.75),
+             Vertex2D(0,0), 
+             Vertex2D(0.5,0.75),
+             Vertex2D(1,1) ]
+bezierWave, x = BezierInterpolated(vertices, 10);
+Axis(figure[1,1]);
+scatter!(x, bezierWave, markersize = dotSize, linewidth = lineThickness);
 
 # --------------- #
 #  S I G M O I D  #
@@ -128,7 +134,7 @@ lobeCount = 3
 # println("SLL: ", SLL, " dB")
 
 # Plot plance.
-sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
+# sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
 
 # ----------- # 
 #  S E T U P  #
