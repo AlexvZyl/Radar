@@ -2,8 +2,8 @@
 #  G L M A K I E   T H E M E S  #
 # ----------------------------- #
 
-glmakie = false
-# glmakie = true
+# glmakie = false
+glmakie = true
 cairomakie = !glmakie
 
 if glmakie
@@ -104,8 +104,7 @@ if cairomakie
 			yticksize = 24,
 			xtickalign = 0,
 			ytickalign = 1,
-			spinewidth = 3,
-			fontsize = 65,
+			spinewidth = 3
 		),
 		Axis3 = (
 			# Visibility.
@@ -138,8 +137,7 @@ if cairomakie
 			ytickcolor = :grey10,
 			ztickcolor = :grey10,
 			cycle = [],
-			viewmode = :fit,
-			fontsize = 65,
+			viewmode = :fit
 			),
 		Legend = (
 			leftspinevisible = true,
@@ -151,9 +149,10 @@ if cairomakie
 			leftspinecolor = :gray90,
 			rightspinecolor = :gray90,
 			backgroundcolor = :gray90,
-			framewidth = 2,
-			fontsize = 65,
+			framewidth = 2
 		),
+		# fontsize = 50, # 3D
+		fontsize = 65, # 2D
 		textcolor = :black,
 		font = "Fonts/ComputerModern/cmunrm.ttf",
 		figure_padding = (0, 50, 0, 0)

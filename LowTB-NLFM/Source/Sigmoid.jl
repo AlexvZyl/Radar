@@ -22,33 +22,28 @@ using QuadGK
 # end
 
 sigmoid(x, scale) = 1 ./ ( 1 .+ exp.(-1 .* scale .* x) )
-logit(x; normValue = 1, m=1, c=0) = ( (-1/m) * log(ℯ, ( (x^-1) -1 )) + c ) / normValue
 
-function logitFreq(time, fs::Real, BW::Real, scale::Real, nSamples::Real; onlyFreq::Bool = false)
+norm(m) = ( 1 )/( 1 + exp(-1/m) ) - 0.5
+logit(x; m = 1, BW = 2) = -m * log(ℯ, (norm(m)*x + 0.5)^-1 - 1) * BW/2
 
-    # Calculate logit frequency.   
-    normValue = abs(logit(time[1], m=scale)) * 2 / BW
-    freq = logit.(time, m=scale, normValue=normValue)
+function logitFreq(BW::Real, nSamples::Real, scale::Real)
 
-    return freq
-
-    # Range the freq in BW.
-    freq = freq ./ maximum(abs.(freq))
-    freq .*= (BW / 2)
- 
-    # Return.
-    return freq
+    time = -1:2/(nSamples-1):1
+    logit.(time, m = scale, BW = BW)
 
 end
 
-function logitPhase(time, fs::Real, BW::Real, scale::Real, nSamples::Real)
+function logitPhase(fs::Real, BW::Real, scale::Real, nSamples::Real)
 
     phase = Array{Float32}(undef, nSamples)
-    normValue = abs(logit(time[1], m=scale)) * 2 / BW
-    timeScale = ( (nSamples/fs) / (time[end]-time[1]) )
-    for i in 1:1:nSamples
-        phase[i], err = quadgk(x -> logit(x, normValue=normValue, m=scale), time[1], time[i], rtol = 1e-3)
+    time = -1:2/(nSamples-1):1
+    phase[1] = 0
+    for i in 2:1:nSamples-1
+        phase[i], err = quadgk(x -> logit(x, m = scale, BW = BW), time[1], time[i], rtol = 1e-6)
     end
+    phase[nSamples] = 0
+    # Scale the integral, since the time is not from -1 to 1.
+    phase .*= (nSamples / fs) / 2
     return phase
 
 end
@@ -57,36 +52,25 @@ function generateSigmoidWaveform(fs::Number, BW::Number, nSamples::Real;
                                  plot::Bool = false, axis = false, label = "Sigmoid", figure = false, color = :blue, title = "Sigmoid NFLM",
                                  scalingParameter::Real = 1)
 
-    # Create time vector.
-    startTime = 0.5 - scalingParameter * 0.5
-    endTime = 0.5 + scalingParameter * 0.5
-    increment = (endTime-startTime)/(nSamples+1)
-    time = collect(startTime:increment:endTime)
-    # Ensure we do not have a 0 or 1.
-    pop!(time)
-    popfirst!(time)
-    
-    # Calculate vectors.
-    freq = logitFreq(time, fs, BW, 1, nSamples)
-    phase = logitPhase(time, fs, BW, 1, nSamples)
+    scalingParameter = exp(1 - scalingParameter)
 
-    # Since we have to scale the values from 0 to 1 to fit it into the logit function
-    # the phase has to be scaled so that we can get the correct integral.
-    logitTime = endTime - startTime;
-    timeScale = (nSamples/fs) / logitTime
-    phase .*= timeScale
+    # Calculate vectors.
+    phase = logitPhase(fs, BW, scalingParameter, nSamples)
 
     # Plotting.
-    realTime = (0:1:(nSamples-1))/fs
+    unitTime = 0:1/(nSamples-1):1
     if plot        
+        freq = logitFreq(BW, nSamples, scalingParameter)
         if axis == false 
             ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
-            scatterlines!(time, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            scatterlines!(unitTime, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            ylims!(-BW/(1e6*2), BW/(1e6*2))
             ax = Axis(figure[1, 2], xlabel = "Time (μs)", ylabel = "Phase (Radians)", title = title)
-            scatterlines!(realTime * 1e6, phase, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            scatterlines!(unitTime, phase, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
             plotOrigin(ax)
+            ax = axis
         else
-            scatterlines!(realTime * 1e6, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            # scatterlines!(realTime * 1e6, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
             ax = axis
         end
     else
@@ -145,7 +129,7 @@ function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::
 end
 
 function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount;
-                     axis = false, title = "Sigmoid Plane", plot = true, figure = false)
+                     axis = false, title = "Logit Plane", plot = true, figure = false)
 
     # Parameter vector.
     parameterIncrements = ( parameterRange[2] - parameterRange[1] ) / (parameterSamples-1)
