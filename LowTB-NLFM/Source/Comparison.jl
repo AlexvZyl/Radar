@@ -22,31 +22,20 @@ figure = Figure(resolution = (1920, 1080)) # 2D
 
 # GENERAL WAVE DATA #
 
-BW = 20e6
-# BW = 120e6
-fs = 50e6
-# fs = 23e6
+# High TBP.
+# BW = 50e6
 # fs = 110e6
 # t_i = 50e-6
+
+# Low TBP.
+BW = 20e6
+fs = 50e6
 t_i = 3.3e-6
+
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
     nSamples += 1
 end
-
-# SLL VS TBP #
-
-fs = 120e6
-tiRange = [60e-6, 60e-6]
-bwRange = [0.01e6, 50e6]
-parameterRange = [0, 6] 
-parameterSamples = 50
-tbSamples = 50
-# parameterSamples = 13
-# tbSamples = 3
-lobeCount = 3
-# BW = minimum(bwRange)
-# t_i = minimum(tiRange)
 
 # ------------------ #
 #  L I N E A R  F M  #
@@ -112,18 +101,31 @@ lobeCount = 3
 #  B E Z I E R  #
 # ------------- #
 
-vertices = [ Vertex2D(-1,-1), 
-             Vertex2D(-0.5,-0.75),
-             Vertex2D(0,0), 
-             Vertex2D(0.5,0.75),
-             Vertex2D(1,1) ]
-bezierWave, x = BezierInterpolated(vertices, 10);
-Axis(figure[1,1]);
-scatter!(x, bezierWave, markersize = dotSize, linewidth = lineThickness);
+resolution = 200
+BezierWaveformSLLPlane(BW, fs, resolution, nSamples)
+
+# Testing the effect of adding points.
+# params = [Vertex2D(0,1), Vertex2D(0, 1), Vertex2D(0,1)]
+# waveform, x = BezierWaveformParametric(params, nSamples)
+# Axis(figure[1,1])
+# scatterlines!(x, waveform, linewidth = lineThickness, markersize = dotSize, color = :blue)
 
 # --------------- #
 #  S I G M O I D  #
 # --------------- #
+
+# SLL VS TBP #
+# fs = 120e6
+# tiRange = [60e-6, 60e-6]
+# bwRange = [0.01e6, 50e6]
+# parameterRange = [0, 6] 
+# parameterSamples = 50
+# tbSamples = 50
+# # parameterSamples = 13
+# # tbSamples = 3
+# lobeCount = 3
+# BW = minimum(bwRange)
+# t_i = minimum(tiRange)
 
 # plotSigmoid()
 # sigmoidWave, ax = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 4, color = :blue, label = "Logit" )

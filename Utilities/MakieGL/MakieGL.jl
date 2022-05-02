@@ -69,7 +69,7 @@ if glmakie
 	)
 
 	originColor = :gray90
-	lineThickness = 7
+	lineThickness = 1
 	dashThickness = 2.5
 	dotSize = 8
 	originThickness = 2

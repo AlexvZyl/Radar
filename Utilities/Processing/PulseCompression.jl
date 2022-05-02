@@ -13,13 +13,8 @@ function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sa
 							xRange::Number = Inf, yRange::Number = Inf, color = :blue, axis = true, label = "",
 							secondSignal = false, nSamples = false, title="Matched Filter Response", plot::Bool = true,
 							timeFromZero::Bool = false)
-
-	if axis == true
-		ax = Nothing
-	else
-		ax = axis
-	end
-
+	
+	
 	nSamples = length(signal)
 	odd = (nSamples%2) == 1
 	waveHalf = 0
@@ -43,6 +38,13 @@ function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sa
 		return responseAbs
 	end
 
+	# Check for axis.
+	if axis == true
+		ax = Nothing
+	else
+		ax = axis
+	end
+
 	# Create DB axis.
 	if dB
 		responseAbs = 20 * log10.( responseAbs./maximum(responseAbs) )
@@ -56,7 +58,6 @@ function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sa
 	elseif axis == true
 		ax = Axis(fig[position[1], position[2]], xlabel = "Time (μs)", ylabel = "Amplitude", title = title)
 		plotOrigin(ax)
-
 	end
 
 	# Plot the response.
