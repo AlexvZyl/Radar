@@ -93,8 +93,10 @@ if cairomakie
 			topspinecolor = :black,
 			leftspinecolor = :black,
 			rightspinecolor = :black,
-			xgridcolor = :gray80, 
-			ygridcolor = :gray80,
+			# xgridcolor = :gray80, 
+			# ygridcolor = :gray80,
+			xgridcolor = :gray50, 
+			ygridcolor = :gray50,
 			cycle = [],
 			yticklabelpad = 20,
 			ylabelpadding = 20,
@@ -124,11 +126,11 @@ if cairomakie
 			xgridcolor = :gray80, 
 			ygridcolor = :gray80,
 			zgridcolor = :gray80,
-			# Label padding.
+			# Label.
 			xlabeloffset = 130,
 			ylabeloffset = 130,
 			zlabeloffset = 130,
-			titlegap = -150,
+			titlegap = -70,
 			# Ticks.
 			xticksvisible = true,
 			yticksvisible = true,

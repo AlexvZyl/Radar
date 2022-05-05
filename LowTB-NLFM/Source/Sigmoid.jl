@@ -2,35 +2,13 @@ include("../../Utilities/MakieGL/MakieGL.jl")
 include("Utilities.jl")
 using QuadGK
 
-# function sigmoidFreq(x, fs::Real, BW::Real, scale::Real; onlyFreq::Bool = false)
-#     val = scale .*  (x .- 0.5)
-#     den = 1 .+ exp.( -val )
-#     sigmoidResult = ( 1 ./ den  ) 
-#     timeNorm = sigmoidResult
-#     timeNorm .-= minimum(timeNorm)
-#     timeNorm ./= maximum(timeNorm)
-#     time = timeNorm .* (nSamples-1)/fs
-#     freq = ( x .- 0.5 ) * BW
-#     if onlyFreq
-#         return freq
-#     end
-#     return time, freq 
-# end
-
-# function sigmoidPhase(x, fs::Real, BW::Real, scale::Real)
-#     return quadgk.(fx -> sigmoidFreq(fx, fs, BW, scale, onlyFreq = true) , 0, x, rtol = 1e-3)
-# end
-
 sigmoid(x, scale) = 1 ./ ( 1 .+ exp.(-1 .* scale .* x) )
-
-norm(m) = ( 1 )/( 1 + exp(-1/m) ) - 0.5
-logit(x; m = 1, BW = 2) = -m * log(ℯ, (norm(m)*x + 0.5)^-1 - 1) * BW/2
+normLogit(m) = ( 1 )/( 1 + exp(-1/m) ) - 0.5
+logit(x; m = 1, BW = 2) = -m * log(ℯ, ( normLogit(m)*x + 0.5 )^-1 - 1) * BW/2
 
 function logitFreq(BW::Real, nSamples::Real, scale::Real)
-
     time = -1:2/(nSamples-1):1
-    logit.(time, m = scale, BW = BW)
-
+    return logit.(time, m = scale, BW = BW)
 end
 
 function logitPhase(fs::Real, BW::Real, scale::Real, nSamples::Real)
@@ -90,14 +68,24 @@ function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::
     SLLvector = Array{Float32}(undef, tbSamples)
     TBPvector = Array{Float32}(undef, tbSamples)
     tiVector = Array{Float32}(undef, tbSamples)
+    bwVector = Array{Float32}(undef, tbSamples)
     tiIncrements = (tiRange[2] - tiRange[1]) / (tbSamples-1)
     bwIncrements = (bwRange[2] - bwRange[1]) / (tbSamples-1)
-    if tiIncrements == 0
+
+    if tbSamples == 1
+        tiVector[1] = tiRange[1]
+    elseif tiIncrements == 0
         tiVector .= tiRange[2]
-    else
         tiVector = tiRange[1]:tiIncrements:tiRange[2]
     end
-    bwVector = bwRange[1]:bwIncrements:bwRange[2]
+
+    if tbSamples == 1
+        bwVector[1] = bwRange[1]
+    elseif bwIncrements == 0
+        bwVector .= bwRange[2]
+    else
+        bwVector = bwRange[1]:bwIncrements:bwRange[2]
+    end
 
     # Create vector.
     for i in 1:1:tbSamples
@@ -148,7 +136,7 @@ function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tb
     sigmoidSLLTBPMatrix = reshape(sigmoidSLLTBPMatrix, (tbSamples, parameterSamples))
 
     # Axis.
-    if axis == false
+    if axis == false && plot
         ax = Axis3(figure[1, 1], xlabel = "TBP (Hz×s)", ylabel = "Non-Linearity",zlabel = "SLL (dB)", title = title)
         ax.azimuth = pi/2 - pi/4
     else
@@ -162,19 +150,32 @@ function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tb
         zlims!(minimum(sigmoidSLLTBPMatrix), maximum(sigmoidSLLTBPMatrix))
     end
 
-    # Setup the camera.
-    # translate_cam!(ax.scene, [1,1,1])
-
     # Done.
     return sigmoidSLLTBPMatrix, TBPvector, ax
 
 end
 
-function plotSigmoid()
-    inc = 0.01
-    values = -1:inc:1
-    wave = sigmoid(values, 10)
+function plotSigmoid(m)
+    BW = 2
+    nSamples = 165
+    freq = logitFreq(BW, nSamples, exp(1-m))
+    time = -1:2/(nSamples-1):1
     ax = Axis(figure[1, 1], xlabel = "", ylabel = "", title = "Sigmoid Function")
-    scatterlines!(values, wave, linewidth = lineThickness, markersize = dotSize, color = :blue)
+    scatterlines!(time, freq, linewidth = lineThickness, markersize = dotSize, color = :blue)
     plotOrigin(ax)
+end
+
+
+# Get the scaling parameter for a sigmoid optimised for SLL in the given range.
+function OptimisedSigmoidSLL(BW::Real, fs::Real, nSamples::Real; 
+                             range::Vector = [0, 5], parameterSamples = 100, lobeCount::Real = 10)
+
+    ti = nSamples / fs
+    SLL = sigmoidPlane(fs, [ti, ti], [BW, BW], range, parameterSamples, 1, lobeCount, plot = false)[1]
+    paramRange = range[2] - range[1]
+    parameterVec = range[1]:paramRange/(parameterSamples-1):range[2]
+    val, index = findmin(SLL)
+    minParam = parameterVec[index[2]]
+    println("Minimised SLL Parameter (sigmoid): ", minParam)
+    return minParam
 end
