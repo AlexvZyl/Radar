@@ -122,9 +122,8 @@ xRange = [-2,2]
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
 # BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 
-ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 1, plotHO = false)
+# ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 2, plotHO = false)
 # # display(ho)
-
 # # Test the best waveform.
 # bestParams = ho.minimum[2]
 # totalPoints = trunc(Int, length(bestParams))
@@ -140,6 +139,7 @@ ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterati
 # println("MLW: ", MLW)
 # println("PSL: ", PSL)
 # println("HO Fitness: ", ho.minimum[1])
+# save("TEST.pdf", figure)
 
 # freq = BezierFreqienciesParametric(params, nSamples, BW = BW)
 # ax = Axis(figure[1,1])
@@ -153,9 +153,29 @@ ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterati
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrum", color = :orange, axis = ax)
 
 # Plot the different Bezier orders on top of each other.
+
+# 4th.
 vertices = [ Vertex2D(0.11210956f0, 1.0807872f0) ]
 waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, label = "4th", title = "Optimal Bézier Pulse Compression")
+
+# 6th.
+vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :red, label = "6th")
+
+# 8th.
+vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :orange, label = "8th")
+
+# 10th.
+vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :purple, label = "10th")
+
+axislegend(ax)
+ylims!(-80, 0)
 save("Article_LowTBP_CompareBezierOrders.pdf", figure)
 
 # --------------- #
