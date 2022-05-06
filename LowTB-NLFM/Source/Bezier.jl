@@ -1,4 +1,7 @@
 using Interpolations
+using Hyperopt
+# using Plots
+using Optim
 
 include("Vertex.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
@@ -74,7 +77,7 @@ end
 # Construct a Bezier curve.
 # vertices: The points the Bezier curve is made of.
 # nSamples:  The amount of samples used to construct the curve (higher = increased resolution).
-function Bezier(vertices::Vector{Vertex2D}, nSamples::Real; xRange::Vector = [-1,1])
+function Bezier(vertices::Vector{Vertex2D}, nSamples::Int; xRange::Vector = [-1,1], yRange::Vector = [-1,1])
 
     # Setup the vectors.
     tVector = 0:1/(nSamples-1):1
@@ -84,9 +87,16 @@ function Bezier(vertices::Vector{Vertex2D}, nSamples::Real; xRange::Vector = [-1
     # Loop over the samples. 
     index = 1
     for t in tVector
-        # result = Bₚ(t, vertices)
         result = Bₑ(t, vertices)
+        # Ensure x is valid.
         if result.x >= xRange[1] && result.x <= xRange[2]
+            # Ensure y is valid.
+            if result.y > yRange[2]
+                result.y = yRange[2]
+            elseif result.y < yRange[1]
+                result.y = yRange[1]
+            end
+            # Store result.
             xVector[index] = result.x
             yVector[index] = result.y
             index += 1
@@ -100,7 +110,7 @@ end
 # Construct a Bezier curve that is linearly interpolated.
 # Points: The points the Bezier curve is made of.
 # nSamples:  The amount of samples used to construct the curve (higher = increased resolution).
-function BezierInterpolated(vertices::Vector{Vertex2D}, nSamples::Real, bezierSamples::Real)
+function BezierInterpolated(vertices::Vector{Vertex2D}, nSamples::Int, bezierSamples::Int)
 
     # Create the uninterpolated bezier curve.
     bezierX, bezierY = Bezier(vertices, bezierSamples)
@@ -115,7 +125,7 @@ end
 # Create an interpolated Bezier frequency curve.
 # The points (-1,-1), (0,0) and (1,1) are always given, and only
 # have to provide the first half of the waveforms' vertices.
-function BezierFrequencies(vertices::Vector{Vertex2D}, nSamples::Real; bezierSamples::Real=0, BW::Real = 2)
+function BezierFrequencies(vertices::Vector{Vertex2D}, nSamples::Int; bezierSamples::Real=0, BW::Real = 2)
 
     # If no value passed, default to the amount of samples.
     if(bezierSamples==0) 
@@ -153,7 +163,7 @@ end
 # nPoints: The amount of points used in the Bezier waveform.  This does not include 
 # the first, last and middle vertex.  Thus, 0 means three points.
 # parameters: A vector containing the parameter for each of the points.  Has to be of size nPoints, and range from(0,1).
-function BezierFreqienciesParametric(parameters::Vector{Vertex2D}, nSamples::Real; bezierSamples::Real = 0, BW::Real = 2)
+function BezierFreqienciesParametric(parameters::Vector{Vertex2D}, nSamples::Int; bezierSamples::Real = 0, BW::Real = 2)
 
     # Calculate the amount of points for the curve.
     nPoints = length(parameters)
@@ -169,7 +179,7 @@ function BezierFreqienciesParametric(parameters::Vector{Vertex2D}, nSamples::Rea
     baseVertex = Vertex2D(-1,-1)
     for i in 1:1:nPoints
         vertices[i] = (1 - parameters[i]) * baseVertex
-        baseVertex = vertices[i]
+        # baseVertex = vertices[i]
     end
 
     # Create the waveform from the paramters.
@@ -181,7 +191,7 @@ end
 # nPoints: The amount of points used in the Bezier waveform.  This does not include 
 # the first, last and middle vertex.  Thus, 0 means three points.
 # parameters: A vector containing the parameter for each of the points.  Has to be of size nPoints, and range from(0,1).
-function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Real, BW::Real; bezierSamples::Real = 0, rtol::Real = 1e-3)
+function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Int, BW::Real; bezierSamples::Real = 0, rtol::Real = 1e-3)
 
     # Calculate the frequencies.
     bezierFreq = BezierFreqienciesParametric(parameters, nSamples, BW = BW, bezierSamples = bezierSamples)
@@ -210,7 +220,7 @@ end
 # nPoints: The amount of points used in the Bezier waveform.  This does not include 
 # the first, last and middle vertex.  Thus, 0 means three points.
 # parameters: A vector containing the parameter for each of the points.  Has to be of size nPoints, and range from(0,1).
-function BezierSignalParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Real, BW::Real; bezierSamples::Real = 0)
+function BezierSignalParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Int, BW::Real; bezierSamples::Real = 0)
 
     # Create the signal from the phase vector.
     phase = BezierPhaseParametric(parameters, fs, nSamples, BW, bezierSamples = bezierSamples)
@@ -226,7 +236,8 @@ end
 # resolution: The resolution of the plane in the 2 dimensions.
 # waveformNSamples: the amount of samples in the waveform.
 # bezierNSamples: the amount of samples used in the interpolation.  More = better accuracy.
-function BezierSurface(BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0, lobeCount::Real = 3,
+function BezierSurface(BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; 
+                       plot::Bool = true, bezierNSamples::Real = 0,
                        title = "Bezier Surface", xRange = [0,1], yRange = [0,1], MLW::Bool = false, dB::Real = 0, azimuth::Real = pi/2 - pi/4, elevation::Real = pi/4)
     
     # If no value passed, default to the amount of samples.
@@ -251,7 +262,7 @@ function BezierSurface(BW::Real, fs::Real, planeResolution::Real, waveformNSampl
             if MLW
                 data[index] = calculateMainLobeWidth(mf, dB = dB) / fs
             else 
-                data[index] = calculateSideLobeLevel(mf, lobeCount)
+                data[index] = calculateSideLobeLevel(mf)
             end
             index += 1
         end
@@ -278,7 +289,7 @@ function BezierSurface(BW::Real, fs::Real, planeResolution::Real, waveformNSampl
     if plot
         data = transpose(reshape(data, (planeResolution, planeResolution)))
         zaxis = "PSL (dB)"
-        title = "Bézier SLL Performance Surface"
+        title = "Bézier PSL Performance Surface"
         if MLW
             zaxis = "Nyquist Samples"
             title = "Bézier Main Lobe Width Performance Surface"
@@ -298,7 +309,8 @@ function BezierSurface(BW::Real, fs::Real, planeResolution::Real, waveformNSampl
 end
 
 
-function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0, lobeCount::Real = 3,
+function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; 
+                       plot::Bool = true, bezierNSamples::Real = 0,
                        title = "Bézier Contour", xRange = [0,1], yRange = [0,1], dB::Real = 0, lobeWidthContourCount::Real = 5, sideLobeContourCount::Real = 5)
 
     # If no value passed, default to the amount of samples.
@@ -322,7 +334,7 @@ function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, wavefo
             waveform = BezierSignalParametric([vertex], fs, nSamples, BW, bezierSamples = bezierNSamples)
             mf = plotMatchedFilter(0, waveform, [], fs, plot = false)
             lobeWidthData[index] = calculateMainLobeWidth(mf, dB = dB) / fs
-            sideLobeData[index] = calculateSideLobeLevel(mf, lobeCount)
+            sideLobeData[index] = calculateSideLobeLevel(mf)
             index += 1
         end
     end
@@ -357,14 +369,9 @@ function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, wavefo
 
 end
 
-function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0, lobeCount::Real = 3,
-                           title = "Bézier Pareto Front", xRange = [0,1], yRange = [0,1], dB::Real = 0, lobeWidthContourCount::Real = 5, sideLobeContourCount::Real = 5,
+function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0,
+                           title = "Bézier Parameter Space", xRange = [0,1], yRange = [0,1], dB::Real = 0,
                            nPoints::Real = 1)
-
-    # If no value passed, default to the amount of samples.
-    if(bezierNSamples==0) 
-        bezierNSamples = waveformNSamples
-    end
 
     # The paramters iterated over.
     xSize = xRange[2] - xRange[1]
@@ -381,15 +388,15 @@ function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, wa
     for x1 in xParameterVec
     for y1 in yParameterVec
 
-    # # Iterate second vertex.
+    # Iterate second vertex.
     # for x2 in xParameterVec
     # for y2 in yParameterVec
 
-    # # Iterate third vertex.
+    # Iterate third vertex.
     # for x3 in xParameterVec
     # for y3 in yParameterVec
 
-    # # Iterate third vertex.
+    # Iterate third vertex.
     # for x4 in xParameterVec
     # for y4 in yParameterVec
 
@@ -397,12 +404,14 @@ function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, wa
             # vertex2 = Vertex2D(x2, y2)
             # vertex3 = Vertex2D(x3, y3)
             # vertex4 = Vertex2D(x4, y4)
-            # vertices = [vertex1, vertex2, vertex3, vertex4]
             vertices = [ vertex1 ]
+            # vertices = [ vertex1, vertex2 ]
+            # vertices = [vertex1, vertex2, vertex3 ]
+            # vertices = [vertex1, vertex2, vertex3, vertex4 ]
             waveform = BezierSignalParametric(vertices, fs, nSamples, BW, bezierSamples = bezierNSamples)
             mf = plotMatchedFilter(0, waveform, [], fs, plot = false)
             lobeWidthData[index] = calculateMainLobeWidth(mf, dB = dB) / fs
-            sideLobeData[index] = calculateSideLobeLevel(mf, lobeCount)
+            sideLobeData[index] = calculateSideLobeLevel(mf)
             index += 1
 
     # end
@@ -417,15 +426,203 @@ function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, wa
     # Calculate the width in Nyqsuit samples.
     lobeWidthData *= BW
 
-    ax = Axis(figure[1, 1], xlabel = "PSL (dB)", ylabel = "MLW (samples)", title = title)
-    ax.xreversed = true
-    # ax.yreversed = true
-    plotOrigin(ax)
-    scatter!(sideLobeData, lobeWidthData, color = :blue, markersize = 15)
-    vlines!(ax, -36.8, color = :black, linewidth=5, linestyle = :dash, label = "Optimal Logit")
-	hlines!(ax, 12.5, color = :black, linewidth=5, linestyle = :dash)
-    axislegend(ax)
-    xlims!(0, -40)
-    ylims!(0, 100)
+    if plot
+        ax = Axis(figure[1, 1], xlabel = "PSL (dB)", ylabel = "MLW (samples)", title = title)
+        ax.xreversed = true
+        # ax.yreversed = true
+        plotOrigin(ax)
+        scatter!(sideLobeData, lobeWidthData, color = :blue, markersize = 15)
+        vlines!(ax, -36.8, color = :black, linewidth=5, linestyle = :dash, label = "Optimal Logit")
+        hlines!(ax, 12, color = :black, linewidth=5, linestyle = :dash)
+        # vlines!(ax, -64.308, color = :black, linewidth=5, linestyle = :dash, label = "Optimal Logit")
+        # hlines!(ax, 47, color = :black, linewidth=5, linestyle = :dash)
+        axislegend(ax)
+        xlims!(0, -40)
+        ylims!(0, 100)
+        # xlims!(0, -80)
+        # ylims!(0, 150)
+    end
+
+end
+
+function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real, sampleIterations::Real, optimIterations::Real;
+                                 plotHO::Bool = true, bezierNSamples::Int = 0,
+                                 title = "Bézier Bayestion Optimisation", xRange = [0,1], yRange = [0,1], dB::Real = 0, nPoints::Real = 1)
+
+    # The paramters iterated over.
+    xParameterVec = LinRange(xRange[1], xRange[2], planeResolution)
+    yParameterVec = LinRange(yRange[1], yRange[2], planeResolution)
+    global resultsVec
+    global latestSLL
+    global latestMLW
+    nParticles = 25
+
+    if nPoints == 1
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal = xParameterVec, 
+                        yVal = yParameterVec
+            res = Optim.optimize(x->optim1(x[1], x[2], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal, yVal], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    elseif nPoints == 2
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal1 = xParameterVec, 
+                        yVal1 = yParameterVec,
+                        xVal2 = xParameterVec, 
+                        yVal2 = yParameterVec
+            res = Optim.optimize(x->optim2(x[1], x[2], x[3], x[4], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal1, yVal1, xVal2, yVal2], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    elseif nPoints == 3
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal1 = xParameterVec, 
+                        yVal1 = yParameterVec,
+                        xVal2 = xParameterVec, 
+                        yVal2 = yParameterVec,
+                        xVal3 = xParameterVec, 
+                        yVal3 = yParameterVec
+            res = Optim.optimize(x->optim3(x[1], x[2], x[3], x[4], x[5], x[6], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    elseif nPoints == 4
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal1 = xParameterVec, 
+                        yVal1 = yParameterVec,
+                        xVal2 = xParameterVec, 
+                        yVal2 = yParameterVec,
+                        xVal3 = xParameterVec, 
+                        yVal3 = yParameterVec,
+                        xVal4 = xParameterVec, 
+                        yVal4 = yParameterVec
+            res = Optim.optimize(x->optim4(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    elseif nPoints == 5
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal1 = xParameterVec, 
+                        yVal1 = yParameterVec,
+                        xVal2 = xParameterVec, 
+                        yVal2 = yParameterVec,
+                        xVal3 = xParameterVec, 
+                        yVal3 = yParameterVec,
+                        xVal4 = xParameterVec, 
+                        yVal4 = yParameterVec,
+                        xVal5 = xParameterVec, 
+                        yVal5 = yParameterVec
+            res = Optim.optimize(x->optim5(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    elseif nPoints == 6
+        ho = @hyperopt  for i = sampleIterations,
+                        sampler = RandomSampler(),
+                        xVal1 = xParameterVec, 
+                        yVal1 = yParameterVec,
+                        xVal2 = xParameterVec, 
+                        yVal2 = yParameterVec,
+                        xVal3 = xParameterVec, 
+                        yVal3 = yParameterVec,
+                        xVal4 = xParameterVec, 
+                        yVal4 = yParameterVec,
+                        xVal5 = xParameterVec, 
+                        yVal5 = yParameterVec,
+                        xVal6 = xParameterVec, 
+                        yVal6 = yParameterVec
+            res = Optim.optimize(x->optim6(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
+                                [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5, xVal6, yVal6], 
+                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+            Optim.minimum(res), Optim.minimizer(res)
+        end
+
+    end
+
+    if plotHO
+        plot(ho)
+    end
+    return ho
+end
+
+
+# ------------------------------- #
+#  O P T I M   F U N C T I O N S  #
+# ------------------------------- #
+
+function optim1(xVal, yVal, 
+                fs, nSamples::Int, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal, yVal) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+function optim2(xVal1, yVal1, xVal2, yVal2,
+                fs, nSamples, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal1, yVal1), Vertex2D(xVal2, yVal2) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+function optim3(xVal1, yVal1, xVal2, yVal2, xVal3, yVal3,
+                fs, nSamples::Int, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal1, yVal1), Vertex2D(xVal2, yVal2), Vertex2D(xVal3, yVal3) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+function optim4(xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4,
+                fs, nSamples::Int, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal1, yVal1), Vertex2D(xVal2, yVal2), Vertex2D(xVal3, yVal3), Vertex2D(xVal4, yVal4) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+function optim5(xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5,
+                fs, nSamples::Int, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal1, yVal1), Vertex2D(xVal2, yVal2), Vertex2D(xVal3, yVal3), Vertex2D(xVal4, yVal4), Vertex2D(xVal5, yVal5) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+function optim6(xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5, xVal6, yVal6,
+                fs, nSamples::Int, BW; bezierSamples = 0, dB = 0)
+    vertices = [ Vertex2D(xVal1, yVal1), Vertex2D(xVal2, yVal2), Vertex2D(xVal3, yVal3), Vertex2D(xVal4, yVal4), Vertex2D(xVal5, yVal5), Vertex2D(xVal6, yVal6) ]
+    SLL, MLW = BezierSLLMLW(vertices, fs, nSamples, BW, bezierSamples = bezierSamples, dB = dB)
+    return fitness(SLL, MLW)
+end
+
+# Calculate the SLL and MLW of the Bezier curve.
+function BezierSLLMLW(vertices, fs, nSamples::Int, BW; 
+                      bezierSamples = 0, dB = 0)
+    waveform = BezierSignalParametric(vertices, fs, nSamples, BW, bezierSamples = bezierSamples)
+    mf = plotMatchedFilter(0, waveform, [], fs, plot = false)
+    SLL = calculateSideLobeLevel(mf)
+    MLW = calculateMainLobeWidth(mf, dB = dB) / fs * BW
+    return SLL, MLW
+end
+
+# The fiteness function.
+function fitness(SLL, MLW)
+
+    # result = 2 * SLL + MLW
+    result = 2.2 * SLL + MLW
+    return result
 
 end

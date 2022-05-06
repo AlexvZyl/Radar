@@ -2,25 +2,33 @@ using Peaks
 using Statistics
 using Interpolations
 
-function calculateSideLobeLevel(signal::Vector, lobeCount::Real)
+function calculateSideLobeLevel(signal::Vector)
 
-    SLLarray = Array{Float32}(undef, lobeCount)
-    indexMax = argmax(signal)
-    currIndex = indexMax
     signalLength = length(signal)
-    for i in 1:1:lobeCount
-        currIndex = findnextmaxima(signal, currIndex + 1)
-        if currIndex > signalLength
-            SLLarray = SLLarray[1:(i-1)]
+    PSL = -Inf
+    searchIndex = 0
+    # Find the peak so that we do not count it as a PSL.
+    peakIndex = argmax(signal)
+
+    # Search for the largest peak.
+    while true
+        searchIndex  = findnextmaxima(signal, searchIndex + 1)
+        # Do not compare to main lobe.
+        if searchIndex == peakIndex
+            continue
+        elseif searchIndex > signalLength 
             break
+        elseif signal[searchIndex] > PSL
+            PSL = signal[searchIndex]
         end
-        SLLarray[i] = signal[currIndex]
     end
 
-    if(length(SLLarray) > 0)
-        return -1 * (signal[indexMax] - maximum(SLLarray))
-    else 
+    # No peak found.
+    if PSL == -Inf
         return 0
+    # Return SLL.
+    else 
+        return -1 * (signal[peakIndex] - PSL)
     end
 end
 
@@ -30,14 +38,23 @@ end
 function calculateMainLobeWidth(signal::Vector; dB::Real = 0)
 
     # Find the max.
-    val, maxIndex = findmax(signal)
+    maxIndex = argmax(signal)
     
     # Use minima point.
     if dB == 0
 
-        # Find the width to the first minima.
-        minimaIndex = findnextminima(signal, maxIndex+1)
-        return ((minimaIndex - maxIndex) * 2) + 1
+        # Positive halve minima.
+        posMinima = findnextminima(signal, maxIndex+1)
+        posLength = posMinima - maxIndex
+
+        # Negative halve minima.
+        signal = reverse(signal)
+        maxIndex = argmax(signal)
+        negMinima = findnextminima(signal, maxIndex+1)
+        negLength = negMinima - maxIndex
+        
+        # Return the two added.
+        return posLength + negLength
 
     # Calculate at dB point.
     else

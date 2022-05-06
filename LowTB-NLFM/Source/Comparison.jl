@@ -32,9 +32,12 @@ figure = Figure(resolution = (1920, 1080)) # 2D
 # Low TBP.
 BW = 20e6
 fs = BW * 2.5
-# fs = 50e6
-# fs = BW * 2
 t_i = 3.3e-6
+
+# Copmpared to paper.
+# BW = 2e6
+# fs = BW * 2.5
+# t_i = 75e-6
 
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
@@ -107,28 +110,53 @@ end
 #  B E Z I E R  #
 # ------------- #
 
-resolution = 300
-yRange = [0,2]
-xRange = [-1,1]
-BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeCount = 10, azimuth = pi/2 - pi/4 + pi)
-# BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeCount = 10, azimuth = pi/2 - pi/4 - pi/2, MLW = true, dB = 0)
-# BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeCount = 10, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
-# BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeCount = 10, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0, nPoints = 1)
+sampleIterations = 20
+optimIterations = 300
+resolution = 1000
+yRange = [-2,2]
+xRange = [-2,2]
+# yRange = [0,2]
+# xRange = [-1,1]
+# BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 + pi)
+# BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 - pi/2, MLW = true, dB = 0)
+# BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
+# BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 
-# Testing the effect of adding points.
-# params = [ Vertex2D(-0.2, 2) ]
-# # waveform = BezierSignalParametric(params, fs, nSamples, BW)
+ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 1, plotHO = false)
+# # display(ho)
+
+# # Test the best waveform.
+# bestParams = ho.minimum[2]
+# totalPoints = trunc(Int, length(bestParams))
+# vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
+# for i in 1:2:totalPoints
+#     vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
+# end
+# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs)
+# PSL = calculateSideLobeLevel(mf)
+# MLW = calculateMainLobeWidth(mf) / fs * BW 
+# display(vertices)
+# println("MLW: ", MLW)
+# println("PSL: ", PSL)
+# println("HO Fitness: ", ho.minimum[1])
+
 # freq = BezierFreqienciesParametric(params, nSamples, BW = BW)
 # ax = Axis(figure[1,1])
 # duration = nSamples/fs
 # time = 0:duration/(nSamples-1):duration
 # scatterlines!(time*1e6, freq/1e6)
-# mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs)
 # plotSignal(figure, waveform, [1,1], fs)
 # ax = plotPowerSpectra(figure, waveform, [1,1], fs, dB = false)
 # LFM, NULL = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, label = "LFM", title = "Frequencies", color = :orange)
 # response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, title = "Matched Filter Response", label = "LFM", color = :orange, axis = ax)
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrum", color = :orange, axis = ax)
+
+# Plot the different Bezier orders on top of each other.
+vertices = [ Vertex2D(0.11210956f0, 1.0807872f0) ]
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax)
+save("Article_LowTBP_CompareBezierOrders.pdf", figure)
 
 # --------------- #
 #  S I G M O I D  #
@@ -146,6 +174,7 @@ BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lo
 # plotSigmoid(4.5)
 
 # sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 2.828, color = :blue, label = "Logit" )
+# sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 3.232, color = :blue, label = "Logit" )
 # sigmoidmf, ax =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 80, title = "", color = :red, label = "Logit")#, axis = ax)
 # println(calculateSideLobeLevel(sigmoidmf, 10))
 # println(calculateMainLobeWidth(sigmoidmf))
@@ -155,7 +184,7 @@ BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lo
 # SLL = calculateSideLobeLevel(sigmoidmf, 3)
 # println("SLL: ", SLL, " dB")
 
-#OptimisedSigmoidSLL(BW, fs ,nSamples)
+# OptimisedSigmoidSLL(BW, fs ,nSamples)
 
 # Plot plance.
 # sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
@@ -186,7 +215,7 @@ BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lo
 #  S E T U P  #
 # ----------- # 
 
-display(figure)
+# display(figure)
 # axislegend(ax, valign = :bottom)
 # axislegend(ax)exe
 # save("TEST.pdf", figure)
@@ -246,7 +275,7 @@ display(figure)
 # save("Article_LowTBP_SLL_SURFACE.pdf", figure)
 # save("Article_LowTBP_MLW_SURFACE.pdf", figure)
 # save("Article_LowTBP_Contour_0-0.pdf", figure)
-# save("Article_LowTBP_Pareto_0-0.pdf", figure)
+# save("Article_LowTBP_4thOrder_ParameterSpace.pdf", figure)
 
 # ------- #
 #  E O F  #
