@@ -18,7 +18,7 @@ include("Hyperbolic.jl")
 #  S E T U P  #
 # ----------- #
 
-figure = Figure(resolution = (1920, 1080)) # 2D
+# figure = Figure(resolution = (1920, 1080)) # 2D
 # figure = Figure()
 # figure = Figure(resolution = (1920-600, 1080)) # 3D
 
@@ -50,6 +50,8 @@ end
 
 # LFM, ax = generateLFM(BW, fs, nSamples, 0, plot = false, fig = figure, label = "LFM", title = "Frequencies", color = :orange)
 # response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 80, title = "Matched Filter Response", label = "LFM", color = :orange)
+# println(calculateSideLobeLevel(response))
+# println(calculateMainLobeWidth(response) / fs * BW )
 
 # ax = plotPowerSpectra(figure, LFM, [1,1], fs, dB = false, label = "LFM", title="Power Spectrum", color = :orange)
 # plotSignal(figure, LFM, [1,1], fs)
@@ -95,7 +97,10 @@ end
 # plotSignal(figure, Lesnik, [1,1], fs)
 
 # Matched filters.
-# response, ax = plotMatchedFilter(figure, LFM, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red)
+# response = plotMatchedFilter(figure, Lesnik, [1,1], fs, yRange = 120, title = "Matched Filter Response", label = "LFM", color = :red, plot = false)
+# println(calculateSideLobeLevel(response))
+# println(calculateMainLobeWidth(response) / fs * BW )
+
 
 # lesnikMF, ax = plotMatchedFilter(figure, Lesnik, [1,1], fs, title = "Matched Filter Response", color = :blue, label = "Leśnik", axis = ax)
 
@@ -110,8 +115,8 @@ end
 #  B E Z I E R  #
 # ------------- #
 
-sampleIterations = 20
-optimIterations = 300
+sampleIterations = 8
+optimIterations = 750
 resolution = 1000
 yRange = [-2,2]
 xRange = [-2,2]
@@ -122,23 +127,23 @@ xRange = [-2,2]
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
 # BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 
-# ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 2, plotHO = false)
+ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 4, plotHO = false)
 # # display(ho)
-# # Test the best waveform.
-# bestParams = ho.minimum[2]
-# totalPoints = trunc(Int, length(bestParams))
-# vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
-# for i in 1:2:totalPoints
-#     vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
-# end
-# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-# mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs)
-# PSL = calculateSideLobeLevel(mf)
-# MLW = calculateMainLobeWidth(mf) / fs * BW 
-# display(vertices)
-# println("MLW: ", MLW)
-# println("PSL: ", PSL)
-# println("HO Fitness: ", ho.minimum[1])
+# Test the best waveform.
+bestParams = ho.minimum[2]
+totalPoints = trunc(Int, length(bestParams))
+vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
+for i in 1:2:totalPoints
+    vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
+end
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf = plotMatchedFilter(figure, waveform, [1,1], fs, plot = false)
+PSL = calculateSideLobeLevel(mf)
+MLW = calculateMainLobeWidth(mf) / fs * BW 
+display(vertices)
+println("MLW: ", MLW)
+println("PSL: ", PSL)
+println("HO Fitness: ", ho.minimum[1])
 # save("TEST.pdf", figure)
 
 # freq = BezierFreqienciesParametric(params, nSamples, BW = BW)
@@ -154,29 +159,42 @@ xRange = [-2,2]
 
 # Plot the different Bezier orders on top of each other.
 
-# 4th.
-vertices = [ Vertex2D(0.11210956f0, 1.0807872f0) ]
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, label = "4th", title = "Optimal Bézier Pulse Compression")
+# # 4th.
+# ax = Axis(figure[1,1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "Optimal Bézier Frequency Modulation")
+# time = LinRange(0, nSamples/fs, nSamples) * 1e6
+# vertices = [ Vertex2D(0.11210956f0, 1.0807872f0) ]
+# # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# # mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, label = "4th", title = "Optimal Bézier Pulse Compression")
+# freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
+# scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "4th", color = :blue)
 
-# 6th.
-vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :red, label = "6th")
+# # 6th.
+# vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
+# # # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# # mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :red, label = "6th")
+# freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
+# scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "6th", color = :red)
 
-# 8th.
-vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :orange, label = "8th")
+# # 8th.
+# vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
+# # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# # mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :orange, label = "8th")
+# freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
+# scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "8th", color = :orange)
 
-# 10th.
-vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :purple, label = "10th")
+# # 10th.
+# vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
+# # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# # mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :purple, label = "10th")
+# freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
+# scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "10th", color = :purple)
 
-axislegend(ax)
-ylims!(-80, 0)
-save("Article_LowTBP_CompareBezierOrders.pdf", figure)
+# # axislegend(ax)
+# axislegend(ax, valign = :bottom)
+# # ylims!(-80, 0)
+# save("Article_LowTBP_CompareBezierOrders_Frequencies.pdf", figure)
+# # save("Article_LowTBP_CompareBezierOrders.pdf", figure)
 
 # --------------- #
 #  S I G M O I D  #
@@ -196,8 +214,8 @@ save("Article_LowTBP_CompareBezierOrders.pdf", figure)
 # sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 2.828, color = :blue, label = "Logit" )
 # sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = false, figure = figure, scalingParameter = 3.232, color = :blue, label = "Logit" )
 # sigmoidmf, ax =  plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 80, title = "", color = :red, label = "Logit")#, axis = ax)
-# println(calculateSideLobeLevel(sigmoidmf, 10))
-# println(calculateMainLobeWidth(sigmoidmf))
+# println(calculateSideLobeLevel(sigmoidmf))
+# println(calculateMainLobeWidth(sigmoidmf) / fs * BW)
 
 # plotPowerSpectra(figure, sigmoidWave, [1,1], fs, dB = false, label = "Logit")#, axis = ax)
 # plotSignal(figure, sigmoidWave, [1,1], fs)
@@ -224,7 +242,8 @@ save("Article_LowTBP_CompareBezierOrders.pdf", figure)
 
 # hypSignal, NULL = generateHyperbolicWaveform(fs, BW, nSamples, scalingParameter = 4.7979)
 # hyperMf, ax =  plotMatchedFilter(figure, hypSignal, [1,1], fs, yRange = 80, title = "", color = :purple, label = "Sinh", axis = ax)
-
+# println(calculateSideLobeLevel(hyperMf))
+# println(calculateMainLobeWidth(hyperMf) / fs * BW )
 # OptimisedHyperbolicSLL(BW, fs ,nSamples)
 
 # Plot the plane.
