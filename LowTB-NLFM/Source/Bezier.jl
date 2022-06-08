@@ -58,6 +58,7 @@ import Base./
 using Interpolations
 using Hyperopt
 using Optim
+using QuadGK
 
 #  The Polynomial from of the Bezier curve (see BezierPolynomial.png):
 
@@ -246,13 +247,19 @@ end
 # parameters: A vector containing the parameter for each of the points.  Has to be of size nPoints, and range from(0,1).
 function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Int, BW::Real; bezierSamples::Real = 0, rtol::Real = 1e-3)
 
+    
+    
     # Calculate the frequencies.
     bezierFreq = BezierFreqienciesParametric(parameters, nSamples, BW = BW, bezierSamples = bezierSamples)
     
     # Setup interpolation.
     duration = nSamples / fs
-    timevec = 0:duration/(nSamples-1):duration
-    bezierFreqInterpol = LinearInterpolation(timevec, bezierFreq)
+    timeIncrements = duration/(nSamples-1)
+    timevec = 0:timeIncrements:duration
+    # Ensure the length is the same (floating math errors?)
+    diff = length(bezierFreq) - length(timevec)
+    timevec = 0:timeIncrements:duration + diff*timeIncrements
+    bezierFreqInterpol = LinearInterpolation(timevec, bezierFreq) 
     # Utility that gets the frequency at the given time (for quadgk).
     function GetBezierFreq(time::Real, bezierFreqInterpol) 
         return bezierFreqInterpol(time)
@@ -265,7 +272,6 @@ function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples:
     for i in 2:1:(nSamples-1)
         phase[i], err =  quadgk(t -> GetBezierFreq(t, bezierFreqInterpol), timevec[1], timevec[i], rtol = rtol)
     end
-
     return phase
 end
 
@@ -680,12 +686,19 @@ end
 #  C + +   I N T E R F A C E  #
 # --------------------------- #
 
-function generateOptimalBezier(nSamples, BW, fs; 
-                               nVertices = 2)
-
-    Ivector = Vector{Float64}(0, nSamples);
-    QIvector = Vector{Float64}(0, nSamples);
-
-    return Ivector, QIvector
-
+function generateOptimalBezierCF32(nSamples::Int32, BW::Float64, fs::Int32)
+    vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
+    return BezierSignalParametric(vertices, Real(fs), Int(nSamples), Real(BW))
 end
+
+function generateOptimalBezier(nSamples::Int32, BW::Float64, fs::Int32)
+    complexWave = generateOptimalBezierCF32(nSamples, BW, fs)
+    floatWave = Vector{Float64}(undef, nSamples*2)
+    floatWave[1:2:end-1] =  Float64.(real.(complexWave))
+    floatWave[2:2:end] =  Float64.(imag.(complexWave))
+    return floatWave
+end
+
+# ------- #
+#  E O F  #
+# ------- #

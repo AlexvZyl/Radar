@@ -18,7 +18,7 @@ include("Hyperbolic.jl")
 #  S E T U P  #
 # ----------- #
 
-# figure = Figure(resolution = (1920, 1080)) # 2D
+figure = Figure(resolution = (1920, 1080)) # 2D
 # figure = Figure()
 # figure = Figure(resolution = (1920-600, 1080)) # 3D
 
@@ -31,7 +31,8 @@ include("Hyperbolic.jl")
 
 # Low TBP.
 BW = 20e6
-fs = BW * 2.5
+# fs = BW * 2.5
+fs = 22e6
 t_i = 3.3e-6
 
 # Copmpared to paper.
@@ -115,11 +116,11 @@ end
 #  B E Z I E R  #
 # ------------- #
 
-sampleIterations = 8
-optimIterations = 750
-resolution = 1000
-yRange = [-2,2]
-xRange = [-2,2]
+# sampleIterations = 8
+# optimIterations = 750
+# resolution = 1000
+# yRange = [-2,2]
+# xRange = [-2,2]
 # yRange = [0,2]
 # xRange = [-1,1]
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 + pi)
@@ -127,24 +128,23 @@ xRange = [-2,2]
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
 # BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 
-ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 4, plotHO = false)
-# # display(ho)
-# Test the best waveform.
-bestParams = ho.minimum[2]
-totalPoints = trunc(Int, length(bestParams))
-vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
-for i in 1:2:totalPoints
-    vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
-end
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf = plotMatchedFilter(figure, waveform, [1,1], fs, plot = false)
-PSL = calculateSideLobeLevel(mf)
-MLW = calculateMainLobeWidth(mf) / fs * BW 
-display(vertices)
-println("MLW: ", MLW)
-println("PSL: ", PSL)
-println("HO Fitness: ", ho.minimum[1])
-# save("TEST.pdf", figure)
+# ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 4, plotHO = false)
+# # # display(ho)
+# # Test the best waveform.
+# bestParams = ho.minimum[2]
+# totalPoints = trunc(Int, length(bestParams))
+# vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
+# for i in 1:2:totalPoints
+#     vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
+# end
+# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# mf = plotMatchedFilter(figure, waveform, [1,1], fs, plot = false)
+# PSL = calculateSideLobeLevel(mf)
+# MLW = calculateMainLobeWidth(mf) / fs * BW 
+# display(vertices)
+# println("MLW: ", MLW)
+# println("PSL: ", PSL)
+# println("HO Fitness: ", ho.minimum[1])
 
 # freq = BezierFreqienciesParametric(params, nSamples, BW = BW)
 # ax = Axis(figure[1,1])
@@ -168,11 +168,14 @@ println("HO Fitness: ", ho.minimum[1])
 # freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
 # scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "4th", color = :blue)
 
-# # 6th.
+# 6th.
 # vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
-# # # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-# # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-# # mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, axis = ax, color = :red, label = "6th")
+# vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
+vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
+waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, color = :red, label = "6th")
+println("SLL: ", calculateSideLobeLevel(mf))
 # freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
 # scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "6th", color = :red)
 
@@ -257,7 +260,7 @@ println("HO Fitness: ", ho.minimum[1])
 # display(figure)
 # axislegend(ax, valign = :bottom)
 # axislegend(ax)exe
-# save("TEST.pdf", figure)
+save("TEST.pdf", figure)
 # save("Compare_All_Waveforms.pdf", figure)
 
 # --------------- #
