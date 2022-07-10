@@ -17,7 +17,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                         dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
                         axis = false, label="Doppler FFT", nWaveSamples=false,
-                        plotDCBin::Bool = false)
+                        plotDCBin::Bool = false, plotFreqLines::Bool = true, freqVal = 20)
     
     # Calculate the PRF.
     PRI = (pulseLengthSamples) / fs
@@ -94,53 +94,57 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     #  P L O T T I N G  #
     # ----------------- #
 
-    # # Create the axis.
-    # ax = nothing
-    # # If no axis was specified.
-    # if axis == false
-    #     ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
-    #     plotOrigin(ax)
-    # # If an axis has been specified.
-    # else
-    #     ax = axis
-    # end
+    # Create the axis.
+    ax = nothing
+    # If no axis was specified.
+    if axis == false
+        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
+        plotOrigin(ax)
+    # If an axis has been specified.
+    else
+        ax = axis
+    end
 
-    # # Plot heatmap with dB scale.
+    # Plot heatmap with dB scale.
     dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
-    # hm = heatmap!(figure[position[1], position[2]], 
-    #               rangeVector, velocityVector, dopplerFFTMatrix,
-    #               colorrange = dBRange)
+    hm = heatmap!(figure[position[1], position[2]], 
+                  rangeVector, velocityVector, dopplerFFTMatrix,
+                  colorrange = dBRange)
 
-    # λ = c / fc
-    # freqIncrement = 100 * λ / 2 # Hz
-    # hValue = freqIncrement
-    # while(hValue < yRange )
-    #     hlines!(ax, hValue, color = :grey90, linewidth=0.5)
-    #     hlines!(ax, -hValue, color = :grey90, linewidth=0.5)
-    #     hValue += freqIncrement
-    # end
+    # Plot velocities.
+    if plotFreqLines
+        println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
+        λ = c / fc
+        freqIncrement = freqVal * λ / 2 # Hz
+        hValue = freqIncrement
+        while(hValue < yRange )
+            hlines!(ax, hValue, color = :grey60, linewidth=0.5)
+            hlines!(ax, -hValue, color = :grey60, linewidth=0.5)
+            hValue += freqIncrement
+        end
+    end
                 
-    # # Plot the colorbar.
-    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+    # Plot the colorbar.
+    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
-    # # Plot a line at the deadzone.
-    # if nWaveSamples != false
-    #     deadZoneRange = (nWaveSamples / (2 * fs) ) * c
-    #     vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
-    #     if axis == false
-    #         axislegend(ax)
-    #     end
-    # end 
+    # Plot a line at the deadzone.
+    if nWaveSamples != false
+        deadZoneRange = (nWaveSamples / (2 * fs) ) * c
+        vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
+        if axis == false
+            axislegend(ax)
+        end
+    end 
     
-    # # Set the X Range.
-    # if xRange != Inf
-    #     xlims!(0, ((rangeSample-1)*c)/(fs * 2))
-    # end
+    # Set the X Range.
+    if xRange != Inf
+        xlims!(0, ((rangeSample-1)*c)/(fs * 2))
+    end
 
-    # # Set the Y range.
-    # if yRange != Inf
-    #     ylims!(-yRange, yRange)
-    # end
+    # Set the Y range.
+    if yRange != Inf
+        ylims!(-yRange, yRange)
+    end
 
     # ------------- #
     #  D C   B I N  #

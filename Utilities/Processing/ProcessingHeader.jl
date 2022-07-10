@@ -7,11 +7,11 @@
 
 include("BinaryProcessor.jl")
 include("DopplerFFT.jl")
-include("FFT.jl")
 include("PowerSpectra.jl")
 include("PulseCompression.jl")
 include("PulseMatrix.jl")
 include("Synchroniser.jl")
+include("Misc.jl")
 
 # -------- #
 #  E  O F  #

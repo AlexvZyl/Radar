@@ -9,24 +9,28 @@ include("../../LowTB-NLFM/Source/Bezier.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
 
 using Statistics
-using SharedArrays
 
 # ================= #
 #  S E T T I N G S  #
 # ================= #
 
 # Specify as 0 to load all the data.
-pulsesToLoad 	= 10
+# 0 : Loads all of the pulses.
+pulsesToLoad 	= 0
+# pulsesToLoad 	= 4
 # REMEMBER: The Doppler FFT removes two pulses.
 folder 			= "Tests"
-fileNumber 		= "004"
+# fileNumber 		= "027" # Bezier
+# fileNumber 		= "020" # LFM
+# fileNumber 		= "029" # Bezier With Offset
+fileNumber 		= "058"
 
 # =========== #
 #  F I L E S  #
 # =========== #
 
 # path 			= "GitHub/SDR-Interface/build/Data/"
-path 			= "../../SDR-Interface/build/Data/"
+path 			= "../SDR-Interface/build/Data/"
 filePrefix 		= "B210_SAMPLES_" * folder * "_"
 file 			= path * folder * "/" * filePrefix * fileNumber
 fileBin 		= file * ".bin"
@@ -86,6 +90,7 @@ for line in eachline(abspath(fileTxt))
 	elseif isnothing(findfirst("DC Frequency Offset", line)) == false
 
 		global dcFreqShift	 	= parseNumber(line, 22)
+		println("DC Shift: ", dcFreqShift)
 
 	# Wave bandwidth.
 	elseif isnothing(findfirst("Wave bandwidth", line)) == false
@@ -122,8 +127,10 @@ rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samp
 # Determine the TX signal.
 if LFM
 	global txSignal = generateLFM(BW, fs, nSamplesWave, dcFreqShift)
+	global waveStr = "LFM"
 else
 	global txSignal = generateOptimalBezierCF32(nSamplesWave, BW, fs)
+	global waveStr = "Bezier"
 end
 
 # ----------------------------------------- #
@@ -132,12 +139,20 @@ end
 
 # Figure for plotting.
 figure = Figure(resolution = (1920, 1080))
+# figure = Figure(resolution = (1920, 1920)) # Square
 # Pulse Compression.
 PCsignal = pulseCompression(rxSignal, txSignal)
 
 # plotSignal(figure, txSignal, [1,1], fs)
-# plotPowerSpectra(figure, txSignal, [1,1], fs, dB = false)
-plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, yRange = 50)
+# plotSignal(figure, rxSignal, [1,1], fs)
+# plotPowerSpectra(figure, txSignal, [1,1], fs, dB = true)
+# plotPowerSpectra(figure, rxSignal, [1,1], fs, dB = true)
+# plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, yRange = 60, dB = true)
+# PlotIQCircle(figure, txSignal, [1,1], title = string("I vs Q ", waveStr))
+# PlotIQCircle(figure, rxSignal, [1,1], title = string("I vs Q ", waveStr))
+
+plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,30], 
+			   xRange = 600, yRange = 300, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = dcFreqShift)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
@@ -171,12 +186,10 @@ plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, yRange =
 # Qmean = -9.71446e-07
 # rxSignal = rxSignal .- (Imean + im*Qmean)
 
-# plotPowerSpectra(figure, rxSignal, [1,1], fs, title = "LFM Frequency Spectrum", dB = false)
+# plotPowerSpectra(figure, rxSignal, [1,1], fs, title = "LFM Frequency Spectrum", dB = true)
 
 # plotSignal(figure, rxSignal, [1,1], fs, title = "LFM Received Signal")
 # plotMatchedFilter(figure, rxSignal, [1,1], fs, secondSignal = txSignal, dB = true, title = "LFM Matched Filter Response", timeFromZero = true)
-# plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [-40,70], 
-			#    xRange = 15000, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = true)
 # syncedPCSignal, ax = syncPulseCompressedSignal(PCsignal, nSamplesPulse, [1,nSamplesPulse], plot = true, figure = figure)
 # plotPulseMatrix(figure, rxSignal, [1,1], fs, nSamplesPulse, [-5, 10])
 

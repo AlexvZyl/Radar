@@ -34,8 +34,11 @@ function plotMatchedFilter(fig, signal::Vector, position::Vector, fs::Number; sa
 
 	# Return if plot not wanted.
 	if plot == false
-		responseAbs = 20 * log10.( responseAbs./maximum(responseAbs) )
-		return responseAbs
+		if dB == true
+			return 20 * log10.( responseAbs./maximum(responseAbs) )
+		else 
+			return responseAbs
+		end
 	end
 
 	# Check for axis.
@@ -95,9 +98,7 @@ end
 # ----------------------------- #
 
 function pulseCompression(txSignal::Vector, rxSignal::Vector)
-
 	return xcorr(txSignal, rxSignal)
-
 end
 
 # ------- #

@@ -31,8 +31,8 @@ figure = Figure(resolution = (1920, 1080)) # 2D
 
 # Low TBP.
 BW = 20e6
-# fs = BW * 2.5
-fs = 22e6
+fs = BW * 2.5
+# fs = 22e6
 t_i = 3.3e-6
 
 # Copmpared to paper.
@@ -116,17 +116,17 @@ end
 #  B E Z I E R  #
 # ------------- #
 
-# sampleIterations = 8
-# optimIterations = 750
-# resolution = 1000
-# yRange = [-2,2]
-# xRange = [-2,2]
-# yRange = [0,2]
-# xRange = [-1,1]
+sampleIterations = 5
+optimIterations = 100
+resolution = 10
+yRange = [-2,2]
+xRange = [-2,2]
+yRange = [0,2]
+xRange = [-1,1]
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 + pi)
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 - pi/2, MLW = true, dB = 0)
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
-# BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
+BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 
 # ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = 4, plotHO = false)
 # # # display(ho)
@@ -171,11 +171,11 @@ end
 # 6th.
 # vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
 # vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
-vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# vertices = [ Vertex2D(0.13209973f0, -0.4626111f0), Vertex2D(-0.20302902f0, 1.5247223f0), Vertex2D(0.5904682f0, -0.77123034f0), Vertex2D(-0.84295666f0, 1.7347952f0) ]
 # waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, color = :red, label = "6th")
-println("SLL: ", calculateSideLobeLevel(mf))
+# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# mf, ax = plotMatchedFilter(figure, waveform, [1,1], fs, color = :red, label = "6th")
+# println("SLL: ", calculateSideLobeLevel(mf))
 # freq = BezierFreqienciesParametric(vertices, nSamples, BW = BW) / 1e6
 # scatterlines!(time, freq, markersize = dotSize, linewidth = lineThickness, label = "6th", color = :red)
 

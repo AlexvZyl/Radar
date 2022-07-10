@@ -38,7 +38,7 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
         ax = axis
     end
 
-    scatterlines!(frequencies/1e6, abs.(fftY), color = color, markersize = dotSize, linewidth = lineThickness, label = label)
+    scatterlines!(frequencies/1e6, fftY, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
     # Set the X Range.
     if xRange != Inf
