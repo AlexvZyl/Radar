@@ -1,10 +1,64 @@
+# ------------------- #
+#  V E R T E X   2 D  #
+# ------------------- #
+
+mutable struct Vertex2D 
+    x::Float32;
+    y::Float32;
+end
+
+# ----------------- #
+#  A D D I T I O N  #
+# ----------------- #
+
+import Base.+
+(+)(val::Real, vertex::Vertex2D)          = Vertex2D(vertex.x + val, vertex.y + val)
+(+)(vertex::Vertex2D, val::Real)          = (+)(val, vertex)
+(+)(val::Vector, vertex::Vertex2D)        = Vertex2D(vertex.x + val[1], vertex.y + val[2])
+(+)(vertex::Vertex2D, val::Vector)        = (+)(val, vertex)
+(+)(vertex1::Vertex2D, vertex2::Vertex2D) = Vertex2D(vertex1.x + vertex2.x, vertex1.y + vertex2.y)
+
+# ----------------------- #
+#  S U B T R A C T I O N  #
+# ----------------------- #
+
+import Base.-
+(-)(val::Real, vertex::Vertex2D)          = Vertex2D(val - vertex.x, val - vertex.y)
+(-)(vertex::Vertex2D, val::Real)          = Vertex2D(vertex.x - val, vertex.y - val)
+(-)(val::Vector, vertex::Vertex2D)        = Vertex2D(val[1] - vertex.x, val[2] - vertex.y)
+(-)(vertex::Vertex2D, val::Vector)        = Vertex2D(vertex.x - val[1], vertex.y - val[2])
+(-)(vertex1::Vertex2D, vertex2::Vertex2D) = Vertex2D(vertex1.x - vertex2.x, vertex1.y - vertex2.y)
+
+# ----------------------------- #
+#  M U L T I P L I C A T I O N  #
+# ----------------------------- #
+
+import Base.*
+(*)(val::Real, vertex::Vertex2D)          = Vertex2D(vertex.x * val, vertex.y * val)
+(*)(vertex::Vertex2D, val::Real)          = (*)(val, vertex)
+(*)(val::Vector, vertex::Vertex2D)        = Vertex2D(vertex.x * val[1], vertex.y * val[2])
+(*)(vertex::Vertex2D, val::Vector)        = (*)(val, vertex)
+(*)(vertex1::Vertex2D, vertex2::Vertex2D) = Vertex2D(vertex1.x * vertex2.x, vertex1.y * vertex2.y)
+
+# ----------------- #
+#  D I V I S I O N  #
+# ----------------- #
+
+import Base./
+(/)(val::Real, vertex::Vertex2D)          = Vertex2D( val / vertex.x, val / vertex.y)
+(/)(vertex::Vertex2D, val::Real)          = Vertex2D(vertex.x / val,  vertex.y / val)
+(/)(val::Vector, vertex::Vertex2D)        = Vertex2D(val[1] / vertex.x, val[2] / vertex.y)
+(/)(vertex::Vertex2D, val::Vector)        = Vertex2D(vertex.x / val[1], vertex.y / val[2])
+(/)(vertex1::Vertex2D, vertex2::Vertex2D) = Vertex2D(vertex1.x / vertex2.x, vertex1.y / vertex2.y)
+
+# ------- #
+#  E O S  #
+# ------- #
+
 using Interpolations
 using Hyperopt
-# using Plots
 using Optim
-
-include("Vertex.jl")
-include("../../Utilities/Processing/ProcessingHeader.jl")
+using QuadGK
 
 #  The Polynomial from of the Bezier curve (see BezierPolynomial.png):
 
@@ -193,13 +247,19 @@ end
 # parameters: A vector containing the parameter for each of the points.  Has to be of size nPoints, and range from(0,1).
 function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples::Int, BW::Real; bezierSamples::Real = 0, rtol::Real = 1e-3)
 
+    
+    
     # Calculate the frequencies.
     bezierFreq = BezierFreqienciesParametric(parameters, nSamples, BW = BW, bezierSamples = bezierSamples)
     
     # Setup interpolation.
     duration = nSamples / fs
-    timevec = 0:duration/(nSamples-1):duration
-    bezierFreqInterpol = LinearInterpolation(timevec, bezierFreq)
+    timeIncrements = duration/(nSamples-1)
+    timevec = 0:timeIncrements:duration
+    # Ensure the length is the same (floating math errors?)
+    diff = length(bezierFreq) - length(timevec)
+    timevec = 0:timeIncrements:duration + diff*timeIncrements
+    bezierFreqInterpol = LinearInterpolation(timevec, bezierFreq) 
     # Utility that gets the frequency at the given time (for quadgk).
     function GetBezierFreq(time::Real, bezierFreqInterpol) 
         return bezierFreqInterpol(time)
@@ -212,7 +272,6 @@ function BezierPhaseParametric(parameters::Vector{Vertex2D}, fs::Real, nSamples:
     for i in 2:1:(nSamples-1)
         phase[i], err =  quadgk(t -> GetBezierFreq(t, bezierFreqInterpol), timevec[1], timevec[i], rtol = rtol)
     end
-
     return phase
 end
 
@@ -370,7 +429,7 @@ function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, wavefo
 end
 
 function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0,
-                           title = "Bézier Parameter Space", xRange = [0,1], yRange = [0,1], dB::Real = 0,
+                           title = "Bézier Performance Range", xRange = [0,1], yRange = [0,1], dB::Real = 0,
                            nPoints::Real = 1)
 
     # The paramters iterated over.
@@ -452,6 +511,9 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
     # The paramters iterated over.
     xParameterVec = LinRange(xRange[1], xRange[2], planeResolution)
     yParameterVec = LinRange(yRange[1], yRange[2], planeResolution)
+    global resultsVec
+    global latestSLL
+    global latestMLW
     nParticles = 25
 
     if nPoints == 1
@@ -558,7 +620,6 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
     return ho
 end
 
-
 # ------------------------------- #
 #  O P T I M   F U N C T I O N S  #
 # ------------------------------- #
@@ -617,9 +678,27 @@ end
 
 # The fiteness function.
 function fitness(SLL, MLW)
-
-    # result = 2 * SLL + MLW
-    result = 1.8 * SLL + MLW
+    result = 2.2 * SLL + MLW
     return result
-
 end
+
+# --------------------------- #
+#  C + +   I N T E R F A C E  #
+# --------------------------- #
+
+function generateOptimalBezierCF32(nSamples::Int32, BW::Float64, fs::Int32)
+    vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
+    return BezierSignalParametric(vertices, Real(fs), Int(nSamples), Real(BW))
+end
+
+function generateOptimalBezier(nSamples::Int32, BW::Float64, fs::Int32)
+    complexWave = generateOptimalBezierCF32(nSamples, BW, fs)
+    floatWave = Vector{Float64}(undef, nSamples*2)
+    floatWave[1:2:end-1] =  Float64.(real.(complexWave))
+    floatWave[2:2:end] =  Float64.(imag.(complexWave))
+    return floatWave
+end
+
+# ------- #
+#  E O F  #
+# ------- #

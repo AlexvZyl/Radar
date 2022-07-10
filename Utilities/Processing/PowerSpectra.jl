@@ -19,15 +19,15 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
 
     # Create dB axis.
     if dB
-        fftY = 20 * log10.(fftY./abs(maximum(fftY)))
+        fftY = 20 * log10.(fftY./maximum(fftY))
         if axis == true
             ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Magnitude (dB)", title = title)
             plotOrigin(ax)
         end
 
-    # Create non dB axis.
-    else
-        fftY /= maximum(fftY)
+        # Create non dB axis.
+        else
+            fftY /= maximum(fftY)
         if axis == true
             ax = Axis(fig[graphPosition[1], graphPosition[2]], xlabel = "Frequency (MHz)", ylabel = "Normalised Amplitude", title = title)
             plotOrigin(ax)
@@ -38,11 +38,7 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
         ax = axis
     end
 
-    if paddingCount == 0
-        scatterlines!(frequencies/1e6, fftY, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
-    else
-        lines!(frequencies/1e6, fftY, color = color, markersize = dotSize, linewidth = lineThickness+3, label = label)
-    end
+    scatterlines!(frequencies/1e6, fftY, color = color, markersize = dotSize, linewidth = lineThickness, label = label)
 
     # Set the X Range.
     if xRange != Inf
