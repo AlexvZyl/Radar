@@ -4,12 +4,9 @@
 
 using CairoMakie
 
-# ----------------- #
-#  W A V E F O R M  #
-# ----------------- #
 
-function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Number; plot::Bool = false, fig::Figure, color = :blue, label = "", axis = false,
-                    title = "Linear Frequency Modulation")
+
+function LFMFreq(nSamples, BW)
 
     if nSamples == 1
         return [1+0*im]
@@ -20,12 +17,25 @@ function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Numb
 
     # Data vectors.
     freqVector = Array{Float64}(undef, nSamples)
-    wave = Array{Complex{Float64}}(undef, nSamples)
 
     # Create freq vector.
     for n in 0:1:nSamples-1
         freqVector[n+1] = ( (freqGradient * n) - (BW/2) )
     end
+
+    return freqVector
+end
+
+# ----------------- #
+#  W A V E F O R M  #
+# ----------------- #
+
+function generateLFM(BW::Number, fs::Number, nSamples::Number, dcFreqShift::Number; plot::Bool = false, fig::Figure, color = :blue, label = "", axis = false,
+                    title = "Linear Frequency Modulation")
+
+    # Data vectors.
+    freqVector = LFMFreq(nSamples, BW)
+    wave = Array{Complex{Float64}}(undef, nSamples)
 
     # Create the waveform.
     offset = (nSamples-1) / 2

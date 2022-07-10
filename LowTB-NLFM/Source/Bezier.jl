@@ -452,9 +452,6 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
     # The paramters iterated over.
     xParameterVec = LinRange(xRange[1], xRange[2], planeResolution)
     yParameterVec = LinRange(yRange[1], yRange[2], planeResolution)
-    global resultsVec
-    global latestSLL
-    global latestMLW
     nParticles = 25
 
     if nPoints == 1
@@ -622,7 +619,7 @@ end
 function fitness(SLL, MLW)
 
     # result = 2 * SLL + MLW
-    result = 2.2 * SLL + MLW
+    result = 1.8 * SLL + MLW
     return result
 
 end
