@@ -506,7 +506,7 @@ end
 
 function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real, sampleIterations::Real, optimIterations::Real;
                                  plotHO::Bool = true, bezierNSamples::Int = 0,
-                                 title = "Bézier Bayestion Optimisation", xRange = [0,1], yRange = [0,1], dB::Real = 0, nPoints::Real = 1)
+                                 title = "Bézier Bayestion Optimisation", xRange = [0,1], yRange = [0,1], dB::Real = 0, nPoints::Real = 1, coordsCap = [ [-5], [5] ], nParticles = 25)
 
     # The paramters iterated over.
     xParameterVec = LinRange(xRange[1], xRange[2], planeResolution)
@@ -514,21 +514,20 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
     global resultsVec
     global latestSLL
     global latestMLW
-    nParticles = 25
 
     if nPoints == 1
-        ho = @hyperopt  for i = sampleIterations,
-                        sampler = RandomSampler(),
-                        xVal = xParameterVec, 
-                        yVal = yParameterVec
+        ho = @thyperopt for i = sampleIterations,
+                            sampler = RandomSampler(),
+                            xVal = xParameterVec, 
+                            yVal = yParameterVec
             res = Optim.optimize(x->optim1(x[1], x[2], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal, yVal], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
     elseif nPoints == 2
-        ho = @hyperopt  for i = sampleIterations,
+        ho = @thyperopt  for i = sampleIterations,
                         sampler = RandomSampler(),
                         xVal1 = xParameterVec, 
                         yVal1 = yParameterVec,
@@ -536,12 +535,12 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
                         yVal2 = yParameterVec
             res = Optim.optimize(x->optim2(x[1], x[2], x[3], x[4], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal1, yVal1, xVal2, yVal2], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
     elseif nPoints == 3
-        ho = @hyperopt  for i = sampleIterations,
+        ho = @thyperopt  for i = sampleIterations,
                         sampler = RandomSampler(),
                         xVal1 = xParameterVec, 
                         yVal1 = yParameterVec,
@@ -551,12 +550,12 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
                         yVal3 = yParameterVec
             res = Optim.optimize(x->optim3(x[1], x[2], x[3], x[4], x[5], x[6], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
     elseif nPoints == 4
-        ho = @hyperopt  for i = sampleIterations,
+        ho = @thyperopt  for i = sampleIterations,
                         sampler = RandomSampler(),
                         xVal1 = xParameterVec, 
                         yVal1 = yParameterVec,
@@ -568,12 +567,12 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
                         yVal4 = yParameterVec
             res = Optim.optimize(x->optim4(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
     elseif nPoints == 5
-        ho = @hyperopt  for i = sampleIterations,
+        ho = @thyperopt  for i = sampleIterations,
                         sampler = RandomSampler(),
                         xVal1 = xParameterVec, 
                         yVal1 = yParameterVec,
@@ -587,12 +586,12 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
                         yVal5 = yParameterVec
             res = Optim.optimize(x->optim5(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
     elseif nPoints == 6
-        ho = @hyperopt  for i = sampleIterations,
+        ho = @thyperopt  for i = sampleIterations,
                         sampler = RandomSampler(),
                         xVal1 = xParameterVec, 
                         yVal1 = yParameterVec,
@@ -608,7 +607,7 @@ function BezierBayesionOptimised(figure, BW::Real, fs::Real, planeResolution::Re
                         yVal6 = yParameterVec
             res = Optim.optimize(x->optim6(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], fs, nSamples, BW, bezierSamples = bezierNSamples, dB = dB), 
                                 [xVal1, yVal1, xVal2, yVal2, xVal3, yVal3, xVal4, yVal4, xVal5, yVal5, xVal6, yVal6], 
-                                ParticleSwarm(n_particles = nParticles), Optim.Options(iterations=optimIterations))
+                                ParticleSwarm(n_particles = nParticles, lower = coordsCap[1], upper = coordsCap[2]), Optim.Options(iterations=optimIterations))
             Optim.minimum(res), Optim.minimizer(res)
         end
 
@@ -678,7 +677,17 @@ end
 
 # The fiteness function.
 function fitness(SLL, MLW)
-    result = 2.2 * SLL + MLW
+    # OG.
+    # result = 2.2 * SLL + MLW
+
+    # For the extra data on the paper.
+    # Trying to beat Logit.
+    result = 3.5 * SLL + MLW
+
+    # For the extra data on the paper.
+    # Trying to beat Lesnik.
+    result = 170 * SLL + MLW
+
     return result
 end
 

@@ -1,0 +1,22 @@
+
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 500
+Resolution: 10000
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Coords Cap: Vector{Any}[[], []]
+Particles: 75
+
+vertices = [
+   Vertex2D(0.022769552f0, 1.1358665f0),
+   Vertex2D(0.18422261f0, 0.92598766f0),
+   Vertex2D(-0.13922428f0, 0.9676616f0),
+]
+
+MLW (Nyquist samples): 234.4
+PSL: -60.512947
+HO Fitness: -10052.801171875
+
+---------------------------------------------------
