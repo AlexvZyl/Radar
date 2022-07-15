@@ -18,7 +18,7 @@ include("Hyperbolic.jl")
 #  S E T U P  #
 # ----------- #
 
-figure = Figure(resolution = (1920, 1080)) # 2D
+# figure = Figure(resolution = (1920, 1080)) # 2D
 # figure = Figure()
 # figure = Figure(resolution = (1920-600, 1080)) # 3D
 
