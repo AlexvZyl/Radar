@@ -127,13 +127,13 @@ end
 # xRange = [-2,2]
 
 sampleIterations = 14
-optimIterations = 500
+optimIterations = 1000
 resolution = 10000
 yRange = [-2,2]
 xRange = [-2,2]
-maxSearchValue = 5
-particles = 40
-points = 3
+maxSearchValue = 20
+particles = 100
+points = 4
 # Setup coords cap.
 coordsCap = [ [], [] ]
 for i in 1:points*2
@@ -166,8 +166,8 @@ write(file, "\nY Range: ")
 write(file, string(yRange))
 write(file, "\nX Range: ")
 write(file, string(xRange))
-write(file, "\nCoords Cap: ")
-write(file, string(coordsCap))
+write(file, "\nMax search coordinate: ")
+write(file, string(maxSearchValue))
 write(file, "\nParticles: ")
 write(file, string(particles))
 

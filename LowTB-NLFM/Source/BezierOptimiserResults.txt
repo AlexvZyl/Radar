@@ -20,3 +20,94 @@ PSL: -60.512947
 HO Fitness: -10052.801171875
 
 ---------------------------------------------------
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 500
+Resolution: 10000
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Coords Cap: Vector{Any}[[-5, -5, -5, -5, -5, -5], [5, 5, 5, 5, 5, 5]]
+Particles: 40
+
+vertices = [
+   Vertex2D(0.0073772944f0, 0.1833681f0),
+   Vertex2D(-0.0089613395f0, 1.3984771f0),
+   Vertex2D(0.0768247f0, 0.9617602f0),
+]
+
+MLW (Nyquist samples): 892.0
+PSL: -61.994408
+HO Fitness: -9647.048828125
+
+---------------------------------------------------
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 750
+Resolution: 10000
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Coords Cap: Vector{Any}[[-5, -5, -5, -5, -5, -5, -5, -5, -5, -5, -5, -5], [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]]
+Particles: 50
+
+vertices = [
+   Vertex2D(-4.209119f0, -3.207853f0),
+   Vertex2D(4.9520626f0, -4.9034534f0),
+   Vertex2D(-4.5414553f0, 3.0674314f0),
+   Vertex2D(3.1057682f0, 2.953814f0),
+   Vertex2D(0.17601801f0, -0.9932433f0),
+   Vertex2D(-2.778968f0, 1.5771034f0),
+]
+
+MLW (Nyquist samples): 510.8
+PSL: -61.342487
+HO Fitness: -9917.42265625
+
+---------------------------------------------------
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 750
+Resolution: 10000
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Max search coordinate: 20
+Particles: 50
+
+vertices = [
+   Vertex2D(-3.5765955f0, -2.1497424f0),
+   Vertex2D(0.5030048f0, -3.7179515f0),
+   Vertex2D(0.88634723f0, -0.8050274f0),
+   Vertex2D(1.0407858f0, -1.7385186f0),
+   Vertex2D(-1.2884297f0, 6.0455384f0),
+   Vertex2D(-1.9255222f0, -1.4674022f0),
+]
+
+MLW (Nyquist samples): 857.2
+PSL: -61.59259
+HO Fitness: -9613.540234375
+
+---------------------------------------------------
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 1000
+Resolution: 10000
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Max search coordinate: 20
+Particles: 100
+
+vertices = [
+   Vertex2D(-12.496825f0, 15.788202f0),
+   Vertex2D(20.0f0, -20.0f0),
+   Vertex2D(-17.63838f0, 8.611545f0),
+   Vertex2D(7.489666f0, 2.922483f0),
+]
+
+MLW (Nyquist samples): 922.0
+PSL: -62.30874
+HO Fitness: -9670.4853515625
+
+---------------------------------------------------
