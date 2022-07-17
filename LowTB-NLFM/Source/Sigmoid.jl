@@ -92,7 +92,7 @@ function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::
         nSamples = floor(Int, tiVector[i] * fs)
         signal, null = generateSigmoidWaveform(fs, bwVector[i], nSamples, plot = false, scalingParameter = scalingParameter)
         mf = plotMatchedFilter(0, signal, [], fs, plot = false)
-        SLLvector[i] = calculateSideLobeLevel(mf, lobeCount)
+        SLLvector[i] = calculateSideLobeLevel(mf)
         TBPvector[i] = bwVector[i] * tiVector[i] 
     end
 
@@ -177,5 +177,10 @@ function OptimisedSigmoidSLL(BW::Real, fs::Real, nSamples::Real;
     val, index = findmin(SLL)
     minParam = parameterVec[index[2]]
     println("Minimised SLL Parameter (sigmoid): ", minParam)
+    optimalSigmoid, ax = generateSigmoidWaveform(fs, BW, nSamples, scalingParameter = minParam)
+    sigmoidMF = plotMatchedFilter(0, optimalSigmoid, [], fs, plot = false)
+    println("SLL: ", calculateSideLobeLevel(sigmoidMF))
+    println("MLW: ", calculateMainLobeWidth(sigmoidMF) / fs * BW )
+    
     return minParam
 end
