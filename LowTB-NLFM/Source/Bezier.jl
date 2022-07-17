@@ -490,12 +490,14 @@ function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, wa
         ax.xreversed = true
         # ax.yreversed = true
         plotOrigin(ax)
-        scatter!(sideLobeData, lobeWidthData, color = :blue, markersize = 15)
-        vlines!(ax, -36.8, color = :black, linewidth=5, linestyle = :dash, label = "Optimal Logit")
+        scatter!(sideLobeData, lobeWidthData, color = :blue, markersize = 20, label = "Bézier")
+        vlines!(ax, -36.8, color = :black, linewidth=5, linestyle = :dash)
         hlines!(ax, 12, color = :black, linewidth=5, linestyle = :dash)
+        scatter!([-36.8], [12], lobeWidthData, color = :red, markersize = 20, label = "Optimal Logit")
         # vlines!(ax, -64.308, color = :black, linewidth=5, linestyle = :dash, label = "Optimal Logit")
         # hlines!(ax, 47, color = :black, linewidth=5, linestyle = :dash)
-        axislegend(ax)
+        # axislegend(ax)
+        axislegend(ax, halign = :left)
         xlims!(0, -40)
         ylims!(0, 100)
         # xlims!(0, -80)

@@ -18,7 +18,7 @@ include("Hyperbolic.jl")
 #  S E T U P  #
 # ----------- #
 
-# figure = Figure(resolution = (1920, 1080)) # 2D
+figure = Figure(resolution = (1920, 1080)) # 2D
 # figure = Figure()
 # figure = Figure(resolution = (1920-600, 1080)) # 3D
 
@@ -30,14 +30,14 @@ include("Hyperbolic.jl")
 # t_i = 50e-6
 
 # Low TBP (66)
-# BW = 20e6
-# t_i = 3.3e-6
-# fs = BW * 2.5
+BW = 20e6
+t_i = 3.3e-6
+fs = BW * 2.5
 
 # High TBP (1000)
-t_i = 25e-6
-BW = 60e6
-fs = BW * 2.5
+# t_i = 25e-6
+# BW = 60e6
+# fs = BW * 2.5
 
 # Copmpared to paper.
 # BW = 2e6
@@ -126,80 +126,80 @@ end
 # yRange = [-2,2]
 # xRange = [-2,2]
 
-sampleIterations = 14
-optimIterations = 1000
-resolution = 10000
+# sampleIterations = 14
+# optimIterations = 1000
+resolution = 10
 yRange = [-2,2]
 xRange = [-2,2]
-maxSearchValue = 20
-particles = 100
-points = 4
+# maxSearchValue = 20
+# particles = 100
+# points = 4
 # Setup coords cap.
-coordsCap = [ [], [] ]
-for i in 1:points*2
-    append!(coordsCap[1], -maxSearchValue)
-    append!(coordsCap[2],  maxSearchValue)
-end
+# coordsCap = [ [], [] ]
+# for i in 1:points*2
+    # append!(coordsCap[1], -maxSearchValue)
+    # append!(coordsCap[2],  maxSearchValue)
+# end
 
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 + pi)
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 - pi/2, MLW = true, dB = 0)
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
-# BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
-ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = points, plotHO = false, coordsCap = coordsCap, nParticles = particles)
-hoFitness = ho.minimum[1]
-bestParams = ho.minimum[2]
+BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
+# ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = points, plotHO = false, coordsCap = coordsCap, nParticles = particles)
+# hoFitness = ho.minimum[1]
+# bestParams = ho.minimum[2]
 
 # Open file.
-file = open("LowTB-NLFM/Source/BezierOptimiserResults.txt", "a")
+# file = open("LowTB-NLFM/Source/BezierOptimiserResults.txt", "a")
 
 # Header.
-write(file, "\n---------------------------------------------------\n")
+# write(file, "\n---------------------------------------------------\n")
 
 # Write optimiser parameters.
-write(file, "\nSampleIterations: ")
-write(file, string(sampleIterations))
-write(file, "\nOptim Iterations: ")
-write(file, string(optimIterations))
-write(file, "\nResolution: ")
-write(file, string(resolution))
-write(file, "\nY Range: ")
-write(file, string(yRange))
-write(file, "\nX Range: ")
-write(file, string(xRange))
-write(file, "\nMax search coordinate: ")
-write(file, string(maxSearchValue))
-write(file, "\nParticles: ")
-write(file, string(particles))
+# write(file, "\nSampleIterations: ")
+# write(file, string(sampleIterations))
+# write(file, "\nOptim Iterations: ")
+# write(file, string(optimIterations))
+# write(file, "\nResolution: ")
+# write(file, string(resolution))
+# write(file, "\nY Range: ")
+# write(file, string(yRange))
+# write(file, "\nX Range: ")
+# write(file, string(xRange))
+# write(file, "\nMax search coordinate: ")
+# write(file, string(maxSearchValue))
+# write(file, "\nParticles: ")
+# write(file, string(particles))
 
 # Write the vertices to the file.
-write(file, "\n\nvertices = [\n")
-totalPoints = trunc(Int, length(bestParams))
-vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
-for i in 1:2:totalPoints
-    write(file, "   ")
-    write(file, string(Vertex2D(bestParams[i], bestParams[i+1])))
-    vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
-    write(file, ",\n")
-end
-write(file, "]\n")
+# write(file, "\n\nvertices = [\n")
+# totalPoints = trunc(Int, length(bestParams))
+# vertices = Vector{Vertex2D}(undef, trunc(Int, totalPoints/2))
+# for i in 1:2:totalPoints
+    # write(file, "   ")
+    # write(file, string(Vertex2D(bestParams[i], bestParams[i+1])))
+    # vertices[trunc(Int, (i+1)/2)] = Vertex2D(bestParams[i], bestParams[i+1])
+    # write(file, ",\n")
+# end
+# write(file, "]\n")
 
 # Log performance.
-waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
-mf = plotMatchedFilter(figure, waveform, [1,1], fs, plot = false)
-PSL = calculateSideLobeLevel(mf)
-MLW = calculateMainLobeWidth(mf) / fs * BW 
-write(file, "\nMLW (Nyquist samples): ")
-write(file, string(MLW))
-write(file, "\nPSL: ")
-write(file, string(PSL))
-write(file, "\nHO Fitness: ")
-write(file, string(hoFitness))
+# waveform = BezierSignalParametric(vertices, fs, nSamples, BW)
+# mf = plotMatchedFilter(figure, waveform, [1,1], fs, plot = false)
+# PSL = calculateSideLobeLevel(mf)
+# MLW = calculateMainLobeWidth(mf) / fs * BW 
+# write(file, "\nMLW (Nyquist samples): ")
+# write(file, string(MLW))
+# write(file, "\nPSL: ")
+# write(file, string(PSL))
+# write(file, "\nHO Fitness: ")
+# write(file, string(hoFitness))
 
 # Footer.
-write(file, "\n\n---------------------------------------------------")
+# write(file, "\n\n---------------------------------------------------")
 
 # Close file.
-close(file)
+# close(file)
 
 # --------
 # Logit:
@@ -226,7 +226,7 @@ close(file)
 
 # Plot the different Bezier orders on top of each other.
 
-# # 4th.
+# 4th.
 # ax = Axis(figure[1,1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = "Optimal Bézier Frequency Modulation")
 # time = LinRange(0, nSamples/fs, nSamples) * 1e6
 # vertices = [ Vertex2D(0.11210956f0, 1.0807872f0) ]
@@ -399,142 +399,8 @@ close(file)
 # save("Article_LowTBP_SLL_SURFACE.pdf", figure)
 # save("Article_LowTBP_MLW_SURFACE.pdf", figure)
 # save("Article_LowTBP_Contour_0-0.pdf", figure)
-# save("Article_LowTBP_4thOrder_ParameterSpace.pdf", figure)
+save("Article_LowTBP_4thOrder_PerformanceRange.pdf", figure)
 
 # ------- #
 #  E O F  #
 # ------- #
-
-
-# results
-
-#----------------------------------------
-# TBP 1000
-#----------------------------------------
-# 4-element Vector{Vertex2D}:
-#  Vertex2D(-0.79325163f0, -2.000197f0)
-#  Vertex2D(1.4835511f0, 2.1629074f0)
-#  Vertex2D(-1.1491517f0, -1.5636559f0)
-#  Vertex2D(-0.50263745f0, 1.9820801f0)
-# MLW: 10.4
-# PSL: -50.708656
-# HO Fitness: -101.15904388427735
-#----------------------------------------
-
-
-
-
-
-
-
-
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.004401153f0, -0.072592914f0)
-#  Vertex2D(-0.8608829f0, -3.2037253f0)
-#  Vertex2D(0.8796333f0, 1.6392988f0)
-#  Vertex2D(0.3902662f0, 0.21561038f0)
-#  Vertex2D(-0.7538218f0, 0.8436815f0)
-#  Vertex2D(-1.1959243f0, 0.51037997f0)
-# MLW: 17.200000000000003
-# PSL: -55.16911
-# HO Fitness: -175.8918827056885
-
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.12495916f0, -1.7825085f0)
-#  Vertex2D(-0.17793395f0, -0.2704954f0)
-#  Vertex2D(0.43170112f0, 0.9573769f0)
-#  Vertex2D(-0.12626116f0, -0.08121906f0)
-#  Vertex2D(-0.13392213f0, 0.6296778f0)
-#  Vertex2D(-0.81182164f0, 1.0162038f0)
-# MLW: 13.6
-# PSL: -55.32245
-# HO Fitness: -180.02857055664063
-
-
-
-
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.069123775f0, -1.0655403f0)
-#  Vertex2D(0.044768166f0, -0.15655173f0)
-#  Vertex2D(-0.23142584f0, -0.07287408f0)
-#  Vertex2D(0.5009374f0, 0.8867123f0)
-#  Vertex2D(0.14771667f0, 0.0023202966f0)
-#  Vertex2D(-1.8252438f0, 1.1936195f0)
-# MLW: 13.6
-# PSL: -55.478348
-# HO Fitness: -263.7917236328125
-
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.02453482f0, -0.44765672f0)
-#  Vertex2D(0.09336345f0, -0.16585666f0)
-#  Vertex2D(-0.31173748f0, -0.02052055f0)
-#  Vertex2D(0.6988276f0, 1.2105978f0)
-#  Vertex2D(-0.80209035f0, 1.6274701f0)
-#  Vertex2D(-0.073321f0, -0.0017470343f0)
-# MLW: 67.2
-# PSL: -57.419395
-# HO Fitness: -2803.7697265625
-
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.033593003f0, -1.8253689f0)
-#  Vertex2D(-0.04062316f0, 0.692004f0)
-#  Vertex2D(-0.3055792f0, -0.0069117364f0)
-#  Vertex2D(1.0949194f0, 1.7234324f0)
-#  Vertex2D(-0.9191544f0, 1.7917341f0)
-#  Vertex2D(0.22205114f0, -0.28914472f0)
-# MLW: 477.6
-# PSL: -61.173588
-# HO Fitness: -5639.75888671875
-
-# 2-element Vector{Vertex2D}:
-#  Vertex2D(0.0152006615f0, 1.3341182f0)
-#  Vertex2D(-0.0027609945f0, 0.7773982f0)
-# MLW: 145.20000000000002
-# PSL: -59.748745
-# HO Fitness: -5829.67451171875
-
-# 3-element Vector{Vertex2D}:
-#  Vertex2D(0.011092876f0, 1.0639327f0)
-#  Vertex2D(0.025852956f0, 0.53730017f0)
-#  Vertex2D(0.067508414f0, 1.0994718f0)
-# MLW: 58.8
-# PSL: -58.50621
-# HO Fitness: -7547.00712890625
-
-# 3-element Vector{Vertex2D}:
-#  Vertex2D(0.02428494f0, 1.1794221f0)
-#  Vertex2D(0.16741861f0, 0.890585f0)
-#  Vertex2D(-0.08579831f0, 0.9908007f0)
-# MLW: 250.0
-# PSL: -60.86422
-# HO Fitness: -7662.3486328125
-
-# 4-element Vector{Vertex2D}:
-#  Vertex2D(-0.09182393f0, -3.93947f0)
-#  Vertex2D(0.18556505f0, 2.6766605f0)
-#  Vertex2D(-0.032590475f0, 2.1363802f0)
-#  Vertex2D(-0.7393958f0, -0.54881227f0)
-# MLW: 383.6
-# PSL: -61.12921
-# HO Fitness: -7563.19736328125
-
-# ^C
-# [ Info: Aborting hyperoptimization
-# 6-element Vector{Vertex2D}:
-#  Vertex2D(-0.05463621f0, -10.263019f0)
-#  Vertex2D(-0.5042109f0, 0.99056363f0)
-#  Vertex2D(0.49187356f0, 1.6340132f0)
-#  Vertex2D(0.75574213f0, 1.007471f0)
-#  Vertex2D(-1.8210466f0, 0.7868207f0)
-#  Vertex2D(0.44933206f0, 0.8513474f0)
-# MLW: 128.0
-# PSL: -59.170803
-# HO Fitness: -7564.20458984375
-
-# 3-element Vector{Vertex2D}:
-#  Vertex2D(0.0057207183f0, 1.1718125f0)
-#  Vertex2D(0.043415412f0, 0.28479356f0)
-#  Vertex2D(-0.18079153f0, 1.2593905f0)
-# MLW: 69.19999999999999
-# PSL: -60.854164
-# HO Fitness: -7841.84150390625
