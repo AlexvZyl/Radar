@@ -429,7 +429,7 @@ function BezierContour(figure, BW::Real, fs::Real, planeResolution::Real, wavefo
 end
 
 function BezierParetoFront(figure, BW::Real, fs::Real, planeResolution::Real, waveformNSamples::Real; plot::Bool = true, bezierNSamples::Real = 0,
-                           title = "Bézier Performance Range", xRange = [0,1], yRange = [0,1], dB::Real = 0,
+                           title = "Bézier Performance Space", xRange = [0,1], yRange = [0,1], dB::Real = 0,
                            nPoints::Real = 1)
 
     # The paramters iterated over.

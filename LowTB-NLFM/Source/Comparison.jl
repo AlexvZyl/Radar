@@ -128,7 +128,7 @@ end
 
 # sampleIterations = 14
 # optimIterations = 1000
-resolution = 10
+resolution = 1000
 yRange = [-2,2]
 xRange = [-2,2]
 # maxSearchValue = 20
