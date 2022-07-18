@@ -3,16 +3,17 @@
 # Phase Noise cancellation met DC offset.
 # NLFM van Dr Steyn.
 
+include("WaveformSpecs.jl")
 include("LFM.jl")
 include("DeWitte_NLFM.jl")
 include("Lesnik_NLFM.jl")
 include("P4_PHASE_CODED.jl")
-include("../../Utilities/MakieGL/PlotUtilities.jl")
-include("../../Utilities/Processing/ProcessingHeader.jl")
 include("Sigmoid.jl")
+include("../../Utilities/Processing/ProcessingHeader.jl")
+include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("Utilities.jl")
-include("Bezier.jl")
 include("Hyperbolic.jl")
+include("Bezier.jl")
 
 # ----------- #
 #  S E T U P  #
@@ -21,33 +22,6 @@ include("Hyperbolic.jl")
 figure = Figure(resolution = (1920, 1080)) # 2D
 # figure = Figure()
 # figure = Figure(resolution = (1920-600, 1080)) # 3D
-
-# GENERAL WAVE DATA #
-
-# High TBP.
-# BW = 50e6
-# fs = 110e6
-# t_i = 50e-6
-
-# Low TBP (66)
-BW = 20e6
-t_i = 3.3e-6
-fs = BW * 2.5
-
-# High TBP (1000)
-# t_i = 25e-6
-# BW = 60e6
-# fs = BW * 2.5
-
-# Copmpared to paper.
-# BW = 2e6
-# fs = BW * 2.5
-# t_i = 75e-6
-
-nSamples = ceil(Int, fs * t_i)
-if nSamples % 2 == 0
-    nSamples += 1
-end
 
 # ------------------ #
 #  L I N E A R  F M  #
@@ -119,32 +93,9 @@ end
 #  B E Z I E R  #
 # ------------- #
 
-# Used in paper.
-# sampleIterations = 8
-# optimIterations = 750
-# resolution = 1000
-# yRange = [-2,2]
-# xRange = [-2,2]
-
-# sampleIterations = 14
-# optimIterations = 1000
-resolution = 1000
-yRange = [-2,2]
-xRange = [-2,2]
-# maxSearchValue = 20
-# particles = 100
-# points = 4
-# Setup coords cap.
-# coordsCap = [ [], [] ]
-# for i in 1:points*2
-    # append!(coordsCap[1], -maxSearchValue)
-    # append!(coordsCap[2],  maxSearchValue)
-# end
-
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 + pi)
 # BezierSurface(BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, azimuth = pi/2 - pi/4 - pi/2, MLW = true, dB = 0)
 # BezierContour(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, lobeWidthContourCount = 9, sideLobeContourCount = 13, dB = 0)
-BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange = yRange, nPoints = 1)
 # ho = BezierBayesionOptimised(figure, BW, fs, resolution, nSamples, sampleIterations, optimIterations, xRange = xRange, yRange = yRange, dB = 0, nPoints = points, plotHO = false, coordsCap = coordsCap, nParticles = particles)
 # hoFitness = ho.minimum[1]
 # bestParams = ho.minimum[2]
@@ -399,7 +350,6 @@ BezierParetoFront(figure, BW, fs, resolution, nSamples, xRange = xRange, yRange 
 # save("Article_LowTBP_SLL_SURFACE.pdf", figure)
 # save("Article_LowTBP_MLW_SURFACE.pdf", figure)
 # save("Article_LowTBP_Contour_0-0.pdf", figure)
-save("Article_LowTBP_4thOrder_PerformanceRange.pdf", figure)
 
 # ------- #
 #  E O F  #

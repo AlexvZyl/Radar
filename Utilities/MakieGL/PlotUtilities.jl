@@ -21,9 +21,9 @@ function addZeros(linearChirp::Vector, Zeros::Number)
 end
 
 # Plot the origin on the graph.
-function plotOrigin(ax::Axis)
-	vlines!(ax, 0, color = originColor, linewidth=originThickness)
-	hlines!(ax, 0, color = originColor, linewidth=originThickness)
+function plotOrigin(ax::Axis; thickness = originThickness)
+	vlines!(ax, 0, color = originColor, linewidth=thickness)
+	hlines!(ax, 0, color = originColor, linewidth=thickness)
 end
 
 # ------------- #
@@ -53,6 +53,7 @@ function plotSignal(fig::Figure, signal::Vector, position::Vector, fs::Number;
 	xlims!(0, time[end])
 	# Add legend.
 	axislegend(ax)
+    return ax
 end
 
 # ------- #
