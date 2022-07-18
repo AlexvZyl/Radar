@@ -53,6 +53,7 @@ function plotSignal(fig::Figure, signal::Vector, position::Vector, fs::Number;
 	xlims!(0, time[end])
 	# Add legend.
 	axislegend(ax)
+    return ax
 end
 
 # ------- #
