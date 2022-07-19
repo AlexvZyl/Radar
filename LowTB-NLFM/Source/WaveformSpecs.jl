@@ -52,3 +52,29 @@ xRange = [-2,2]
     # append!(coordsCap[1], -maxSearchValue)
     # append!(coordsCap[2],  maxSearchValue)
 # end
+
+#----------------------
+# Logit Specifications.
+#----------------------
+
+# SLL VS TBP #
+# fs = 120e6
+# tiRange = [60e-6, 60e-6]
+# bwRange = [0.01e6, 50e6]
+# parameterRange = [0, 6] 
+# parameterSamples = 50
+# tbSamples = 50
+# lobeCount = 3
+
+#---------------------------
+# Hyperbolic specifications.
+#---------------------------
+
+# SLL VS TBP #
+# fs = 120e6
+# tiRange = [60e-6, 60e-6]
+# bwRange = [0.01e6, 50e6]
+# parameterRange = [0, 15] 
+# parameterSamples = 200
+# tbSamples = 50
+# lobeCount = 1000
