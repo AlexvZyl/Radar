@@ -27,7 +27,7 @@ end
 
 function generateHyperbolicWaveform(fs::Number, BW::Number, nSamples::Real;
                                  plot::Bool = false, axis = false, label = "Hyperbolic", figure = false, color = :blue, title = "Hyperbolic NFLM",
-                                 scalingParameter::Real = 1)
+                                 scalingParameter::Real = 1, timeScale = 1)
 
     scalingParameter = exp(1 - scalingParameter)
 
@@ -35,9 +35,9 @@ function generateHyperbolicWaveform(fs::Number, BW::Number, nSamples::Real;
     phase = HyperbolicPhase(fs, BW, scalingParameter, nSamples)
 
     # Plotting.
-    unitTime = 0:1/(nSamples-1):1
+    unitTime = 0:1/(nSamples-1):(1 - 1/(nSamples-1))
     if plot        
-        freq = HyperbolicFreq(BW, nSamples, scalingParameter)
+        freq = HyperbolicFreq(BW, nSamples-1, scalingParameter)
         if axis == false 
             ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
             scatterlines!(unitTime, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
@@ -47,7 +47,7 @@ function generateHyperbolicWaveform(fs::Number, BW::Number, nSamples::Real;
             plotOrigin(ax)
             ax = axis
         else
-            # scatterlines!(realTime * 1e6, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            scatterlines!(unitTime * timeScale, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
             ax = axis
         end
     else

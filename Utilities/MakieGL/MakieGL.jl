@@ -156,7 +156,8 @@ if cairomakie
 		# fontsize = 50, # 3D
 		fontsize = 65, # 2D
 		textcolor = :black,
-		font = "Fonts/ComputerModern/cmunrm.ttf",
+		font = "Fonts/ComputerModern/cmunrm.ttf",  # Windows.
+		# font = "/home/alex/GitHub/Masters-Julia/Fonts/ComputerModern/cmunrm.ttf", # Linux.
 		figure_padding = (0, 50, 0, 0)
 	)
 

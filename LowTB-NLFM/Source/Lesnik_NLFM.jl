@@ -38,7 +38,7 @@ end
 # Generate the NLFM waveform.
 function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Number; 
                             plot::Bool = false, figure = false, axis = false, label = "",
-                            title = "Leśnik NLFM Frequencies")
+                            title = "Leśnik NLFM Frequencies", color = :blue)
 
    # ----------- #
    #  P H A S E  #
@@ -52,7 +52,6 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
 
    t = range(0, tᵢ, step = inv(fs))
    PHASE = Φ.(t, tᵢ, Δ)
-
    Δ *= 1e6
 
    # Waveform.
@@ -74,15 +73,15 @@ function generateLesnikNLFM(Δ::Number, fs::Number, nSamples::Number, tᵢ::Numb
          
       else 
          
-         timeVec2 = (0:1:nSamples) / fs
-         scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
+        timeVec2 = (0:1:(nSamples-1)) / fs
+         scatterlines!(timeVec2 * 1e6, freqVec/1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
          # scatterlines!(timeVec2 * 1e6, PHASE, linewidth = lineThickness, color = :blue, markersize = dotSize, label = label)
-         plotOrigin(axis)
          
       end
       
    end
 
+   # Return the waveform.
    return exp.(im * 2π * PHASE * Δ), axis
    
 end
