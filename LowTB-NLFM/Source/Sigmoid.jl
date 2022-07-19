@@ -28,7 +28,7 @@ end
 
 function generateSigmoidWaveform(fs::Number, BW::Number, nSamples::Real;
                                  plot::Bool = false, axis = false, label = "Sigmoid", figure = false, color = :blue, title = "Sigmoid NFLM",
-                                 scalingParameter::Real = 1)
+                                 scalingParameter::Real = 1, durationScale = 1)
 
     scalingParameter = exp(1 - scalingParameter)
 
@@ -36,19 +36,19 @@ function generateSigmoidWaveform(fs::Number, BW::Number, nSamples::Real;
     phase = logitPhase(fs, BW, scalingParameter, nSamples)
 
     # Plotting.
-    unitTime = 0:1/(nSamples-1):1
+    unitTime = 0:1/(nSamples-1):(1 - 1/(nSamples-1))
     if plot        
-        freq = logitFreq(BW, nSamples, scalingParameter)
+        freq = logitFreq(BW, nSamples-1, scalingParameter)
         if axis == false 
             ax = Axis(figure[1, 1], xlabel = "Time (μs)", ylabel = "Frequency (MHz)", title = title)
             scatterlines!(unitTime, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
-            ylims!(-BW/(1e6*2), BW/(1e6*2))
-            ax = Axis(figure[1, 2], xlabel = "Time (μs)", ylabel = "Phase (Radians)", title = title)
-            scatterlines!(unitTime, phase, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
-            plotOrigin(ax)
+            # ylims!(-BW/(1e6*2), BW/(1e6*2))
+            # ax = Axis(figure[1, 2], xlabel = "Time (μs)", ylabel = "Phase (Radians)", title = title)
+            # scatterlines!(unitTime, phase, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            # plotOrigin(ax)
             ax = axis
         else
-            # scatterlines!(realTime * 1e6, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
+            scatterlines!(unitTime * durationScale, freq ./ 1e6, linewidth = lineThickness, color = color, markersize = dotSize, label = label)
             ax = axis
         end
     else
