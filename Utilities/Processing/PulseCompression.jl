@@ -98,7 +98,31 @@ end
 # ----------------------------- #
 
 function pulseCompression(txSignal::Vector, rxSignal::Vector)
-	return xcorr(txSignal, rxSignal)
+    filterSignal = txSignal .- mean(txSignal)
+    println(mean(txSignal))
+	return xcorr(filterSignal, rxSignal)
+end
+
+
+function splitMatrix(signal, pulseLengthSamples, syncRange)
+
+    # First sync the signal.
+    # println(pulseLengthSamples)
+    syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
+
+    # Now we need to create a matrix of aligned pulses.
+    totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)
+    pulseMatrix = Array{Complex{Float64}}(undef, pulseLengthSamples, totalPulses)
+
+    # Iterate for every pulse.
+    for i in 1:1:totalPulses
+        startIndex = trunc(Int, pulseLengthSamples * (i-1)) + 1
+        endIndex = trunc(Int, startIndex + pulseLengthSamples) - 1
+        pulseMatrix[:,i] = syncedSignal[startIndex:1:endIndex]
+    end
+
+    return pulseMatrix
+
 end
 
 # ------- #

@@ -33,3 +33,5 @@ sigmoidWave, NULL = generateSigmoidWaveform(fs, BW, nSamples, plot = true, figur
 hypSignal, NULL = generateHyperbolicWaveform(fs, BW, nSamples, scalingParameter = 4.7979, plot = true, axis = ax, timeScale = t_i * 1e6, color = :purple)
 axislegend(ax, valign = :bottom)
 save("Article_LowTBP_SingleParameterFreq.pdf", figure)
+
+generateDette(sasdsdf)

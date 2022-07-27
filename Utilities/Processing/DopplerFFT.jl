@@ -27,6 +27,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     frequencies = Any
     dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF)
     
+    
     # ------------------------- #
     #  R A N G E   V E C T O R  #
     # ------------------------- #
@@ -118,14 +119,17 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         freqIncrement = freqVal * λ / 2 # Hz
         hValue = freqIncrement
         while(hValue < yRange )
-            hlines!(ax, hValue, color = :grey60, linewidth=0.5)
-            hlines!(ax, -hValue, color = :grey60, linewidth=0.5)
+            # hlines!(ax, hValue, color = :grey60, linewidth=0.5)
+            # hlines!(ax, -hValue, color = :grey60, linewidth=0.5)
+            hlines!(ax, hValue, color = :red, linewidth=1.5)
+            hlines!(ax, -hValue, color = :red, linewidth=1.5)
             hValue += freqIncrement
         end
     end
                 
+    # For some reason this is giving me issues, not really sure why...
     # Plot the colorbar.
-    cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
 
     # Plot a line at the deadzone.
     if nWaveSamples != false
@@ -170,7 +174,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
 
 
         # Middle range line.
-        dcAxis = Axis(figure[position[1], :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
+        dcAxis = Axis(figure[position[1]+1, :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
                       xgridvisible = false)
         plotOrigin(dcAxis)
         middle = length(dopplerFFTMatrix[:,1]/2)
@@ -206,17 +210,21 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
         pulseMatrix[:,i] = syncedSignal[startIndex:1:endIndex]
     end
 
-    # Now take the fft over the pulses.
+    # Now take the fft over the samples.
     frequencies = Any
     fftMatrix = Array{Float64}(undef, pulseLengthSamples, totalPulses)
     # Make this call to get the frequencies for the window.
-    ans, frequencies = powerSpectra(pulseMatrix[1,:], PRF, true)
+    ans, frequencies, dcComplex = powerSpectra(pulseMatrix[1,:], PRF, true)
     # window = generateChebychevWindow(frequencies, -50)
     window = kaiser((length(pulseMatrix[1,:])), 3)
     for s in 1:1:pulseLengthSamples
         pulseMatrix[s,:] .*= window
-        fftMatrix[s,:] = powerSpectra(pulseMatrix[s,:], PRF, false)
+        fftMatrix[s,:], null = powerSpectra(pulseMatrix[s,:], PRF, false)
     end
+
+    windowSum = sum(window)
+    dcTot = dcComplex / windowSum
+    println(dcTot)
 
     return fftMatrix, frequencies
 

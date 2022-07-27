@@ -15,7 +15,8 @@ function syncPulseCompressedSignal(signal::Vector, pulseLengthSamples::Number, s
     # The last pulse is not going to be a full pulse, so it has to be removed.
     # How many pulses fit into the signal?
     totalPulses = floor(Int32, length(syncedSignal)/pulseLengthSamples)
-    syncedSignal = abs.(syncedSignal[1:1:totalPulses*pulseLengthSamples])
+    # syncedSignal = abs.(syncedSignal[1:1:totalPulses*pulseLengthSamples])
+    syncedSignal = syncedSignal[1:1:totalPulses*pulseLengthSamples]
 
     # ----------------- #
     #  P L O T T I N G  #

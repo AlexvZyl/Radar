@@ -25,3 +25,5 @@ plotOrigin(ax, thickness = 4)
 axislegend(ax, halign = :right, valign = :bottom)
 
 save("Article_BasicBezierExample.pdf", figure)
+
+kglkghkjgh

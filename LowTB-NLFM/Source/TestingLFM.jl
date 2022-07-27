@@ -3,9 +3,9 @@ include("../../Utilities/Processing/ProcessingHeader.jl")
 
 # Variables.
 j = complex(0,1)
-BW = 2       # Signal bandwidth.
-τ = 3           # Signal duration.
-fs = 50       # Sampling frequency.
+BW = 2      # Signal bandwidth.
+τ = 3       # Signal duration.
+fs = 50     # Sampling frequency.
 
 # Generate signal.
 f(t) = exp(2π*j*BW*t)

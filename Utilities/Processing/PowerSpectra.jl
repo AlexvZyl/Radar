@@ -68,42 +68,37 @@ function powerSpectra(signal::Vector, fs::Number, returnFrequencies::Bool;
     
     if paddingCount != 0
         zerosVec = zeros(paddingCount) + im*zeros(paddingCount)
-        append!(signal, zerosVec)
+        append!(signal, zerosVec) 
     end
 
-    #  F F T  #
-
-    signalFFT = abs.(fft(signal))
-
-    #  F F T   S H I F T  #
-    
+    # Calculate FFT.
+    signalFFT = (fft(signal))
+    dcComplex = signalFFT[1]
+    signalFFT = abs.(signalFFT)
     fftLength = length(signalFFT)
 
     # Odd FFT's.
     if fftLength % 2 == 1
-
         # FFT values.
-        fftCenter = ceil(Int, (fftLength)/2)
+        fftCenter = ceil(Int, fftLength/2)
         fftY = [ signalFFT[fftCenter+1 : end] ; signalFFT[1 : fftCenter] ]
         # Frequencies.
         frequencies = (-fftCenter+1:1:fftCenter-1) / fftCenter / 2 * fs
-    
+
     # Even FFT's.
     else
-    
         # FFT Values.
-        fftHalve = trunc(Int, (fftLength)/2)
+        fftHalve = trunc(Int, fftLength/2)
         fftY = [ signalFFT[fftHalve+2 : end] ; signalFFT[1 : fftHalve+1] ]
         # Frequencies
         frequencies = (-fftHalve+1:1:fftHalve) / fftHalve / 2 * fs
-        
     end
     
     # Return types.
     if returnFrequencies == true
-        return fftY, frequencies
+        return fftY, frequencies, dcComplex
     else
-        return fftY
+        return fftY, dcComplex 
     end
 
 end
