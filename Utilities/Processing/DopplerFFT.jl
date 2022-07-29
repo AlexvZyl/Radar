@@ -27,7 +27,6 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     frequencies = Any
     dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF)
     
-    
     # ------------------------- #
     #  R A N G E   V E C T O R  #
     # ------------------------- #
@@ -95,59 +94,64 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     #  P L O T T I N G  #
     # ----------------- #
 
-    # Create the axis.
-    ax = nothing
-    # If no axis was specified.
-    if axis == false
-        ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
-        plotOrigin(ax)
-    # If an axis has been specified.
-    else
-        ax = axis
-    end
+    if plotDCBin == false
 
-    # Plot heatmap with dB scale.
-    dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
-    hm = heatmap!(figure[position[1], position[2]], 
-                  rangeVector, velocityVector, dopplerFFTMatrix,
-                  colorrange = dBRange)
-
-    # Plot velocities.
-    if plotFreqLines
-        println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
-        λ = c / fc
-        freqIncrement = freqVal * λ / 2 # Hz
-        hValue = freqIncrement
-        while(hValue < yRange )
-            # hlines!(ax, hValue, color = :grey60, linewidth=0.5)
-            # hlines!(ax, -hValue, color = :grey60, linewidth=0.5)
-            hlines!(ax, hValue, color = :red, linewidth=1.5)
-            hlines!(ax, -hValue, color = :red, linewidth=1.5)
-            hValue += freqIncrement
-        end
-    end
-                
-    # For some reason this is giving me issues, not really sure why...
-    # Plot the colorbar.
-    # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
-
-    # Plot a line at the deadzone.
-    if nWaveSamples != false
-        deadZoneRange = (nWaveSamples / (2 * fs) ) * c
-        vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
+        # Create the axis.
+        ax = nothing
+        # If no axis was specified.
         if axis == false
-            axislegend(ax)
+            ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
+            plotOrigin(ax)
+        # If an axis has been specified.
+        else
+            ax = axis
         end
-    end 
-    
-    # Set the X Range.
-    if xRange != Inf
-        xlims!(0, ((rangeSample-1)*c)/(fs * 2))
-    end
 
-    # Set the Y range.
-    if yRange != Inf
-        ylims!(-yRange, yRange)
+        # Plot heatmap with dB scale.
+        dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
+        hm = heatmap!(figure[position[1], position[2]], 
+                      rangeVector, velocityVector, dopplerFFTMatrix,
+                      colorrange = dBRange)
+
+        # Plot velocities.
+        if plotFreqLines
+            println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
+            # Converts Hz to m/s
+            λ = c / fc
+            freqIncrement = freqVal * λ / 2 
+            hValue = freqIncrement
+            while(hValue < yRange )
+                # hlines!(ax, hValue, color = :grey60, linewidth=0.5)
+                # hlines!(ax, -hValue, color = :grey60, linewidth=0.5)
+                hlines!(ax, hValue, color = :red, linewidth=1.5)
+                hlines!(ax, -hValue, color = :red, linewidth=1.5)
+                hValue += freqIncrement
+            end
+        end
+                    
+        # For some reason this is giving me issues, not really sure why...
+        # Plot the colorbar.
+        # cbar = Colorbar(figure[position[1], position[2]+1], label="Amplitude (dB)", hm)
+
+        # Plot a line at the deadzone.
+        if nWaveSamples != false
+            deadZoneRange = (nWaveSamples / (2 * fs) ) * c
+            vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
+            if axis == false
+                axislegend(ax)
+            end
+        end 
+    
+        # Set the X Range.
+        if xRange != Inf
+            xlims!(0, ((rangeSample-1)*c)/(fs * 2))
+        end
+
+        # Set the Y range.
+        if yRange != Inf
+            ylims!(-yRange, yRange)
+        end
+
     end
 
     # ------------- #
@@ -155,33 +159,37 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
     # ------------- #
 
     if plotDCBin
+        
+        # Convert velocity to doppler freq. 
+        function vel2dp(vel)
+            λ = c / fc
+            return (vel * 2) / λ
+        end
 
-        # # DC Bin.
-        # dcAxis = Axis(figure[position[1]+1, :], xlabel = "Distance (m)", ylabel = "Magnitude (dB)", title = "DC Bin (0 m/s)",
-        #           xgridvisible = false)
-        # plotOrigin(dcAxis)
-        # velocitiesLength = length(dopplerFFTMatrix[1,:])
-        # dcBin = 0
-        # odd = (velocitiesLength%2 == 1)
-        # if odd 
-        #     dcBin = ceil(Int, velocitiesLength/2)
-        # else
-        #     dcBin = floor(Int, velocitiesLength/2)
-        # end
-        # bin = dopplerFFTMatrix[:,dcBin]
-        # scatterlines!(rangeVector, dopplerFFTMatrix[:,dcBin], markersize = dotSize, linewidth = lineThickness)
+        # DC Bin.
+        dcAxis = Axis(figure[position[1], :], xlabel = "Distance (m)", ylabel = "Magnitude (dB)", title = "DC Bin (0 m/s)",
+                  xgridvisible = false)
+        plotOrigin(dcAxis)
+        velocitiesLength = length(dopplerFFTMatrix[1,:])
+        dcBin = 0
+        odd = (velocitiesLength%2 == 1)
+        if odd 
+            dcBin = ceil(Int, velocitiesLength/2)
+        else
+            dcBin = floor(Int, velocitiesLength/2)
+        end
+        dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
+        bin = dopplerFFTMatrix[:,dcBin]
+        scatterlines!(rangeVector, dopplerFFTMatrix[:,dcBin], markersize = dotSize, linewidth = lineThickness)
         # ylims!(0, 130)
 
-
         # Middle range line.
-        dcAxis = Axis(figure[position[1]+1, :], xlabel = "Velocity (m/s)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
+        dcAxis = Axis(figure[position[1]+1, :], xlabel = "Doplper Freq (Hz)", ylabel = "Magnitude (dB)", title = "Middle Range Line",
                       xgridvisible = false)
         plotOrigin(dcAxis)
         middle = length(dopplerFFTMatrix[:,1]/2)
         middleLine = dopplerFFTMatrix[middle,:]
-        scatterlines!(velocityVector, middleLine, markersize = dotSize, linewidth = lineThickness)
-        # ylims!(0, 120)
-        xlims!(-yRange, yRange)
+        scatterlines!(vel2dp.(velocityVector), middleLine, markersize = dotSize, linewidth = lineThickness)
 
     end
 

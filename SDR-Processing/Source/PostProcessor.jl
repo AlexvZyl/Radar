@@ -50,7 +50,7 @@ folder 			= "Tests"
 # fileNumber 		= "035" # DC Ofsset no TX.
 
 # fileNumber 		= "036"
-fileNumber 		= "048"
+fileNumber 		= "050"
 
 # File location.
 # path 			= "GitHub/SDR-Interface/build/Data/"
@@ -184,6 +184,7 @@ figure = Figure(resolution = (1920, 1080))
 
 Imean = -0.004786199
 Qmean = -0.002466153
+
 rxSignal = rxSignal .- (Imean + im*Qmean)
 PCsignal = pulseCompression(txSignal, rxSignal)
 # pulseMatrix = splitMatrix(PCsignal, nSamplesPulse, [1, nSamplesPulse*2])
@@ -204,10 +205,10 @@ PCsignal = pulseCompression(txSignal, rxSignal)
 # PlotIQCircle(figure, txSignal, [1,1], title = string("I vs Q ", waveStr))
 # PlotIQCircle(figure, rxSignal, [1,1], title = string("I vs Q ", waveStr))
 
-# freqVal = dcFreqShift
+freqVal = dcFreqShift
 if freqVal == 0 freqVal = 10000 end
 plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,30], 
-			   xRange = 10, yRange = 3000, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
+			   xRange = 2000, yRange = 100, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
