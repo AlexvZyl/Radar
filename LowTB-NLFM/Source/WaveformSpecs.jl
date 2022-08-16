@@ -1,3 +1,5 @@
+include("Utilities.jl")
+
 #------------------------
 # General specifications.
 #------------------------
@@ -8,9 +10,9 @@
 # t_i = 50e-6
 
 # Low TBP (66)
-BW = 20e6
-t_i = 3.3e-6
-fs = BW * 2.5
+# BW = 20e6
+# t_i = 3.3e-6
+# fs = BW * 2.5
 
 # High TBP (1000)
 # t_i = 25e-6
@@ -22,6 +24,15 @@ fs = BW * 2.5
 # fs = BW * 2.5
 # t_i = 75e-6
 
+# For measurements.
+BW = 20e6
+deadzone = 50
+fs = 22e6
+println("Distance: ", deadzone)
+t_i = distanceToTime(deadzone)
+println("Time: ", t_i) 
+
+# Ensure odd number of samples.
 nSamples = ceil(Int, fs * t_i)
 if nSamples % 2 == 0
     nSamples += 1
@@ -31,27 +42,20 @@ end
 # Bezier specifications.
 #-----------------------
 
-# Used in paper.
-# sampleIterations = 8
-# optimIterations = 750
-# resolution = 1000
-# yRange = [-2,2]
-# xRange = [-2,2]
-
-# sampleIterations = 14
-# optimIterations = 1000
+sampleIterations = 14
+optimIterations = 100
 resolution = 10
 yRange = [-2,2]
 xRange = [-2,2]
-# maxSearchValue = 20
-# particles = 100
-# points = 4
+maxSearchValue = 20
+particles = 100
+points = 4
 # Setup coords cap.
-# coordsCap = [ [], [] ]
-# for i in 1:points*2
-    # append!(coordsCap[1], -maxSearchValue)
-    # append!(coordsCap[2],  maxSearchValue)
-# end
+coordsCap = [ [], [] ]
+for i in 1:points*2
+    append!(coordsCap[1], -maxSearchValue)
+    append!(coordsCap[2],  maxSearchValue)
+end
 
 #----------------------
 # Logit Specifications.
@@ -77,4 +81,4 @@ xRange = [-2,2]
 # parameterRange = [0, 15] 
 # parameterSamples = 200
 # tbSamples = 50
-# lobeCount = 1000
+# lobeCount = 100

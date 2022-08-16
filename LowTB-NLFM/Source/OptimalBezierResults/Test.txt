@@ -1,0 +1,45 @@
+
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 10
+Resolution: 10
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Max search coordinate: 20
+Particles: 100
+
+vertices = [
+   Vertex2D(-2.6075037f0, -6.9191546f0),
+   Vertex2D(11.89458f0, 3.5172873f0),
+   Vertex2D(-20.0f0, 5.6306844f0),
+   Vertex2D(-12.118252f0, -2.8791983f0),
+]
+
+MLW (Nyquist samples): 124.39999999999999
+PSL: -40.174786
+HO Fitness: -6705.31337890625
+
+---------------------------------------------------
+---------------------------------------------------
+
+SampleIterations: 14
+Optim Iterations: 100
+Resolution: 10
+Y Range: [-2, 2]
+X Range: [-2, 2]
+Max search coordinate: 20
+Particles: 100
+
+vertices = [
+   Vertex2D(0.97190744f0, -18.738241f0),
+   Vertex2D(-19.339773f0, -1.1254811f0),
+   Vertex2D(-20.0f0, 20.0f0),
+   Vertex2D(-7.274552f0, -20.0f0),
+]
+
+MLW (Nyquist samples): 120.8
+PSL: -40.19409
+HO Fitness: -6712.19560546875
+
+---------------------------------------------------

@@ -4,8 +4,6 @@
 
 using CairoMakie
 
-
-
 function LFMFreq(nSamples, BW)
 
     if nSamples == 1

@@ -59,6 +59,7 @@ using Interpolations
 using Hyperopt
 using Optim
 using QuadGK
+using StatsBase
 
 #  The Polynomial from of the Bezier curve (see BezierPolynomial.png):
 
@@ -698,8 +699,8 @@ end
 # --------------------------- #
 
 function generateOptimalBezierCF32(nSamples::Int32, BW::Float64, fs::Int32)
-    vertices = [ Vertex2D(0.21581618f0, 0.44881594f0), Vertex2D(-0.47461903f0, 0.80749863f0) ]
-    return BezierSignalParametric(vertices, Real(fs), Int(nSamples), Real(BW))
+    vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
+    BezierSignalParametric(vertices, Real(fs), Int(nSamples), Real(BW))
 end
 
 function generateOptimalBezier(nSamples::Int32, BW::Float64, fs::Int32)
@@ -707,7 +708,7 @@ function generateOptimalBezier(nSamples::Int32, BW::Float64, fs::Int32)
     floatWave = Vector{Float64}(undef, nSamples*2)
     floatWave[1:2:end-1] =  Float64.(real.(complexWave))
     floatWave[2:2:end] =  Float64.(imag.(complexWave))
-    return floatWave
+    floatWave
 end
 
 # ------- #

@@ -2,6 +2,8 @@ using Peaks
 using Statistics
 using Interpolations
 
+const C = 299792458
+
 function calculateSideLobeLevel(signal::Vector)
 
     signalLength = length(signal)
@@ -71,4 +73,16 @@ function calculateMainLobeWidth(signal::Vector; dB::Real = 0)
         return (interpolate(-1*dB) * 2)
 
     end
+end
+
+# Calculate how long it should take to detect the signal of a target
+# based on the distance.
+function distanceToTime(distance)
+    ( distance / C ) * 2
+end
+
+# Calculate the distance a object is from the radar based on how long it took
+# for the signal to be detected.
+function timeToDistance(time)
+    return ( time / 2 ) * C
 end

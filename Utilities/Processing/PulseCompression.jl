@@ -3,6 +3,9 @@
 # ----------------- #
 
 include("../MakieGL/MakieGL.jl")
+include("../MakieGL/PlotUtilities.jl")
+
+using DSP
 
 # -------------- #
 #  P C   P L O T #
@@ -98,9 +101,10 @@ end
 # ----------------------------- #
 
 function pulseCompression(txSignal::Vector, rxSignal::Vector)
-    filterSignal = txSignal .- mean(txSignal)
-    println(mean(txSignal))
-	return xcorr(filterSignal, rxSignal)
+    # filterSignal = txSignal .- mean(txSignal)
+    # println("TX Mean: ", mean(txSignal))
+	# return xcorr(rxSignal, filterSignal)
+    return xcorr(rxSignal, txSignal, padmode = :none)
 end
 
 

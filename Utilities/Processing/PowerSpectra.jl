@@ -72,7 +72,7 @@ function powerSpectra(signal::Vector, fs::Number, returnFrequencies::Bool;
     end
 
     # Calculate FFT.
-    signalFFT = (fft(signal))
+    signalFFT = fft(signal)
     dcComplex = signalFFT[1]
     signalFFT = abs.(signalFFT)
     fftLength = length(signalFFT)

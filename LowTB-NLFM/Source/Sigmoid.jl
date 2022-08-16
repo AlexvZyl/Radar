@@ -181,6 +181,37 @@ function OptimisedSigmoidSLL(BW::Real, fs::Real, nSamples::Real;
     sigmoidMF = plotMatchedFilter(0, optimalSigmoid, [], fs, plot = false)
     println("SLL: ", calculateSideLobeLevel(sigmoidMF))
     println("MLW: ", calculateMainLobeWidth(sigmoidMF) / fs * BW )
-    
     return minParam
+
+end
+
+function generateOptimalSigmoidForSDR(nSamples::Int32, BW::Float64, fs::Int32; formatJulia = false)
+    
+    # Default parameters.
+    range = [0, 5]
+    parameterSamples = 5000
+    lobeCount = 0 # This parameter is deprecated.
+
+    # Calculate the optimal waveform.
+    ti = nSamples / fs
+    SLL = sigmoidPlane(fs, [ti, ti], [BW, BW], range, parameterSamples, 1, lobeCount, plot = false)[1]
+    paramRange = range[2] - range[1]
+    parameterVec = range[1]:paramRange/(parameterSamples-1):range[2]
+    val, index = findmin(SLL)
+    minParam = parameterVec[index[2]]
+    
+    # Generate the optimal waveform.
+    complexWave, ax = generateSigmoidWaveform(fs, BW, nSamples, scalingParameter = minParam)
+    
+    # Return for Julia format.
+    if formatJulia == true
+       return complexWave 
+    end
+
+    # Return for C++ format.
+    floatWave = Vector{Float64}(undef, nSamples*2)
+    floatWave[1:2:end-1] =  Float64.(real.(complexWave))
+    floatWave[2:2:end] =  Float64.(imag.(complexWave))
+    return floatWave
+
 end

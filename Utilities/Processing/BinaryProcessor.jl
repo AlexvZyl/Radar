@@ -5,8 +5,6 @@
 function loadDataFromBin(file::String; 
 						 pulsesToLoad::Number=0, samplesPerPulse::Number=0)
 
-	
-
 	# If a certain amount of pulses that were specified.
 	if pulsesToLoad != 0
 

@@ -14,7 +14,7 @@ function generateChebychevWindow(freq, SLL::Number)
     A = acosh(ƞ) / pi
 
     W(f) =  (  φ(f, N) * cos( pi * sqrt(f^2 * A^2) )  )        /
-          # --------------------------------------------
+    #      ---------------------------------------------
             (   cos(pi * sqrt(Complex(-1 * A^2)) )    )
 
     W.(freq)
@@ -26,12 +26,10 @@ end
 # =============================== # 
 
 function φ(f, N)
-
     isOdd = (N%2==1)
-    if   (isOdd || f≥0) return 1
+    if   (isOdd || f≥0) return  1
     else                return -1
     end
-
 end
 
 # ======= #

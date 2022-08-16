@@ -9,6 +9,7 @@ include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("Waveforms/LFM.jl")
 include("Waveforms/NLFM.jl")
 include("../../LowTB-NLFM/Source/Bezier.jl")
+include("../../LowTB-NLFM/Source/Sigmoid.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
 
 using Statistics
@@ -21,41 +22,15 @@ using Statistics
 # 0 : Loads all of the pulses.
 pulsesToLoad 	= 0
 # pulsesToLoad 	= 30000
-# pulsesToLoad 	= 15
+# pulsesToLoad 	= 10
+
+# pulsesToLoad 	= 5
 # REMEMBER: The Doppler FFT removes two pulses.
-folder 			= "Tests"
-
-# Testing filenumbers.
-# fileNumber 		= "000" # Bezier without DC shift.
-# fileNumber 		= "001" # Bezier with DC shift.
-# fileNumber 		= "017" # Bezier with large DC shift, normal eq.
-# fileNumber 		= "018"
-
-# Testing different shift values.
-# fileNumber 		= "019"
-# fileNumber 		= "020"
-# fileNumber 		= "021"
-# fileNumber 		= "023"
-# fileNumber 		= "024"
-
-# LFM.
-# fileNumber 		= "025"
-# fileNumber 		= "026"
-
-# fileNumber 		= "029" # DC Ofsset.
-# fileNumber 		= "030" # No DC Ofsset.
-# fileNumber 		= "031" # LFM, No DC Ofsset.
-# fileNumber 		= "033" # DC Ofsset with phase file.
-# fileNumber 		= "034" # DC Ofsset with phase file.
-# fileNumber 		= "035" # DC Ofsset no TX.
-
-# fileNumber 		= "036"
-fileNumber 		= "050"
+folder 			= "Test"
+fileNumber 		= "138"
 
 # File location.
-# path 			= "GitHub/SDR-Interface/build/Data/"
-# path 			= "../SDR-Interface/build/Data/"
-path 			= "../../../SDR-Interface/build/Data/"
+path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
 filePrefix 		= "B210_SAMPLES_" * folder * "_"
 file 			= path * folder * "/" * filePrefix * fileNumber
 fileBin 		= file * ".bin"
@@ -71,7 +46,7 @@ dcFreqShift = 0
 # Get the value from the string given the position.
 function parseNumber(string::String, startIndex::Number)
 
-	stringAns = ""
+    stringAns = ""
 	index = startIndex
     while(string[index]!=' ' && string[index]!='\n')
 		stringAns = stringAns * string[index]
@@ -127,20 +102,22 @@ for line in eachline(abspath(fileTxt))
 	# Waveform type.
 	elseif isnothing(findfirst("Wave type", line)) == false
 
-		# LFM.
 		if isnothing(findfirst("Linear Frequency Chirp", line)) == false
-			global LFM = true
-			global NLFM = false
-		# NFLM.
+            global waveStr = "LFM"
 		elseif isnothing(findfirst("Optimal Bezier", line)) == false
-			global LFM = false
-			global NFLM = true
-		end
+            global waveStr = "Bezier"
+		elseif isnothing(findfirst("Optimal Logit", line)) == false
+            global waveStr = "Logit"	
+        end
 
     # Total pulses.
 	elseif isnothing(findfirst("Total pulses", line)) == false
 
 		global totalPulses	 			= parseNumber(line, 15)
+
+    elseif isnothing(findfirst("Radar max range", line)) == false
+
+		global max_range	 			= parseNumber(line, 18)
 
 	end
 
@@ -155,21 +132,22 @@ println("Total pulses: ", totalPulses)
 rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
 phaseDataArray = Vector{Complex{Float64}}(undef, Int(totalPulses))
 phaseData       = read!(abspath(phaseFile), phaseDataArray)
-# println(phaseDataArray)
 
 # =============================== #
 #  P O S T   P R O C E S S I N G  #
 # =============================== #	
 
 # Determine the TX signal.
-if LFM
-	# global txSignal = generateLFM(BW, fs, nSamplesWave, dcFreqShift)
+if waveStr=="LFM"
 	global txSignal = generateLFM(BW, fs, nSamplesWave, 0)
-	global waveStr = "LFM"
-else
+elseif waveStr=="Bezier"
 	global txSignal = generateOptimalBezierCF32(nSamplesWave, BW, fs)
-	global waveStr = "Bezier"
+elseif waveStr=="Logit"
+    global txSignal, null = generateOptimalSigmoidForSDR(nSamplesPulse, BW, fs)
+else
+    AssertionError("Unknown waveform.")
 end
+println("Wave type: " * waveStr)            
 
 # ----------------------------------------- #
 #  P R O C E S S I N G  &  P L O T T I N G  #
@@ -179,13 +157,11 @@ end
 figure = Figure(resolution = (1920, 1080))
 # figure = Figure(resolution = (1080, 1080))
 # figure = Figure(resolution = (1920, 1920)) # Square
-# Pulse Compression.
-# display(rxSignal)
 
 Imean = -0.004786199
 Qmean = -0.002466153
 
-rxSignal = rxSignal .- (Imean + im*Qmean)
+# rxSignal = rxSignal .- (Imean + im*Qmean)
 PCsignal = pulseCompression(txSignal, rxSignal)
 # pulseMatrix = splitMatrix(PCsignal, nSamplesPulse, [1, nSamplesPulse*2])
 # pulseMatrix = splitMatrix(rxSignal, nSamplesPulse, [1, nSamplesPulse*2])
@@ -207,8 +183,9 @@ PCsignal = pulseCompression(txSignal, rxSignal)
 
 freqVal = dcFreqShift
 if freqVal == 0 freqVal = 10000 end
-plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,30], 
-			   xRange = 2000, yRange = 100, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
+plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,20], 
+			   # xRange = 500, yRange = 250, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
+			   xRange = max_range, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
@@ -228,6 +205,7 @@ plotDopplerFFT(figure, PCsignal, [1,1], [1, nSamplesPulse*2], fc, fs, nSamplesPu
 # titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
 # heatmap!(abs.(rxMatrix))
 display(figure)
+# save("Testing.pdf", figure)
 
 # fftMatrix = dopplerFFT(rxSignal, [1, nSamplesPulse*2], nSamplesPulse, PRF)
 # velocityBinCount = length(fftMatrix[])
