@@ -27,7 +27,7 @@ pulsesToLoad 	= 0
 # pulsesToLoad 	= 5
 # REMEMBER: The Doppler FFT removes two pulses.
 folder 			= "Test"
-fileNumber 		= "138"
+fileNumber 		= "004"
 
 # File location.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -185,7 +185,7 @@ freqVal = dcFreqShift
 if freqVal == 0 freqVal = 10000 end
 plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,20], 
 			   # xRange = 500, yRange = 250, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
-			   xRange = max_range, yRange = 10, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal)
+			   xRange = max_range, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
