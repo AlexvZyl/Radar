@@ -27,7 +27,7 @@ pulsesToLoad 	= 0
 # pulsesToLoad 	= 5
 # REMEMBER: The Doppler FFT removes two pulses.
 folder 			= "Test"
-fileNumber 		= "004"
+fileNumber 		= "012"
 
 # File location.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -43,85 +43,10 @@ phaseFile       = fileBin * "_PhaseShifts.bin"
 
 dcFreqShift = 0
 
-# Get the value from the string given the position.
-function parseNumber(string::String, startIndex::Number)
 
-    stringAns = ""
-	index = startIndex
-    while(string[index]!=' ' && string[index]!='\n')
-		stringAns = stringAns * string[index]
-		index += 1
-        if index>length(string) break end
-	end
-	return parse(Float32, stringAns)
-
-end
 
 global LFM = false
 global NLFM = false
-
-# Iterate over the file lines.
-for line in eachline(abspath(fileTxt))
-
-	# Sampling rate.
-	if isnothing(findfirst("TX sampling rate", line)) == false
-
-		global fs 				= trunc(Int32, parseNumber(line, 19)*1e6)
-		
-	# Center frequency.
-	elseif isnothing(findfirst("TX wave frequency", line)) == false
-		
-		global fc 				= parseNumber(line, 20)*1e6
-
-	# Wave samples.
-	elseif isnothing(findfirst("Radar Waveform Samples", line)) == false
-
-		global nSamplesWave 	= trunc(Int32, parseNumber(line, 25))
-
-	# Pulse samples.
-	elseif isnothing(findfirst("Radar Pulse Samples", line)) == false
-
-		global nSamplesPulse 	= trunc(Int32, parseNumber(line, 22))
-
-	# PRF 
-	elseif isnothing(findfirst("PRF", line)) == false
-
-		global PRF	 			= parseNumber(line, 6)
-
-	# DC Offset
-	elseif isnothing(findfirst("DC Frequency Offset Actual", line)) == false
-
-		global dcFreqShift	 	= parseNumber(line, 29)
-		println("DC Shift: ", dcFreqShift)
-
-	# Wave bandwidth.
-	elseif isnothing(findfirst("Wave bandwidth", line)) == false
-
-		global BW	 			= parseNumber(line, 17) * 1e6
-
-	# Waveform type.
-	elseif isnothing(findfirst("Wave type", line)) == false
-
-		if isnothing(findfirst("Linear Frequency Chirp", line)) == false
-            global waveStr = "LFM"
-		elseif isnothing(findfirst("Optimal Bezier", line)) == false
-            global waveStr = "Bezier"
-		elseif isnothing(findfirst("Optimal Logit", line)) == false
-            global waveStr = "Logit"	
-        end
-
-    # Total pulses.
-	elseif isnothing(findfirst("Total pulses", line)) == false
-
-		global totalPulses	 			= parseNumber(line, 15)
-
-    elseif isnothing(findfirst("Radar max range", line)) == false
-
-		global max_range	 			= parseNumber(line, 18)
-
-	end
-
-end
 
 println("Total pulses: ", totalPulses)
 
@@ -153,8 +78,15 @@ println("Wave type: " * waveStr)
 #  P R O C E S S I N G  &  P L O T T I N G  #
 # ----------------------------------------- #
 
+# Change the theme for the raw image.
+rawImage = true
+if rawImage
+    update_theme!(figure_padding = (0, 0, 0, 0))
+end
+
 # Figure for plotting.
 figure = Figure(resolution = (1920, 1080))
+# figure = Figure()
 # figure = Figure(resolution = (1080, 1080))
 # figure = Figure(resolution = (1920, 1920)) # Square
 
@@ -183,9 +115,10 @@ PCsignal = pulseCompression(txSignal, rxSignal)
 
 freqVal = dcFreqShift
 if freqVal == 0 freqVal = 10000 end
-plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [0,20], 
+plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [10, 20], 
 			   # xRange = 500, yRange = 250, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
-			   xRange = max_range, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal)
+			   xRange = max_range, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal,
+               removeClutter = true, rawImage = rawImage)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
@@ -204,8 +137,10 @@ plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesP
 # ax2 = Axis(figure[1, 2], xlabel = "Amplitude (V)", ylabel = "Total", title = "RX Noise",
 # titlesize = textSize, ylabelsize=textSize, xlabelsize=textSize)
 # heatmap!(abs.(rxMatrix))
-display(figure)
+# display(figure)
 # save("Testing.pdf", figure)
+# save("Doppler.png", figure)
+save("DopplerThreshold.png", figure)
 
 # fftMatrix = dopplerFFT(rxSignal, [1, nSamplesPulse*2], nSamplesPulse, PRF)
 # velocityBinCount = length(fftMatrix[])

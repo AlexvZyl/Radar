@@ -12,12 +12,13 @@ include("Synchroniser.jl")
 #  D O P P L E R   F F T   P L O T  #
 # ================================= #
 
-function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
+function plotDopplerFFT(figure, signal::Vector, position::Vector,
                         syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32,
                         dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
                         axis = false, label="Doppler FFT", nWaveSamples=false,
-                        plotDCBin::Bool = false, plotFreqLines::Bool = true, freqVal = 20)
+                        plotDCBin::Bool = false, plotFreqLines::Bool = true, freqVal = 20,
+                        removeClutter::Bool = false, rawImage::Bool = false, return_doppler_fft::Bool = false)
     
     # Calculate the PRF.
     PRI = (pulseLengthSamples) / fs
@@ -25,7 +26,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
 
     # Get the Doppler FFT.
     frequencies = Any
-    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF)
+    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF, removeClutter = removeClutter)
     # The format of dopplerFFTMatrix : Array{Float64}(undef, pulseLengthSamples, totalPulses)
     
     # --------------------------- #
@@ -38,7 +39,8 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
    
     # Calculate noise floor.
     snrCalcBinCount = 500
-    noiseFloor = mean(dopplerFFTMatrix[:,1:1:snrCalcBinCount])
+    # noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
+    noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
     println("Noise Floor: ", noiseFloor)
     println("Noise Floor (dB): ", 20*log10(noiseFloor))
 
@@ -107,10 +109,17 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         end
         
     end
+
+    # Just return the matrix without plotting anything.
+    if return_doppler_fft
+        return dopplerFFTMatrix, rangeVector, velocityVector
+    end
     
     # ----------------- #
     #  P L O T T I N G  #
     # ----------------- #
+    
+    dopplerFFTMatrix = abs.(dopplerFFTMatrix)
 
     if plotDCBin == false
 
@@ -118,8 +127,12 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         ax = nothing
         # If no axis was specified.
         if axis == false
-            ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
-            plotOrigin(ax) 
+            if !rawImage
+                ax = Axis(figure[position[1], position[2]], xlabel = "Distance (m)", ylabel = "Velocity (m/s)", title = label)
+                plotOrigin(ax) 
+            else
+                ax = Axis(figure[position[1], position[2]], xlabel = "", ylabel = "", title = "", leftspinevisible = false, rightspinevisible = false, topspinevisible = false, bottomspinevisible = false, yticklabelsvisible = false, xticklabelsvisible = false)
+            end
         # If an axis has been specified.
         else
             ax = axis
@@ -132,7 +145,7 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
                       colorrange = dBRange)
 
         # Plot velocities.
-        if plotFreqLines
+        if plotFreqLines && !rawImage
             println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
             # Converts Hz to m/s
             λ = c / fc
@@ -148,10 +161,12 @@ function plotDopplerFFT(figure::Figure, signal::Vector, position::Vector,
         end
                     
         # Plot the colorbar.
-        cbar = Colorbar(figure[position[1], position[2]+1], colorrange=(dBRange[1], dBRange[2]), label="SNR (dB)")
+        if !rawImage
+            cbar = Colorbar(figure[position[1], position[2]+1], colorrange=(dBRange[1], dBRange[2]), label="SNR (dB)")
+        end
 
         # Plot a line at the deadzone.
-        if nWaveSamples != false
+        if nWaveSamples != false && !rawImage
             deadZoneRange = (nWaveSamples / (2 * fs) ) * c
             vlines!(ax, deadZoneRange, color=:cyan, linewidth = 3.5, label="Deadzone")
             if axis == false
@@ -219,14 +234,14 @@ end
 
 # Calculate the Doppler FFT of the given signal.
 # Will most likely be a pulse compressed signal that is passed.
-function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number)
+function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false)
 
     # First sync the signal.
     syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
 
     # Now we need to create a matrix of aligned pulses.
     totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)
-    pulseMatrix = Array{Complex{Float64}}(undef, pulseLengthSamples, totalPulses)
+    pulseMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses)
 
     # Iterate for every pulse.
     for i in 1:1:totalPulses
@@ -237,13 +252,19 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
 
     # Now take the fft over the samples.
     frequencies = Any
-    fftMatrix = Array{Float64}(undef, pulseLengthSamples, totalPulses)
+    fftMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses)
     # Make this call to get the frequencies for the window.
     null, frequencies, dcComplex = powerSpectra(pulseMatrix[1,:], PRF, true)
     # window = generateChebychevWindow(frequencies, -1)
     window = kaiser(length(pulseMatrix[1,:]), 3)
     for s in 1:1:pulseLengthSamples
+        # Remove clutter.
+        if removeClutter
+            pulseMatrix[s,:] .-= mean(pulseMatrix[s,:])
+        end
+        # Apply window.
         pulseMatrix[s,:] .*= ComplexF64.(window, window)
+        # Calculate fft.
         fftMatrix[s,:], null = powerSpectra(pulseMatrix[s,:], PRF, false)
     end
 

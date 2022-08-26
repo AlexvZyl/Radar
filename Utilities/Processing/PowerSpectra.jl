@@ -64,8 +64,7 @@ end
 function powerSpectra(signal::Vector, fs::Number, returnFrequencies::Bool; 
                       paddingCount::Number=0)
 
-    #  P A D D I N G  #
-    
+    # Padding.
     if paddingCount != 0
         zerosVec = zeros(paddingCount) + im*zeros(paddingCount)
         append!(signal, zerosVec) 
@@ -74,7 +73,6 @@ function powerSpectra(signal::Vector, fs::Number, returnFrequencies::Bool;
     # Calculate FFT.
     signalFFT = fft(signal)
     dcComplex = signalFFT[1]
-    signalFFT = abs.(signalFFT)
     fftLength = length(signalFFT)
 
     # Odd FFT's.

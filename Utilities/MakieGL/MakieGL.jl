@@ -81,7 +81,8 @@ end
 if cairomakie
 
 	using CairoMakie
-	CairoMakie.activate!(type = "pdf")
+	# CairoMakie.activate!(type = "pdf")
+	CairoMakie.activate!(type = "png")
 
 	update_theme!(
 		Axis = (

@@ -41,7 +41,20 @@ end
 # Pulse compression.
 pc_signal = pulseCompression(tx_signal, rx_signal)
 
+# Doppler fft.
+doppler_fft_matrix, range_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+			                                        xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
+                                                    removeClutter = true, rawImage = false, return_doppler_fft = true)
 
+# Convert to dB.
+doppler_fft_matrix = 20*log10.(abs.(doppler_fft_matrix))
+
+# Debug with plot.
+figure = Figure()
+axis = Axis(figure[1,1])
+hm = heatmap!(figure[1, 1], range_vector, velocity_vector, doppler_fft_matrix, colorrange = [10, 20])
+display(figure)
 
 # Save the results to a file.
-destination_folder = "Data"
+destination_folder = "Data/"
+destination_file = file_bin  
