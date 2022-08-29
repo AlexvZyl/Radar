@@ -48,13 +48,11 @@ doppler_fft_matrix, range_vector, velocity_vector = plotDopplerFFT(false, pc_sig
 			                                        xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                     removeClutter = true, rawImage = false, return_doppler_fft = true)
 
-# Debug with plot.
-# figure = Figure()
-# axis = Axis(figure[1,1])
-# hm = heatmap!(figure[1, 1], range_vector, velocity_vector, doppler_fft_matrix, colorrange = [10, 20])
-# display(figure)
-
-# Save the results to a file.
+# Destination file.                                                    
 destination_folder = "Data/" * folder * "/"
 destination_file = destination_folder * file * ".jld"  
-save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix)
+
+# Save the data to file.
+save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
+                       "Velocity", velocity_vector,
+                       "Range", range_vector)
