@@ -59,8 +59,8 @@ save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix,
 
 
 # Debug with plot.
-figure = Figure()
-axis = Axis(figure[1,1])
-doppler_fft_matrix = 20*log10.(abs.(doppler_fft_matrix))
-hm = heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [15, 20])
-display(figure)
+# figure = Figure()
+# axis = Axis(figure[1,1])
+# doppler_fft_matrix = 20*log10.(abs.(doppler_fft_matrix))
+# hm = heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [15, 20])
+# display(figure)

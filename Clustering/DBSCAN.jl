@@ -6,20 +6,18 @@ using JLD
 struct WeightParameters
     distance
     velocity
-    real
-    imag
+    magnitude
 end 
-global weight_parameters = WeightParameters(2, 2, 1, 1)
+global weight_parameters = WeightParameters(1/1000 * 8, 1/10 * 8, 1/20)
 
 # Create a d*n adjacency matrix to.
 function create_adjacency_matrix(doppler_data::Matrix{ComplexF64}, distance::AbstractRange, velocity::AbstractRange; snr_threshold::Number = 15)
 
+    # Setup data.
     total_entries = size(doppler_data, 1) * size(doppler_data, 2)
     distance_step = step(distance)
-    # The 4 dimensions: distance, velocity, real, imagenary.
-    adjacency_matrix = Matrix{Float32}(undef, 4, 0)
-    # Calculate the DB value to compare to the threshold.
-    doppler_data_db = 20*log10.(abs.(doppler_data))   
+    adjacency_matrix = Matrix{Float32}(undef, 3, 0)
+    doppler_data_db = amp2db.(abs.(doppler_data))   
     # Calculate the matrix column major.
     for c in 1:size(doppler_data_db, 2)
         for r in 1:size(doppler_data_db, 1)
@@ -27,8 +25,7 @@ function create_adjacency_matrix(doppler_data::Matrix{ComplexF64}, distance::Abs
             if doppler_data_db[r, c] >= snr_threshold
                 new_entry = [ ((distance_step*r)-distance_step/2) * weight_parameters.distance, 
                               velocity[c] * weight_parameters.velocity, 
-                              real(doppler_data[r, c]) * weight_parameters.real,  
-                              imag(doppler_data[r, c]) * weight_parameters.imag ]
+                              doppler_data_db[r, c] * weight_parameters.magnitude ]  
                 adjacency_matrix = hcat(adjacency_matrix, new_entry)
             end
         end
@@ -71,6 +68,9 @@ end
 # Meta data.
 folder = "Test"
 file_number = "012"
+snr_threshold = 13
+dbscan_radius = 0.18
+min_cluster_size = 1
 
 # Load the data.
 file = "Data/" * folder * "/B210_SAMPLES_" * folder * "_" * file_number * ".jld"
@@ -80,8 +80,8 @@ distance = file_data["Distance"]
 velocity = file_data["Velocity"]
 
 # DBSCAN.
-adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity)
-result = dbscan(adjacency_matrix, 10, min_cluster_size = 5)
+adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size)
 
 # Plot.
-plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity)
+plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold =snr_threshold)
