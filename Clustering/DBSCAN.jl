@@ -8,13 +8,12 @@ struct WeightParameters
     velocity
     magnitude
 end 
-global weight_parameters = WeightParameters(1/1000 * 8, 1/10 * 8, 1/20)
+global weight_parameters = WeightParameters(1/1000 * 10, 1/10 * 10, 1/20 * 0.5)
 
 # Create a d*n adjacency matrix to.
 function create_adjacency_matrix(doppler_data::Matrix{ComplexF64}, distance::AbstractRange, velocity::AbstractRange; snr_threshold::Number = 15)
 
     # Setup data.
-    total_entries = size(doppler_data, 1) * size(doppler_data, 2)
     distance_step = step(distance)
     adjacency_matrix = Matrix{Float32}(undef, 3, 0)
     doppler_data_db = amp2db.(abs.(doppler_data))   
@@ -36,13 +35,14 @@ end
 
 # Plot the DBSCAN result.
 function plot(result::Vector{DbscanCluster}, adjacency_matrix::AbstractMatrix, doppler_data::Matrix{ComplexF64}, distance::AbstractRange, velocity::AbstractRange; snr_threshold::Number = 15)
-    # Setup,
+
+    # Setup.
     figure = Figure()
-    axis = Axis(figure[1,1])
+    Axis(figure[1,1])
 
     # Plot doppler data.
     doppler_data_db = 20*log10.(abs.(doppler_data))
-    hm = heatmap!(figure[1, 1], distance, velocity, doppler_data_db, colorrange = [snr_threshold, 20])
+    heatmap!(figure[1, 1], distance, velocity, doppler_data_db, colorrange = [snr_threshold, 20])
 
     # Plot the dbsan results.
     for cluster in result
@@ -65,12 +65,16 @@ function plot(result::Vector{DbscanCluster}, adjacency_matrix::AbstractMatrix, d
     display(figure)    
 end
 
+# Parameters.
+snr_threshold = 10
+dbscan_radius = 0.18
+min_cluster_size = 5
+min_neighbors = 1
+leaf_size = 20
+
 # Meta data.
 folder = "Test"
-file_number = "012"
-snr_threshold = 13
-dbscan_radius = 0.18
-min_cluster_size = 1
+file_number = "010"
 
 # Load the data.
 file = "Data/" * folder * "/B210_SAMPLES_" * folder * "_" * file_number * ".jld"
@@ -81,7 +85,7 @@ velocity = file_data["Velocity"]
 
 # DBSCAN.
 adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
-result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size)
+result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size, min_neighbors = min_neighbors, leafsize = leaf_size)
 
 # Plot.
-plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold =snr_threshold)
+plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
