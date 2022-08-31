@@ -38,8 +38,8 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector,
     # since there won't be any targets here.
    
     # Calculate noise floor.
-    snrCalcBinCount = 500
-    # noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
+    # This value could in some cases be too large...
+    snrCalcBinCount = Int(floor(Base.size(dopplerFFTMatrix, 2) * 0.05))
     noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
     println("Noise Floor: ", noiseFloor)
     println("Noise Floor (dB): ", 20*log10(noiseFloor))
