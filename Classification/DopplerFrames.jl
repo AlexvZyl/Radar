@@ -47,14 +47,17 @@ frames = create_frames(meta_data.total_pulses, frame_count, frame_overlap)
 # Calculate the doppler frames.
 doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(file, frames)
     
+display(distance_vector)
+display(velocity_vector)
+
 # Debugging.
 plot(amp2db.(abs.(doppler_frames[1])), distance_vector, velocity_vector)
 
 # Destination file.                                                    
-# destination_folder = "Data/" * folder * "/"
-# destination_file = destination_folder * file * ".jld"  
+destination_folder = "Data/DopplerFrames/" * folder * "/"
+destination_file = destination_folder * file_prefix * file_number * ".jld"  
 
 # Save the data to file.
-# save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
-                       # "Velocity", velocity_vector,
-                       # "Distance", distance_vector)
+save(destination_file, "Doppler FFT Frames", doppler_frames, 
+                       "Velocity", velocity_vector,
+                       "Distance", distance_vector)
