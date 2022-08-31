@@ -66,7 +66,7 @@ function plot(result::Vector{DbscanCluster}, adjacency_matrix::AbstractMatrix, d
 end
 
 # Parameters.
-snr_threshold = 10
+snr_threshold = 12
 dbscan_radius = 0.18
 min_cluster_size = 5
 min_neighbors = 1
