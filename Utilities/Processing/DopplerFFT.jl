@@ -41,8 +41,8 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector,
     # This value could in some cases be too large...
     snrCalcBinCount = Int(floor(Base.size(dopplerFFTMatrix, 2) * 0.05))
     noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
-    println("Noise Floor: ", noiseFloor)
-    println("Noise Floor (dB): ", 20*log10(noiseFloor))
+    # println("Noise Floor: ", noiseFloor)
+    # println("Noise Floor (dB): ", 20*log10(noiseFloor))
 
     # Divide FFT by noise floor.
     dopplerFFTMatrix = dopplerFFTMatrix ./ noiseFloor
@@ -270,7 +270,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
 
     windowSum = sum(window)
     dcTot = dcComplex / windowSum
-    println(dcTot)
+    # println(dcTot)
 
     return fftMatrix, frequencies
 
