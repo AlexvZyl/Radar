@@ -16,7 +16,7 @@ function create_frames(total_pulses::Number, frame_count::Number, frame_overlap:
 
     # Populate frame vector.
     for i in range(1, frame_count)    
-        frames[i] = Frame(starting_position, starting_position + frame_size)       
+        frames[i] = Frame(trunc(Int, starting_position), trunc(Int, starting_position + frame_size))       
         starting_position += frame_size - frame_overlap / 2
     end
 
@@ -30,8 +30,7 @@ end
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
-frame_count     = 5
-frame_overlap   = 100000 # In pulses.
+frame_count     = 1
 
 # Fixed metdata.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -40,6 +39,7 @@ file            = path * folder * file_prefix * file_number
 
 # Create frames from the meta data.
 meta_data = load_meta_data(file * ".txt")
+frame_overlap = trunc(Int, (meta_data.total_pulses / frame_count) / 2) - 1
 frames = create_frames(meta_data.total_pulses, frame_count, frame_overlap)
 
 # Calculate the doppler frames.

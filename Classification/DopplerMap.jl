@@ -99,7 +99,6 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
 
     # We need to padd the signal since the frames are going to be smaller than the entire signal.
     padding_count = (meta_data.total_pulses - size(frames[1]))
-    println(padding_count)
     
     # Doppler fft.
     null, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
@@ -115,7 +114,6 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
         padding_count = (meta_data.total_pulses - size(frame))
-        println(padding_count)
 
         # Calculate doppler matrix.
         doppler_fft_matrix, null1, null2 = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
