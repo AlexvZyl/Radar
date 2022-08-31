@@ -30,7 +30,7 @@ end
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
-frame_count     = 1
+frame_count     = 5
 
 # Fixed metdata.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
