@@ -103,6 +103,7 @@ function loadDataFromBin(file::String; pulsesToLoad::Number=0, samplesPerPulse::
 
 	# Load the channels.
 	Ichannel = rawData[1:2:end]
+
 	Qchannel = rawData[2:2:end]
 	
 	# Create and return complex vector.
