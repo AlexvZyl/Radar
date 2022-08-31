@@ -18,8 +18,8 @@ function create_adjacency_matrix(doppler_data::Matrix{ComplexF64}, distance::Abs
     adjacency_matrix = Matrix{Float32}(undef, 3, 0)
     doppler_data_db = amp2db.(abs.(doppler_data))   
     # Calculate the matrix column major.
-    for c in 1:size(doppler_data_db, 2)
-        for r in 1:size(doppler_data_db, 1)
+    for c in 1:Base.size(doppler_data_db, 2)
+        for r in 1:Base.size(doppler_data_db, 1)
             # We can ignore values that are not detected by the radar.
             if doppler_data_db[r, c] >= snr_threshold
                 new_entry = [ ((distance_step*r)-distance_step/2) * weight_parameters.distance, 
@@ -77,7 +77,8 @@ folder = "Test"
 file_number = "010"
 
 # Load the data.
-file = "Data/" * folder * "/B210_SAMPLES_" * folder * "_" * file_number * ".jld"
+file_prefix =  "/B210_SAMPLES_" * folder * "_"
+file = "Data/EntireDopplerMap/" * folder * file_prefix * file_number * ".jld"
 file_data = load(file)
 doppler_fft_matrix = file_data["Doppler FFT Matrix"]
 distance = file_data["Distance"]
@@ -89,3 +90,10 @@ result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_
 
 # Plot.
 plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+
+# Destination file.                                                    
+destination_folder = "Data/DopplerClustering/" * folder * "/"
+destination_file = destination_folder * file_prefix * file_number * ".jld"  
+
+# Save the data to file.
+save(destination_file, "Clustering Result", result)
