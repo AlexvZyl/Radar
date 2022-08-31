@@ -12,7 +12,7 @@ function create_frames(total_pulses::Number, frame_count::Number, frame_overlap:
     frame_size = floor( ( total_pulses + (frame_overlap * (frame_count-1) ) ) / frame_count )
     starting_position = 1
 
-    @assert frame_size > frame_overlap "Supplied invalid values.  Frame overlap is larger than the size.  Reduce overlap or frame count."
+    @assert frame_size > 2*frame_overlap "Frame overlap is larger than half the frame size.  Reduce overlap or frame count."
 
     # Populate frame vector.
     for i in range(1, frame_count)    
@@ -24,16 +24,14 @@ function create_frames(total_pulses::Number, frame_count::Number, frame_overlap:
     # This should not have a large effect on the result.
     frames[end].last = total_pulses
 
-    @assert size(frames[end]) >= 0 "Last frame is not valid.  Should probably reduce the amount of frames." 
-
     return frames
 end
 
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
-frame_count     = 1
-frame_overlap   = 10 # In pulses.
+frame_count     = 5
+frame_overlap   = 100000 # In pulses.
 
 # Fixed metdata.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -46,12 +44,9 @@ frames = create_frames(meta_data.total_pulses, frame_count, frame_overlap)
 
 # Calculate the doppler frames.
 doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(file, frames)
-    
-display(distance_vector)
-display(velocity_vector)
 
 # Debugging.
-plot(amp2db.(abs.(doppler_frames[1])), distance_vector, velocity_vector)
+plot(abs.(doppler_frames[1]), distance_vector, velocity_vector, snr_threshold = 0)
 
 # Destination file.                                                    
 destination_folder = "Data/DopplerFrames/" * folder * "/"

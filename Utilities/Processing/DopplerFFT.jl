@@ -13,12 +13,12 @@ include("Synchroniser.jl")
 # ================================= #
 
 function plotDopplerFFT(figure, signal::Vector, position::Vector,
-                        syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32,
-                        dBRange::Vector;
+                        syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32, dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
                         axis = false, label="Doppler FFT", nWaveSamples=false,
                         plotDCBin::Bool = false, plotFreqLines::Bool = true, freqVal = 20,
-                        removeClutter::Bool = false, rawImage::Bool = false, return_doppler_fft::Bool = false)
+                        removeClutter::Bool = false, rawImage::Bool = false, return_doppler_fft::Bool = false,
+                        padding_count::Number = 0)
     
     # Calculate the PRF.
     PRI = (pulseLengthSamples) / fs
@@ -26,7 +26,7 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector,
 
     # Get the Doppler FFT.
     frequencies = Any
-    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF, removeClutter = removeClutter)
+    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF, removeClutter = removeClutter, padding_count = padding_count)
     # The format of dopplerFFTMatrix : Array{Float64}(undef, pulseLengthSamples, totalPulses)
     
     # --------------------------- #
@@ -41,8 +41,6 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector,
     # This value could in some cases be too large...
     snrCalcBinCount = Int(floor(Base.size(dopplerFFTMatrix, 2) * 0.05))
     noiseFloor = mean(abs.(dopplerFFTMatrix[:,1:1:snrCalcBinCount]))
-    # println("Noise Floor: ", noiseFloor)
-    # println("Noise Floor (dB): ", 20*log10(noiseFloor))
 
     # Divide FFT by noise floor.
     dopplerFFTMatrix = dopplerFFTMatrix ./ noiseFloor
@@ -146,7 +144,7 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector,
 
         # Plot velocities.
         if plotFreqLines && !rawImage
-            println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
+            # println("Doppler FFT Freq Line Increments: ", freqVal, " Hz")
             # Converts Hz to m/s
             λ = c / fc
             freqIncrement = freqVal * λ / 2 
@@ -234,7 +232,7 @@ end
 
 # Calculate the Doppler FFT of the given signal.
 # Will most likely be a pulse compressed signal that is passed.
-function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false)
+function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false, padding_count::Number = 0)
 
     # First sync the signal.
     syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
@@ -252,9 +250,9 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
 
     # Now take the fft over the samples.
     frequencies = Any
-    fftMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses)
+    fftMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses + padding_count)
     # Make this call to get the frequencies for the window.
-    null, frequencies, dcComplex = powerSpectra(pulseMatrix[1,:], PRF, true)
+    null, frequencies, dcComplex = powerSpectra(pulseMatrix[1,:], PRF, true, paddingCount = padding_count)
     # window = generateChebychevWindow(frequencies, -1)
     window = kaiser(length(pulseMatrix[1,:]), 3)
     for s in 1:1:pulseLengthSamples
@@ -265,7 +263,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
         # Apply window.
         pulseMatrix[s,:] .*= ComplexF64.(window, window)
         # Calculate fft.
-        fftMatrix[s,:], null = powerSpectra(pulseMatrix[s,:], PRF, false)
+        fftMatrix[s,:], null = powerSpectra(pulseMatrix[s,:], PRF, false, paddingCount = padding_count)
     end
 
     windowSum = sum(window)

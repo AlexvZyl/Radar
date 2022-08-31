@@ -3,6 +3,8 @@ include("DopplerMap.jl")
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
+
+# Fixed data.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
 file_prefix 	= "/B210_SAMPLES_" * folder * "_"
 file            = path * folder * file_prefix * file_number
@@ -18,4 +20,6 @@ destination_file = relpath(destination_folder * file_prefix * file_number * ".jl
 save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
                        "Velocity", velocity_vector,
                        "Distance", distance_vector)
+
+plot(doppler_fft_matrix, distance_vector, velocity_vector)
 

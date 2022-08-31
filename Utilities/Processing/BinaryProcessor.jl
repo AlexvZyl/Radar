@@ -8,7 +8,7 @@ mutable struct Meta_Data
     dc_freq_shift::Float64
     bandwidth::Float64
     wave_type::String
-    total_pulses::Int32
+    total_pulses::Int64
     max_range::Float64
 
     Meta_Data() = new(0, 0, 0, 0, 0, 0, 0, "", 0, 0) 
@@ -68,7 +68,7 @@ function load_meta_data(file::String)
             end
     
     	elseif isnothing(findfirst("Total pulses", line)) == false
-            meta_data.total_pulses  = Int32(parseNumber(line, 15))
+            meta_data.total_pulses  = Int32(parseNumber(line, 15)) - 10 # Remove 10 pulses just to be safe.
     
         elseif isnothing(findfirst("Radar max range", line)) == false
     		meta_data.max_range	= parseNumber(line, 18)
@@ -80,12 +80,12 @@ function load_meta_data(file::String)
 end
 
 # Process binary file.
-function loadDataFromBin(file::String; pulsesToLoad::Number=0, samplesPerPulse::Number=0)
+function loadDataFromBin(file::String, meta_data::Meta_Data; pulsesToLoad::Number=0)
 
 	# If a certain amount of pulses that were specified.
 	if pulsesToLoad != 0
 
-		rawData = Array{Float64}(undef, pulsesToLoad*samplesPerPulse*2)
+		rawData = Array{Float64}(undef, pulsesToLoad*meta_data.pulse_sample_count*2)
 
 	# Load all of the data.
 	else
@@ -103,9 +103,8 @@ function loadDataFromBin(file::String; pulsesToLoad::Number=0, samplesPerPulse::
 
 	# Load the channels.
 	Ichannel = rawData[1:2:end]
-
 	Qchannel = rawData[2:2:end]
-	
+
 	# Create and return complex vector.
 	return Ichannel + im*Qchannel
 

@@ -107,7 +107,6 @@ function pulseCompression(txSignal::Vector, rxSignal::Vector)
     return xcorr(rxSignal, txSignal, padmode = :none)
 end
 
-
 function splitMatrix(signal, pulseLengthSamples, syncRange)
 
     # First sync the signal.
