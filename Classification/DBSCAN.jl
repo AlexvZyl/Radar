@@ -51,12 +51,12 @@ function plot(result::Vector{DbscanCluster}, adjacency_matrix::AbstractMatrix, d
         velocity_data = Array{Float32}(undef, cluster.size)
         # Populate data.
         for (i, index) in enumerate(cluster.core_indices)
-            distance_data[i] = adjacency_matrix[1, index] / weight_parameters.distance
-            velocity_data[i] = adjacency_matrix[2, index] / weight_parameters.velocity
+            distance_data[i] = adjacency_matrix[1, index] 
+            velocity_data[i] = adjacency_matrix[2, index] 
         end
         for (i, index) in enumerate(cluster.boundary_indices)
-            distance_data[i] = adjacency_matrix[1, index] / weight_parameters.distance
-            velocity_data[i] = adjacency_matrix[2, index] / weight_parameters.velocity
+            distance_data[i] = adjacency_matrix[1, index] 
+            velocity_data[i] = adjacency_matrix[2, index] 
         end 
         scatter!(distance_data, velocity_data)
     end
@@ -74,7 +74,7 @@ leaf_size = 20
 
 # Meta data.
 folder = "Test"
-file_number = "010"
+file_number = "012"
 
 # Load the data.
 file_prefix =  "/B210_SAMPLES_" * folder * "_"
@@ -88,6 +88,13 @@ velocity = file_data["Velocity"]
 adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
 result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size, min_neighbors = min_neighbors, leafsize = leaf_size)
 
+# Correct the distance and velocity data before using.
+display(adjacency_matrix)
+for c in range(1, Base.size(adjacency_matrix, 2))
+    adjacency_matrix[1,c] /= weight_parameters.distance
+    adjacency_matrix[2,c] /= weight_parameters.velocity
+end
+
 # Plot.
 plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
 
@@ -96,4 +103,7 @@ destination_folder = "Data/DopplerClustering/" * folder * "/"
 destination_file = destination_folder * file_prefix * file_number * ".jld"  
 
 # Save the data to file.
-save(destination_file, "Clustering Result", result)
+save(destination_file, 
+    "Clustering Result", result,
+    "Adjacency Matrix", adjacency_matrix,
+    "Weight Parameters", weight_parameters)
