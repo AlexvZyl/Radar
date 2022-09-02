@@ -1,4 +1,6 @@
+# Modules.
 using JLD
+include("DopplerMap.jl")
 
 # Meta data.
 folder 			= "Test"
@@ -10,11 +12,10 @@ file_prefix 	= "/B210_SAMPLES_" * folder * "_"
 file            = path * folder * file_prefix * file_number * ".jld"
 
 # Load the file.
-file_data = load(file)
-doppler_frames = file_data["Doppler FFT Frames"]
+file_data       = load(file)
+doppler_frames  = file_data["Doppler FFT Frames"]
 distance_vector = file_data["Distance"]
 velocity_vector = file_data["Velocity"]
 
-# Debugging.
-display(length(doppler_frames))
-plot(abs.(doppler_frames[5]), distance_vector, velocity_vector, snr_threshold = 0)
+# Render.
+animate(doppler_frames, distance_vector, velocity_vector, snr_threshold = 10)

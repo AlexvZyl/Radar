@@ -101,13 +101,13 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     for frame in frames
 
         # Pulse compression.
-        pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frame, meta_data)])       
+        pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frame, meta_data)])
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
         padding_count = meta_data.total_pulses - size(frame)
 
         # Calculate doppler matrix.
-        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, Int(meta_data.pulse_sample_count*2)], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
     			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                                removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 
@@ -139,5 +139,35 @@ function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange
     # Plot and display.
     hm = heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [snr_threshold, 20])
     display(figure)
+
+end
+
+# Animate the doppler frames on a figure.
+function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange, velocity::AbstractRange; sleep_seconds::Number = 0.5, snr_threshold::Number = 13)
+
+    # Create the figure and axis. 
+    figure = Figure()
+    axis = Axis(figure[1,1])
+    display(figure)
+
+    # Get the dB of the magnitude.
+    doppler_frames_db = Vector{AbstractMatrix}(undef, length(doppler_frames))
+    for (index, frame) in enumerate(doppler_frames)
+        doppler_frames_db[index] = amp2db.(abs.(frame))
+    end
+
+    # Keep looping until the user interrupts.
+    while true
+        
+        # Iterate and display the frames.
+        for (index, frame) in enumerate(doppler_frames_db)
+            # Plot and display.
+            heatmap!(figure[1, 1], distance, velocity, frame, colorrange = [snr_threshold, 20])
+            legend_element = MarkerElement(marker = " ")
+            text!(5,4.85, text = "Frame Index: " * string(index))
+            sleep(sleep_seconds)
+        end
+
+    end
 
 end
