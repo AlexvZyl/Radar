@@ -2,6 +2,7 @@
 # in a file so that the clustering can take place.
 
 using JLD
+using Clustering
 
 # Includes.
 include("../Utilities/MakieGL/PlotUtilities.jl")
@@ -143,17 +144,46 @@ function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange
 end
 
 # Animate the doppler frames on a figure.
-function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange, velocity::AbstractRange; sleep_seconds::Number = 0.5, snr_threshold::Number = 13)
+function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange, velocity::AbstractRange; 
+                 sleep_seconds::Number = 0.5, snr_threshold::Number = 13, clusters::Vector{DbscanCluster} = undef,
+                 adjacency_matrix::AbstractMatrix = undef)
 
     # Create the figure and axis. 
     figure = Figure()
     Axis(figure[1,1])
     display(figure)
 
-    # Get the dB of the magnitude.
+    # Ensure data is valid.
+    if clusters != undef || adjacency_matrix != undef
+        @assert clusters != undef "Did not provide the cluster data." 
+        @assert adjacency_matrix != undef "Did not provide the adjacency matrix."
+    end
+
+    # Get the dB of the magnitude.distance_data
     doppler_frames_db = Vector{AbstractMatrix}(undef, length(doppler_frames))
     for (index, frame) in enumerate(doppler_frames)
         doppler_frames_db[index] = amp2db.(abs.(frame))
+    end
+
+    # Setup the clustering data.
+    distance_data = Vector{Vector{Float64}}(undef, length(clusters))
+    velocity_data = Vector{Vector{Float64}}(undef, length(clusters))   
+
+    # Load the data.
+    for (c, cluster) in enumerate(clusters)
+        distance_temp = Vector{Float64}(undef, cluster.size)
+        velocity_temp = Vector{Float64}(undef, cluster.size)
+        # Populate data.
+        for (i, index) in enumerate(cluster.core_indices)
+            distance_temp[i] = adjacency_matrix[1, index]
+            velocity_temp[i] = adjacency_matrix[2, index]
+        end
+        for (i, index) in enumerate(cluster.boundary_indices)
+            distance_temp[i] = adjacency_matrix[1, index]
+            velocity_temp[i] = adjacency_matrix[2, index]
+        end
+        distance_data[c] = distance_temp
+        velocity_data[c] = velocity_temp
     end
 
     # Keep looping until the user interrupts.
@@ -163,10 +193,15 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
         for (index, frame) in enumerate(doppler_frames_db)
             # Plot and display.
             heatmap!(figure[1, 1], distance, velocity, frame, colorrange = [snr_threshold, 20])
-            text!(5,4.8, text = "Frame Index: " * string(index))
+            # Render clustering data.
+            if clusters != undef
+                for (distance, velocity) in zip(distance_data, velocity_data)
+                    scatter!(distance, velocity)
+                end
+            end
+            text!(5,4.78, text = "Frame Index: " * string(index))
             sleep(sleep_seconds)
         end
 
     end
-
 end
