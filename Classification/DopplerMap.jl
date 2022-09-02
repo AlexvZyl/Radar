@@ -92,20 +92,11 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     
     # TX Signal.
     tx_signal = generate_tx_signal(meta_data) 
-    
-    # Pulse compression.
-    pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frames[1], meta_data)])
-
-    # We need to padd the signal since the frames are going to be smaller than the entire signal.
-    padding_count = meta_data.total_pulses - size(frames[1])
-    
-    # Doppler fft.
-    null, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
-    			                                            xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
-                                                            removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 
     # Calculate doppler maps for each frame.
     doppler_frames = Vector{AbstractMatrix}(undef, length(frames))
+    distance_vector = AbstractRange
+    velocity_vector = AbstractRange
     index = 1
     for frame in frames
 
@@ -113,12 +104,12 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
         pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frame, meta_data)])       
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
-        padding_count = (meta_data.total_pulses - size(frame))
+        padding_count = meta_data.total_pulses - size(frame)
 
         # Calculate doppler matrix.
-        doppler_fft_matrix, null1, null2 = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
-    			                                          xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
-                                                          removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
+        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+    			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
+                                                               removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 
         # Add current doppler matrix to the list of frames.
         doppler_frames[index] = doppler_fft_matrix
