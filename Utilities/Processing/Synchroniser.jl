@@ -3,26 +3,26 @@
 # --------------------------- #
 
 function syncPulseCompressedSignal(signal::Vector, pulseLengthSamples::Number, syncRange::Vector;
-                                    plot = false, figure = false, position::Vector = [1,1], axis = false, dB = true,
-                                    timeFromZero = true, yRange = Inf, xRange = Inf, title = "Synced Matched Filter Response",
-                                    color = :blue, label = "")
+                                   plot = false, figure = false, position::Vector = [1,1], axis = false, dB = true,
+                                   timeFromZero = true, yRange = Inf, xRange = Inf, title = "Synced Matched Filter Response",
+                                   color = :blue, label = "")
 
     # First we have to find the first peak to sync the tx & receive signal.
     toSearch = abs.(signal[syncRange[1]:1:syncRange[2]])
     peakIndex = argmax(toSearch)
+    println(peakIndex)
     syncedSignal = signal[peakIndex:1:end]
 
     # The last pulse is not going to be a full pulse, so it has to be removed.
     # How many pulses fit into the signal?
     totalPulses = floor(Int32, length(syncedSignal)/pulseLengthSamples)
-    # syncedSignal = abs.(syncedSignal[1:1:totalPulses*pulseLengthSamples])
     syncedSignal = syncedSignal[1:1:totalPulses*pulseLengthSamples]
 
     # ----------------- #
     #  P L O T T I N G  #
     # ----------------- #
 
-    #  Create new axis.
+    # Create new axis.
     ax = nothing
     if axis == false && plot
         # dB.

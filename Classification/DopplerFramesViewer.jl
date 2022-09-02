@@ -18,4 +18,4 @@ distance_vector = file_data["Distance"]
 velocity_vector = file_data["Velocity"]
 
 # Render.
-animate(doppler_frames, distance_vector, velocity_vector, snr_threshold = 10)
+animate(doppler_frames, distance_vector, velocity_vector, snr_threshold = 0)

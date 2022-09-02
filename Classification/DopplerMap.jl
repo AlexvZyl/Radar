@@ -107,7 +107,7 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
         padding_count = meta_data.total_pulses - size(frame)
 
         # Calculate doppler matrix.
-        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, Int(meta_data.pulse_sample_count*2)], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, Int(meta_data.pulse_sample_count)], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
     			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                                removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 
@@ -129,7 +129,7 @@ function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange
 
     # Create the figure and axis. 
     figure = Figure()
-    axis = Axis(figure[1,1])
+    Axis(figure[1,1])
 
     # Calculate dB.
     if dB
@@ -137,7 +137,7 @@ function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange
     end
 
     # Plot and display.
-    hm = heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [snr_threshold, 20])
+    heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [snr_threshold, 20])
     display(figure)
 
 end
@@ -147,7 +147,7 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
 
     # Create the figure and axis. 
     figure = Figure()
-    axis = Axis(figure[1,1])
+    Axis(figure[1,1])
     display(figure)
 
     # Get the dB of the magnitude.
@@ -163,8 +163,7 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
         for (index, frame) in enumerate(doppler_frames_db)
             # Plot and display.
             heatmap!(figure[1, 1], distance, velocity, frame, colorrange = [snr_threshold, 20])
-            legend_element = MarkerElement(marker = " ")
-            text!(5,4.85, text = "Frame Index: " * string(index))
+            text!(5,4.8, text = "Frame Index: " * string(index))
             sleep(sleep_seconds)
         end
 

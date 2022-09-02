@@ -34,8 +34,8 @@ end
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
-frame_count     = 5
-frame_advance  = 10000
+frame_count     = 10
+frame_advance   = 40000
 
 # Fixed metdata.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -45,17 +45,15 @@ file            = path * folder * file_prefix * file_number
 # Create frames from the meta data.
 meta_data = load_meta_data(file * ".txt")
 frames = create_frames(meta_data.total_pulses, frame_count, frame_advance)
-display(meta_data.total_pulses)
-display(frames)
 
 # Calculate the doppler frames.
-# doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(file, frames)
+doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(file, frames)
 
 # Destination file.                                                    
 destination_folder = "Data/DopplerFrames/" * folder * "/"
 destination_file = destination_folder * file_prefix * file_number * ".jld"  
 
 # Save the data to file.
-# save(destination_file, "Doppler FFT Frames", doppler_frames, 
-                       # "Velocity", velocity_vector,
-                       # "Distance", distance_vector)
+save(destination_file, "Doppler FFT Frames", doppler_frames, 
+                       "Velocity", velocity_vector,
+                       "Distance", distance_vector)
