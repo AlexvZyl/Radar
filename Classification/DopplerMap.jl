@@ -196,7 +196,7 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
             # Render clustering data.
             if clusters != undef
                 for (distance, velocity) in zip(distance_data, velocity_data)
-                    scatter!(distance, velocity)
+                    scatter!(distance, velocity, markersize = 4)
                 end
             end
             text!(5,4.78, text = "Frame Index: " * string(index))

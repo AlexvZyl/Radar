@@ -25,4 +25,4 @@ doppler_clusters = clusters_file_data["Clustering Result"]
 adjacency_matrix = clusters_file_data["Adjacency Matrix"]
 
 # Render.
-animate(doppler_frames, distance_vector, velocity_vector, snr_threshold = 0, clusters = doppler_clusters, adjacency_matrix = adjacency_matrix)
+animate(doppler_frames, distance_vector, velocity_vector, snr_threshold = 10, clusters = doppler_clusters, adjacency_matrix = adjacency_matrix)

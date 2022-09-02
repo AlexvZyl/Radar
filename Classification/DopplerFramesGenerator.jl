@@ -34,7 +34,7 @@ end
 # Meta data.
 folder 			= "Test"
 file_number 	= "012"
-frame_count     = 10
+frame_count     = 5
 frame_advance   = 40000
 
 # Fixed metdata.
