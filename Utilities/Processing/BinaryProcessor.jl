@@ -68,7 +68,7 @@ function load_meta_data(file::String)
             end
     
     	elseif isnothing(findfirst("Total pulses", line)) == false
-            meta_data.total_pulses  = Int32(parseNumber(line, 15)) - 10 # Remove 10 pulses just to be safe.
+            meta_data.total_pulses  = Int32(parseNumber(line, 15)) - 10 # Remove 10 pulses just to be safe.  This can cause issues...
     
         elseif isnothing(findfirst("Radar max range", line)) == false
     		meta_data.max_range	= parseNumber(line, 18)

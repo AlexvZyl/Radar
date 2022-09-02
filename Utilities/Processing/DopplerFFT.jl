@@ -238,7 +238,7 @@ function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32
     syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
 
     # Now we need to create a matrix of aligned pulses.
-    totalPulses = floor(Int, length(syncedSignal)/pulseLengthSamples)
+    totalPulses = floor(Int, length(syncedSignal) / pulseLengthSamples)
     pulseMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses)
 
     # Iterate for every pulse.
