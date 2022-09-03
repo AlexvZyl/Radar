@@ -3,6 +3,7 @@
 
 using JLD
 using Clustering
+using Base.Threads
 
 # Includes.
 include("../Utilities/MakieGL/PlotUtilities.jl")
@@ -34,7 +35,7 @@ function generate_tx_signal(meta_data::Meta_Data)
         return generateOptimalBezierCF32(meta_data.wave_sample_count, meta_data.bandwidth, Int32(meta_data.sampling_freq))
 
     elseif meta_data.wave_type == "Logit"
-        tx_signal, null = generateOptimalSigmoidForSDR(meta_data.wave_sample_count, meta_data.bandwidth, meta_data.sampling_freq)
+        tx_signal = generateOptimalSigmoidForSDR(meta_data.wave_sample_count, meta_data.bandwidth, meta_data.sampling_freq)[1]
         return tx_signal
     end
 
@@ -54,7 +55,7 @@ function calculate_doppler_map(file::String; return_doppler_only::Bool = false, 
     # Load binary data.
     rx_signal = loadDataFromBin(abspath(file_bin), pulsesToLoad = pulses_to_load, samplesPerPulse = meta_data.pulse_sample_count)
     
-    # TX Signal.
+    # TX Signal.i
     tx_signal = generate_tx_signal(meta_data) 
     
     # Pulse compression.
@@ -98,14 +99,14 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     doppler_frames = Vector{AbstractMatrix}(undef, length(frames))
     distance_vector = AbstractRange
     velocity_vector = AbstractRange
-    index = 1
-    for frame in frames
+    # This might be causing problems.
+    Threads.@threads for index in range(1, length(frames))
 
         # Pulse compression.
-        pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frame, meta_data)])
+        pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frames[index], meta_data)])
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
-        padding_count = meta_data.total_pulses - size(frame)
+        padding_count = meta_data.total_pulses - size(frames[index])
 
         # Calculate doppler matrix.
         doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, Int(meta_data.pulse_sample_count)], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
@@ -114,7 +115,6 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
 
         # Add current doppler matrix to the list of frames.
         doppler_frames[index] = doppler_fft_matrix
-        index += 1
 
     end
 
@@ -159,6 +159,7 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
         @assert adjacency_matrix != undef "Did not provide the adjacency matrix."
     end
 
+
     # Get the dB of the magnitude.distance_data
     doppler_frames_db = Vector{AbstractMatrix}(undef, length(doppler_frames))
     for (index, frame) in enumerate(doppler_frames)
@@ -186,6 +187,8 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
         velocity_data[c] = velocity_temp
     end
 
+    colormap = to_colormap(:seaborn_bright)
+
     # Keep looping until the user interrupts.
     while true
         
@@ -195,8 +198,10 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
             heatmap!(figure[1, 1], distance, velocity, frame, colorrange = [snr_threshold, 20])
             # Render clustering data.
             if clusters != undef
+                color_index = 1
                 for (distance, velocity) in zip(distance_data, velocity_data)
-                    scatter!(distance, velocity, markersize = 4)
+                    scatter!(distance, velocity, markersize = 4, color = (colormap[color_index], 0.85))
+                    color_index += 1
                 end
             end
             text!(5,4.78, text = "Frame Index: " * string(index))

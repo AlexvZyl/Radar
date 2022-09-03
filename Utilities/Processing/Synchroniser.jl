@@ -10,7 +10,7 @@ function syncPulseCompressedSignal(signal::Vector, pulseLengthSamples::Number, s
     # First we have to find the first peak to sync the tx & receive signal.
     toSearch = abs.(signal[syncRange[1]:1:syncRange[2]])
     peakIndex = argmax(toSearch)
-    println(peakIndex)
+    println("Peak Index: ", peakIndex)
     syncedSignal = signal[peakIndex:1:end]
 
     # The last pulse is not going to be a full pulse, so it has to be removed.
