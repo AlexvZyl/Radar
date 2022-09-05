@@ -53,7 +53,7 @@ function calculate_doppler_map(file::String; return_doppler_only::Bool = false, 
     meta_data = load_meta_data(file_txt)
     
     # Load binary data.
-    rx_signal = loadDataFromBin(abspath(file_bin), pulsesToLoad = pulses_to_load, samplesPerPulse = meta_data.pulse_sample_count)
+    rx_signal = loadDataFromBin(abspath(file_bin), meta_data, pulsesToLoad = pulses_to_load)
     
     # TX Signal.i
     tx_signal = generate_tx_signal(meta_data) 

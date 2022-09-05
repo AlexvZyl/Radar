@@ -3,6 +3,7 @@ include("DopplerMap.jl")
 # Meta data.
 folder 			= "Test"
 files_to_load = [
+    "011",
     "012"
 ]
 
@@ -24,6 +25,7 @@ for file_number in files_to_load
     destination_file = relpath(destination_folder * file_prefix * file_number * ".jld")
     
     # Save the data to file.
+    meta_data = load_meta_data(file * ".txt")
     save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
                            "Velocity", velocity_vector,
                            "Distance", distance_vector,
