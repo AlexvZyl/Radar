@@ -2,6 +2,7 @@
 
 # Includes.
 include("DopplerMap.jl")
+include("Directories.jl")
 
 # Create the frame based on the data provided.
 # Frame advance is given in samples (or in the case of a doppler map, pulses).
@@ -33,27 +34,50 @@ end
 
 # Meta data.
 folder 			= "Test"
-file_number 	= "012"
+load_all_files  = true
+files_to_load   = [ 
+    "012" 
+]
+
+# Frame data.
 frame_count     = 5
 frame_advance   = 40000
 
-# Fixed metdata.
-path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
-file_prefix 	= "/B210_SAMPLES_" * folder * "_"
-file            = path * folder * file_prefix * file_number
+# Directories.
+map_dir, cluster_dir, frames_dir = get_directories(folder)
+# Get all of the files in the directory.
+if load_all_files 
+    files_to_load = readdir(map_dir)
+# Convert the file numbers into files.
+else
+    for (i, number) in enumerate(selected_files)
+        files_to_load[i] = get_file_name(folder, number)
+    end
+end
 
-# Create frames from the meta data.
-meta_data = load_meta_data(file * ".txt")
-frames = create_frames(meta_data.total_pulses, frame_count, frame_advance)
+println("Loading files:")
+display(files_to_load)
 
-# Calculate the doppler frames.
-doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(file, frames)
+# Might not have enough ram for this...
+# Are my swap files setup properly?...
+Base.Threads.@threads for file in files_to_load
 
-# Destination file.                                                    
-destination_folder = "Data/DopplerFrames/" * folder * "/"
-destination_file = destination_folder * file_prefix * file_number * ".jld"  
+    # Create frames from the meta data.
+    meta_data = load(get_file_path(map_dir, file))["Meta Data"]
+    frames = create_frames(meta_data.total_pulses, frame_count, frame_advance)
+    
+    # Calculate the doppler frames.
+    raw_file = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/" * splitdir(file)[2][1:end-4]
+    doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(raw_file, frames)
+    
+    # Destination file.                                                    
+    destination_file = get_file_path(frames_dir, file)  
+    
+    # Save the data to file.
+    save(destination_file, "Doppler FFT Frames", doppler_frames, 
+                           "Velocity", velocity_vector,
+                           "Distance", distance_vector,
+                           "Frame Count", frame_count,
+                           "Frame Advance", frame_advance)
 
-# Save the data to file.
-save(destination_file, "Doppler FFT Frames", doppler_frames, 
-                       "Velocity", velocity_vector,
-                       "Distance", distance_vector)
+end
