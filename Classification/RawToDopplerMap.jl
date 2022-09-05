@@ -3,6 +3,10 @@ include("DopplerMap.jl")
 # Meta data.
 folder 			= "Test"
 files_to_load = [
+    "004",
+    "005",
+    "006",
+    "007",
     "008",
     "009",
     "010",
@@ -15,7 +19,7 @@ path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
 file_prefix 	= "/B210_SAMPLES_" * folder * "_"
 
 # Load all of the files.
-for file_number in files_to_load
+Base.Threads.@threads for file_number in files_to_load
 
     # Create file.
     file = path * folder * file_prefix * file_number
