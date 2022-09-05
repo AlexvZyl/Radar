@@ -1,4 +1,5 @@
 include("../Utilities/MakieGL/PlotUtilities.jl")
+include("Directories.jl")
 using Clustering
 using JLD 
 
@@ -8,6 +9,7 @@ struct WeightParameters
     velocity
     magnitude
 end 
+
 global weight_parameters = WeightParameters(1/1000 * 10, 1/10 * 10, 1/20 * 0.5)
 
 # Create a d*n adjacency matrix to.
@@ -74,36 +76,53 @@ leaf_size = 20
 
 # Meta data.
 folder = "Test"
-file_number = "012"
+load_all_files = true
+files_to_load = [ "012" ]
+map_dir, cluster_dir, frames_dir = get_directories(folder)
 
-# Load the data.
-file_prefix =  "/B210_SAMPLES_" * folder * "_"
-file = "Data/EntireDopplerMap/" * folder * file_prefix * file_number * ".jld"
-file_data = load(file)
-doppler_fft_matrix = file_data["Doppler FFT Matrix"]
-distance = file_data["Distance"]
-velocity = file_data["Velocity"]
-
-# DBSCAN.
-adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
-result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size, min_neighbors = min_neighbors, leafsize = leaf_size)
-
-# Correct the distance and velocity data before using.
-display(adjacency_matrix)
-for c in range(1, Base.size(adjacency_matrix, 2))
-    adjacency_matrix[1,c] /= weight_parameters.distance
-    adjacency_matrix[2,c] /= weight_parameters.velocity
+# Get all of the files in the directory.
+if load_all_files 
+    files_to_load = readdir(map_dir)
+# Convert the file numbers into files.
+else
+    for (i, number) in enumerate(selected_files)
+        files_to_load[i] = get_file_name(folder, number)
+    end
 end
 
-# Plot.
-plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+println("Loading files:")
+display(files_to_load)
 
-# Destination file.                                                    
-destination_folder = "Data/DopplerClustering/" * folder * "/"
-destination_file = destination_folder * file_prefix * file_number * ".jld"  
+# Iterate over the files and generate the map for each one.
+for file in files_to_load
 
-# Save the data to file.
-save(destination_file, 
-    "Clustering Result", result,
-    "Adjacency Matrix", adjacency_matrix,
-    "Weight Parameters", weight_parameters)
+    # Load the data.
+    file_data = load(get_file_path(map_dir, file))
+    doppler_fft_matrix = file_data["Doppler FFT Matrix"]
+    distance = file_data["Distance"]
+    velocity = file_data["Velocity"]
+    
+    # DBSCAN.
+    adjacency_matrix = create_adjacency_matrix(doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+    result = dbscan(adjacency_matrix, dbscan_radius, min_cluster_size = min_cluster_size, min_neighbors = min_neighbors, leafsize = leaf_size)
+    
+    # Correct the distance and velocity data before using.
+    for c in range(1, Base.size(adjacency_matrix, 2))
+        adjacency_matrix[1,c] /= weight_parameters.distance
+        adjacency_matrix[2,c] /= weight_parameters.velocity
+    end
+    
+    # Plot.
+    # plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+    
+    # Destination file.                                                    
+    destination_folder = cluster_dir
+    destination_file = get_file_path(cluster_dir, file)
+    
+    # Save the data to file.
+    save(destination_file, 
+        "Clustering Result", result,
+        "Adjacency Matrix", adjacency_matrix,
+        "Weight Parameters", weight_parameters)
+
+end
