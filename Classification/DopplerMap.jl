@@ -61,8 +61,11 @@ function calculate_doppler_map(file::String; return_doppler_only::Bool = false, 
     # Pulse compression.
     pc_signal = pulseCompression(tx_signal, rx_signal)
     
+    # Sync the TX signal.
+    synced_signal = syncPulseCompressedSignal(pc_signal, meta_data.pulse_sample_count, [1, meta_data.pulse_sample_count*2])[1]
+
     # Doppler fft.
-    doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, meta_data.pulse_sample_count*2], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+    doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, synced_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
     			                                                          xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                                           removeClutter = true, rawImage = false, return_doppler_fft = true)
 
@@ -108,8 +111,11 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
         padding_count = meta_data.total_pulses - size(frames[index])
 
+        # Sync the TX signal.
+        synced_signal = syncPulseCompressedSignal(pc_signal, meta_data.pulse_sample_count, [1, meta_data.pulse_sample_count*2])[1]
+
         # Calculate doppler matrix.
-        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, pc_signal, [1, 1], [1, Int(meta_data.pulse_sample_count)], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, synced_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
     			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                                removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 

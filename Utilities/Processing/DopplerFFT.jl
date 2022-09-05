@@ -12,8 +12,7 @@ include("Synchroniser.jl")
 #  D O P P L E R   F F T   P L O T  #
 # ================================= #
 
-function plotDopplerFFT(figure, signal::Vector, position::Vector,
-                        syncRange::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32, dBRange::Vector;
+function plotDopplerFFT(figure, signal::Vector, position::Vector, fc::Number, fs::Int32, pulseLengthSamples::Int32, dBRange::Vector;
                         xRange::Number=Inf, yRange::Number = Inf,
                         axis = false, label="Doppler FFT", nWaveSamples=false,
                         plotDCBin::Bool = false, plotFreqLines::Bool = true, freqVal = 20,
@@ -234,18 +233,15 @@ end
 # Will most likely be a pulse compressed signal that is passed.
 function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false, padding_count::Number = 0)
 
-    # First sync the signal.
-    syncedSignal, ax = syncPulseCompressedSignal(signal, pulseLengthSamples, syncRange)
-
     # Now we need to create a matrix of aligned pulses.
-    totalPulses = floor(Int, length(syncedSignal) / pulseLengthSamples)
+    totalPulses = floor(Int, length(signal) / pulseLengthSamples)
     pulseMatrix = Array{ComplexF64}(undef, pulseLengthSamples, totalPulses)
 
     # Iterate for every pulse.
     for i in 1:1:totalPulses
         startIndex = trunc(Int, pulseLengthSamples * (i-1)) + 1
         endIndex = trunc(Int, startIndex + pulseLengthSamples) - 1
-        pulseMatrix[:,i] = syncedSignal[startIndex:1:endIndex]
+        pulseMatrix[:,i] = signal[startIndex:1:endIndex]
     end
 
     # Now take the fft over the samples.
