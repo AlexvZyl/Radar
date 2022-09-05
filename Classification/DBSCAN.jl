@@ -94,7 +94,7 @@ println("Loading files:")
 display(files_to_load)
 
 # Iterate over the files and generate the map for each one.
-for file in files_to_load
+Base.Threads.@threads for file in files_to_load
 
     # Load the data.
     file_data = load(get_file_path(map_dir, file))
