@@ -12,7 +12,10 @@ folder = "Test"
 map_dir, cluster_dir, frames_dir = get_directories(folder)
 all_files = true
 # If all files is not true we have to use specific files.
-selected_files = ["001", "002"]
+selected_files = [
+    "001", 
+    "002"
+]
 
 # Get all of the files in the directory.
 if all_files

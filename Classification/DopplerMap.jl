@@ -110,16 +110,16 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     Threads.@threads for index in range(1, length(frames))
 
         # Pulse compression.
-        pc_signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frames[index], meta_data)])
+        signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frames[index], meta_data)])
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
         padding_count = meta_data.total_pulses - size(frames[index])
 
         # Sync the TX signal.
-        synced_signal = synced_signal(pc_signal, sync_index, meta_data)
+        signal = sync_signal(signal, sync_index, meta_data)
 
         # Calculate doppler matrix.
-        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, synced_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
     			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
                                                                removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 

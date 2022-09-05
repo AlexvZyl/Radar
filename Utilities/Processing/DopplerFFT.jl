@@ -25,7 +25,7 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector, fc::Number, fs
 
     # Get the Doppler FFT.
     frequencies = Any
-    dopplerFFTMatrix, frequencies = dopplerFFT(signal, syncRange, pulseLengthSamples, PRF, removeClutter = removeClutter, padding_count = padding_count)
+    dopplerFFTMatrix, frequencies = dopplerFFT(signal, pulseLengthSamples, PRF, removeClutter = removeClutter, padding_count = padding_count)
     # The format of dopplerFFTMatrix : Array{Float64}(undef, pulseLengthSamples, totalPulses)
     
     # --------------------------- #
@@ -231,7 +231,7 @@ end
 
 # Calculate the Doppler FFT of the given signal.
 # Will most likely be a pulse compressed signal that is passed.
-function dopplerFFT(signal::Vector, syncRange::Vector, pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false, padding_count::Number = 0)
+function dopplerFFT(signal::Vector,  pulseLengthSamples::Int32, PRF::Number; removeClutter::Bool = false, padding_count::Number = 0)
 
     # Now we need to create a matrix of aligned pulses.
     totalPulses = floor(Int, length(signal) / pulseLengthSamples)

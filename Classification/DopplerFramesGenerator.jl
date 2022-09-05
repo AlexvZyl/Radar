@@ -40,8 +40,8 @@ files_to_load   = [
 ]
 
 # Frame data.
-frame_count     = 10
-frame_advance   = 20000
+frame_count     = 2
+frame_advance   = 100000
 
 # Directories.
 map_dir, cluster_dir, frames_dir = get_directories(folder)
@@ -58,8 +58,7 @@ end
 println("Loading files:")
 display(files_to_load)
 
-# Might not have enough ram for this...
-# Are my swap files setup properly?...
+# Calculate frames for each file.
 for file in files_to_load
 
     # Create frames from the meta data.
