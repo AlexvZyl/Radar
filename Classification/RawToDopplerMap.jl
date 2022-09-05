@@ -2,24 +2,32 @@ include("DopplerMap.jl")
 
 # Meta data.
 folder 			= "Test"
-file_number 	= "012"
+files_to_load = [
+    "012"
+]
 
 # Fixed data.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
 file_prefix 	= "/B210_SAMPLES_" * folder * "_"
-file            = path * folder * file_prefix * file_number
 
-# Calculate doppler data.
-doppler_fft_matrix, distance_vector, velocity_vector = calculate_doppler_map(abspath(file))
+# Load all of the files.
+for file_number in files_to_load
 
-# Destination file.                                                    
-destination_folder = "Data/EntireDopplerMap/" * folder * "/"
-destination_file = relpath(destination_folder * file_prefix * file_number * ".jld")
+    # Create file.
+    file = path * folder * file_prefix * file_number
+    
+    # Calculate doppler data.
+    doppler_fft_matrix, distance_vector, velocity_vector = calculate_doppler_map(abspath(file))
+    
+    # Destination file.                                                    
+    destination_folder = "Data/EntireDopplerMap/" * folder * "/"
+    destination_file = relpath(destination_folder * file_prefix * file_number * ".jld")
+    
+    # Save the data to file.
+    save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
+                           "Velocity", velocity_vector,
+                           "Distance", distance_vector,
+                           "Meta Data", meta_data)
+end
 
-# Save the data to file.
-save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
-                       "Velocity", velocity_vector,
-                       "Distance", distance_vector)
-
-plot(doppler_fft_matrix, distance_vector, velocity_vector)
-
+# plot(doppler_fft_matrix, distance_vector, velocity_vector)
