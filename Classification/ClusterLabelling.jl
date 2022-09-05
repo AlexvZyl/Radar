@@ -3,17 +3,13 @@
 
 # Modules.
 include("DopplerMap.jl")
+include("Directories.jl")
 using JLD
 using Base.Threads
 
 # File data.
 folder = "Test"
-file_prefix =  "/B210_SAMPLES_" * folder * "_"
-file_extension = ".jld"
-parent_dir = "/home/alex/GitHub/Masters-Julia/Classification/Data/"
-cluster_dir = parent_dir * "DopplerClustering/" * folder 
-frames_dir = parent_dir * "DopplerFrames/" * folder
-map_dir = parent_dir * "EntireDopplerMap/" * folder
+map_dir, cluster_dir, frames_dir = get_directories(folder)
 all_files = true
 # If all files is not true we have to use specific files.
 selected_files = ["001", "002"]
@@ -24,4 +20,9 @@ if all_files
 end
 
 # The user now has to identify the cluster that has the target for each doppler map.
-
+for file in all_files
+    cluster_file_data = load(cluster_dir * file)
+    doppler_file_data = load(map_dir * file)
+    display(cluster_file_data)
+    display(doppler_file_data)
+end

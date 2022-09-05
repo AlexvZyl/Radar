@@ -3,6 +3,9 @@ include("DopplerMap.jl")
 # Meta data.
 folder 			= "Test"
 files_to_load = [
+    "008",
+    "009",
+    "010",
     "011",
     "012"
 ]
@@ -30,6 +33,7 @@ for file_number in files_to_load
                            "Velocity", velocity_vector,
                            "Distance", distance_vector,
                            "Meta Data", meta_data)
-end
 
-# plot(doppler_fft_matrix, distance_vector, velocity_vector)
+    # plot(doppler_fft_matrix, distance_vector, velocity_vector)
+
+end
