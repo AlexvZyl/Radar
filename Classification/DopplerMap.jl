@@ -62,7 +62,7 @@ function calculate_doppler_map(file::String; return_doppler_only::Bool = false, 
     pc_signal = pulseCompression(tx_signal, rx_signal)
     
     # Sync the TX signal.
-    synced_signal = syncPulseCompressedSignal(pc_signal, meta_data.pulse_sample_count, [1, meta_data.pulse_sample_count*2])[1]
+    synced_signal = sync_signal(pc_signal, get_sync_index(pc_signal, meta_data, pulses_to_search = 2), meta_data)
 
     # Doppler fft.
     doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, synced_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
@@ -102,7 +102,11 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     doppler_frames = Vector{AbstractMatrix}(undef, length(frames))
     distance_vector = AbstractRange
     velocity_vector = AbstractRange
-    # This might be causing problems.
+
+    # Get the offset required to sync the signal.
+    sync_index = get_sync_index(rx_signal, meta_data, pulses_to_search = 2)
+
+    # Calculate the doppler frames.
     Threads.@threads for index in range(1, length(frames))
 
         # Pulse compression.
@@ -112,7 +116,7 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
         padding_count = meta_data.total_pulses - size(frames[index])
 
         # Sync the TX signal.
-        synced_signal = syncPulseCompressedSignal(pc_signal, meta_data.pulse_sample_count, [1, meta_data.pulse_sample_count*2])[1]
+        synced_signal = synced_signal(pc_signal, sync_index, meta_data)
 
         # Calculate doppler matrix.
         doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, synced_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
