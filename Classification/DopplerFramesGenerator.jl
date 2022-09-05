@@ -34,14 +34,14 @@ end
 
 # Meta data.
 folder 			= "Test"
-load_all_files  = true
+load_all_files  = false
 files_to_load   = [ 
     "012" 
 ]
 
 # Frame data.
-frame_count     = 5
-frame_advance   = 40000
+frame_count     = 10
+frame_advance   = 20000
 
 # Directories.
 map_dir, cluster_dir, frames_dir = get_directories(folder)
@@ -50,7 +50,7 @@ if load_all_files
     files_to_load = readdir(map_dir)
 # Convert the file numbers into files.
 else
-    for (i, number) in enumerate(selected_files)
+    for (i, number) in enumerate(files_to_load)
         files_to_load[i] = get_file_name(folder, number)
     end
 end
@@ -60,7 +60,7 @@ display(files_to_load)
 
 # Might not have enough ram for this...
 # Are my swap files setup properly?...
-Base.Threads.@threads for file in files_to_load
+for file in files_to_load
 
     # Create frames from the meta data.
     meta_data = load(get_file_path(map_dir, file))["Meta Data"]
