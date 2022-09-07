@@ -55,7 +55,7 @@ function calculate_doppler_map(file::String; return_doppler_only::Bool = false, 
     # Load binary data.
     rx_signal = loadDataFromBin(abspath(file_bin), meta_data, pulsesToLoad = pulses_to_load)
     
-    # TX Signal.i
+    # TX Signal.
     tx_signal = generate_tx_signal(meta_data) 
     
     # Pulse compression.
@@ -103,20 +103,20 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     distance_vector = AbstractRange
     velocity_vector = AbstractRange
 
-    # Get the offset required to sync the signal.
-    sync_index = get_sync_index(rx_signal, meta_data, pulses_to_search = 2)
+    # Pulse compression.
+    pc_signal = pulseCompression(tx_signal, rx_signal)
+
+    # Sync the signal.
+    pc_signal = sync_signal(pc_signal, get_sync_index(pc_signal, meta_data, pulses_to_search = 2), meta_data)
 
     # Calculate the doppler frames.
     Threads.@threads for index in range(1, length(frames))
 
-        # Pulse compression.
-        signal = pulseCompression(tx_signal, rx_signal[get_sample_range(frames[index], meta_data)])
+        # Extract the frame data from the pulse compressed signal.
+        signal = pc_signal[get_sample_range(frames[index], meta_data)]
 
         # We need to padd the signal since the frames are going to be smaller than the entire signal.
         padding_count = meta_data.total_pulses - size(frames[index])
-
-        # Sync the TX signal.
-        signal = sync_signal(signal, sync_index, meta_data)
 
         # Calculate doppler matrix.
         doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
@@ -168,7 +168,6 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
         @assert clusters != undef "Did not provide the cluster data." 
         @assert adjacency_matrix != undef "Did not provide the adjacency matrix."
     end
-
 
     # Get the dB of the magnitude.distance_data
     doppler_frames_db = Vector{AbstractMatrix}(undef, length(doppler_frames))

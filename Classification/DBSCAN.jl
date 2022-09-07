@@ -1,5 +1,6 @@
 include("../Utilities/MakieGL/PlotUtilities.jl")
 include("Directories.jl")
+include("../Utilities/Processing/BinaryProcessor.jl")
 using Clustering
 using JLD 
 
@@ -76,7 +77,7 @@ leaf_size = 20
 
 # Meta data.
 folder = "Test"
-load_all_files = true
+load_all_files = false
 files_to_load = [ "012" ]
 map_dir, cluster_dir, frames_dir = get_directories(folder)
 
@@ -85,7 +86,7 @@ if load_all_files
     files_to_load = readdir(map_dir)
 # Convert the file numbers into files.
 else
-    for (i, number) in enumerate(selected_files)
+    for (i, number) in enumerate(files_to_load)
         files_to_load[i] = get_file_name(folder, number)
     end
 end
@@ -113,7 +114,7 @@ Base.Threads.@threads for file in files_to_load
     end
     
     # Plot.
-    # plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+    plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
     
     # Destination file.                                                    
     destination_folder = cluster_dir
