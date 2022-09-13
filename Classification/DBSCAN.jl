@@ -117,7 +117,7 @@ for file in files_to_load
     end
     
     # Plot.
-    # plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+    plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
     
     # Destination file.                                                    
     destination_folder = cluster_dir
@@ -128,5 +128,6 @@ for file in files_to_load
         "Clustering Result", result,
         "Adjacency Matrix", adjacency_matrix,
         "Weight Parameters", weight_parameters)
+        "SNR Threshold", snr_threshold
 
 end

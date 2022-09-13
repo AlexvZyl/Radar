@@ -136,11 +136,17 @@ end
 
 # Plot a Doppler heatmap.
 # Creates a new figure and axis, so only for debugging really.
-function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange, velocity_vector::AbstractRange; dB::Bool = true, snr_threshold::Number = 15)
+function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange, velocity_vector::AbstractRange; dB::Bool = true, snr_threshold::Number = 15,
+              existing_figure = false)
 
-    # Create the figure and axis. 
-    figure = Figure()
-    Axis(figure[1,1])
+    figure = nothing
+    if existing_figure == false   
+        # Create the figure and axis. 
+        figure = Figure()
+        Axis(figure[1,1])
+    else
+        figure = existing_figure
+    end
 
     # Calculate dB.
     if dB
