@@ -34,14 +34,14 @@ end
 
 # Meta data.
 folder 			= "Test"
-load_all_files  = false
+load_all_files  = true
 files_to_load   = [ 
     "012" 
 ]
 
 # Frame data.
-frame_count     = 2
-frame_advance   = 100000
+frame_count     = 5
+frame_advance   = 40000
 
 # Directories.
 map_dir, cluster_dir, frames_dir = get_directories(folder)
@@ -55,28 +55,47 @@ else
     end
 end
 
+# Multithreading over all of the files at the same time causes the program to us
+# way too much ram.  Insteac load three files at a time.
+# Is there a way to limit the amount of iterations that runs at a timea
+vectorised_files_to_load = Vector{Vector{String}}(undef, 0)
+files_per_segment = 2
+for (i, file) in enumerate(files_to_load)
+    if((i-1) % files_per_segment == 0) 
+        push!(vectorised_files_to_load, Vector{String}(undef, 0))
+    end
+    push!(vectorised_files_to_load[floor(Int, (i-1)/files_per_segment)+1], file)    
+end
+
+# Display files.
 println("Loading files:")
-display(files_to_load)
+display(vectorised_files_to_load)
 
-# Calculate frames for each file.
-for file in files_to_load
+# Iterate over the file segments.
+for file_segment in vectorised_files_to_load
 
-    # Create frames from the meta data.
-    meta_data = load(get_file_path(map_dir, file))["Meta Data"]
-    frames = create_frames(meta_data.total_pulses, frame_count, frame_advance)
+    # Calculate the doppler map for each file.
+    Base.Threads.@threads for file in file_segment
     
-    # Calculate the doppler frames.
-    raw_file = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/" * splitdir(file)[2][1:end-4]
-    doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(raw_file, frames)
+        println("Processing: ", file)
     
-    # Destination file.                                                    
-    destination_file = get_file_path(frames_dir, file)  
-    
-    # Save the data to file.
-    save(destination_file, "Doppler FFT Frames", doppler_frames, 
-                           "Velocity", velocity_vector,
-                           "Distance", distance_vector,
-                           "Frame Count", frame_count,
-                           "Frame Advance", frame_advance)
+        # Create frames from the meta data.
+        meta_data = load(get_file_path(map_dir, file))["Meta Data"]
+        frames = create_frames(meta_data.total_pulses, frame_count, frame_advance)
+        
+        # Calculate the doppler frames.
+        raw_file = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/" * splitdir(file)[2][1:end-4]
+        doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(raw_file, frames)
+        
+        # Destination file.                                                    
+        destination_file = get_file_path(frames_dir, file)  
+        
+        # Save the data to file.
+        save(destination_file, "Doppler FFT Frames", doppler_frames, 
+                               "Velocity", velocity_vector,
+                               "Distance", distance_vector,
+                               "Frame Count", frame_count,
+                               "Frame Advance", frame_advance)
 
+    end
 end
