@@ -13,6 +13,8 @@ map_dir, cluster_dir, frames_dir = get_directories(folder)
 all_files = false
 # If all files is not true we have to use specific files.
 selected_files = [
+    "010"
+    "011"
     "012"
 ]
 
@@ -30,6 +32,9 @@ end
 figure = Figure()
 Axis(figure[1,1])
 display(figure)
+
+# Allow the user to input which cluster contains the target.
+tb = Textbox(figure[2,1], placeholder = "Enter the cluster containing the target. Seperate with spaces for multiple clusters.", tellwidth = false)
 
 # The user now has to identify the cluster that has the target for each doppler map.
 for file in selected_files
@@ -51,6 +56,7 @@ for file in selected_files
 
     # Plot the cluster labels.
     for (i, cluster) in enumerate(result)
+
         # init data.
         distance_data = Array{Float32}(undef, cluster.size)
         velocity_data = Array{Float32}(undef, cluster.size)
@@ -64,7 +70,7 @@ for file in selected_files
             velocity_data[i] = adjacency_matrix[2, index] 
         end
         position = [ mean(distance_data), mean(velocity_data) ]    
-        poly_size = [ 10, 0.2 ] 
+        poly_size = [ 10, 0.13 ] 
         poly_vertices = Point2f[
             ( position[1] - poly_size[1], position[2] - poly_size[2] ),
             ( position[1] + poly_size[1], position[2] - poly_size[2] ),
@@ -73,15 +79,38 @@ for file in selected_files
         ]
         scatter!(distance_data, velocity_data)
         poly!(poly_vertices, color = (:black, 0.7))
-        text!(position[1], position[2], text = string(i), textsize = 30, align = (:center, :center))
+        text!(position[1], position[2], text = string(i), textsize = 20, align = (:center, :center))
     end
 
-    # Allow the user to input which cluster contains the target.
-    tb = Textbox(figure[2,1], placeholder = "Enter the cluster containing the target. Seperate with spaces for multiple clusters.", tellwidth = false)
+    # Data required for the input loop.
+    keep_asking = true
+    condition = Threads.Condition()
 
-    # Read the string when enter is pressed.
+    # Add a callback the notifies the condition of a change. 
     on(tb.stored_string) do s
-        println(s)
+        lock(condition)
+        notify(condition)
+        unlock(condition)
+    end
+
+    # Loop until the user inputs valid data.
+    while keep_asking
+
+        println("Waiting.")
+
+        # Wait for the user to input the values.
+        lock(condition)
+        wait(condition)
+        unlock(condition)
+        
+        # If the values are valid, stop the loop. 
+        if true
+            keep_asking = false
+        # If they are not valid the user has to keep inputting values.
+        else
+
+        end
+ 
     end
 
 end
