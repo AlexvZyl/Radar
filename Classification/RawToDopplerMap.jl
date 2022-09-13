@@ -14,6 +14,8 @@ files_to_load = [
     "012"
 ]
 
+files_to_load = [ "012" ]
+
 # Fixed data.
 path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
 file_prefix 	= "/B210_SAMPLES_" * folder * "_"

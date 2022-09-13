@@ -77,7 +77,7 @@ leaf_size = 20
 
 # Meta data.
 folder = "Test"
-load_all_files = false
+load_all_files = true
 files_to_load = [ "012" ]
 map_dir, cluster_dir, frames_dir = get_directories(folder)
 
@@ -95,7 +95,10 @@ println("Loading files:")
 display(files_to_load)
 
 # Iterate over the files and generate the map for each one.
-Base.Threads.@threads for file in files_to_load
+# Multithreading this causes some issues with HDf5.  But it is very fast so it does not really matter.
+for file in files_to_load
+
+    println("Processing: ", file)
 
     # Load the data.
     file_data = load(get_file_path(map_dir, file))
@@ -114,7 +117,7 @@ Base.Threads.@threads for file in files_to_load
     end
     
     # Plot.
-    plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
+    # plot(result, adjacency_matrix, doppler_fft_matrix, distance, velocity, snr_threshold = snr_threshold)
     
     # Destination file.                                                    
     destination_folder = cluster_dir

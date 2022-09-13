@@ -5,7 +5,7 @@ include("DopplerMap.jl")
 
 # Meta data.
 folder 			 = "Test"
-file_number 	 = "012"
+file_number 	 = "010"
 
 # Fixed metdata.
 path 			 = "/home/alex/GitHub/Masters-Julia/Classification/Data/"

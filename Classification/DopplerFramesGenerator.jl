@@ -59,7 +59,7 @@ end
 # way too much ram.  Insteac load three files at a time.
 # Is there a way to limit the amount of iterations that runs at a timea
 vectorised_files_to_load = Vector{Vector{String}}(undef, 0)
-files_per_segment = 2
+files_per_segment = 1
 for (i, file) in enumerate(files_to_load)
     if((i-1) % files_per_segment == 0) 
         push!(vectorised_files_to_load, Vector{String}(undef, 0))
