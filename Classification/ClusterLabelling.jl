@@ -7,6 +7,22 @@ include("Directories.jl")
 using JLD
 using Base.Threads
 
+# Functions that parses the input from the user.
+function parse_cluster_input(input::String)
+    parsed_input = Vector{String}(undef, 0)
+    push!(parsed_input, string(""))
+    for c in input
+        # Add character if not a space.
+        if c != ' '
+             parsed_input[end] = parsed_input[end] * c 
+        # If it is a space, start a new string.
+        else
+            push!(parsed_input, string(""))
+        end
+    end
+    parsed_input
+end
+
 # File data.
 folder = "Test"
 map_dir, cluster_dir, frames_dir = get_directories(folder)
@@ -103,12 +119,18 @@ for file in selected_files
         wait(condition)
         unlock(condition)
         
-        # If the values are valid, stop the loop. 
-        if true
-            keep_asking = false
-        # If they are not valid the user has to keep inputting values.
-        else
+        # Parse the input.
+        parsed_input = parse_cluster_input(tb.stored_string[])
+        println(parsed_input)
 
+        # Validate the input.
+        try 
+            parsed_input = parse.(Int, parsed_input)
+            println(parsed_input)
+            keep_asking = false
+        # If input is invalid, keep asking.
+        catch
+            keep_asking = true
         end
  
     end
