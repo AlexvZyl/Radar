@@ -25,7 +25,7 @@ end
 
 # File data.
 folder = "Test"
-map_dir, cluster_dir, frames_dir = get_directories(folder)
+map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
 all_files = false
 # If all files is not true we have to use specific files.
 selected_files = [
@@ -86,7 +86,7 @@ for file in selected_files
             velocity_data[i] = adjacency_matrix[2, index] 
         end
         position = [ mean(distance_data), mean(velocity_data) ]    
-        poly_size = [ 10, 0.13 ] 
+        poly_size = [ 8, 0.13 ] 
         poly_vertices = Point2f[
             ( position[1] - poly_size[1], position[2] - poly_size[2] ),
             ( position[1] + poly_size[1], position[2] - poly_size[2] ),
@@ -105,22 +105,20 @@ for file in selected_files
     # Add a callback the notifies the condition of a change. 
     on(tb.stored_string) do s
         lock(condition)
-        notify(condition)
+        notify(condition, s)
         unlock(condition)
     end
 
     # Loop until the user inputs valid data.
     while keep_asking
 
-        println("Waiting.")
-
         # Wait for the user to input the values.
         lock(condition)
-        wait(condition)
+        input_string = wait(condition)
         unlock(condition)
         
         # Parse the input.
-        parsed_input = parse_cluster_input(tb.stored_string[])
+        parsed_input = parse_cluster_input(input_string)
         println(parsed_input)
 
         # Validate the input.
@@ -131,6 +129,12 @@ for file in selected_files
         # If input is invalid, keep asking.
         catch
             keep_asking = true
+        end
+
+        # Now save the cluster label.
+        if keep_asking == false
+            save(get_file_path(labels_dir, file),
+                 "Target Labels", parsed_input)                        
         end
  
     end
