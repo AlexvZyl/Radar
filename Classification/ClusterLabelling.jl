@@ -34,15 +34,13 @@ selected_files = [
     "012"
 ]
 
-# Get all of the files in the directory.
-if all_files
-    selected_files = readdir(cluster_dir)
+# Get the files to load.
+if all_files == true
+    selected_files = get_all_files(cluster_dir)
 else
-# Load the files specified.
-    for (i, number) in enumerate(selected_files)
-        selected_files[i] = get_file_name(folder, number)
-    end
+    selected_files = get_files(folder, selected_files)
 end
+
 
 # Create the figure and axis. 
 figure = Figure()
