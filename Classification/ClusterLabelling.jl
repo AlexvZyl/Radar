@@ -29,8 +29,6 @@ map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_di
 all_files = false
 # If all files is not true we have to use specific files.
 selected_files = [
-    "010"
-    "011"
     "012"
 ]
 

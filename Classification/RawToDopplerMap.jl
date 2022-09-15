@@ -40,6 +40,6 @@ Base.Threads.@threads for file_number in files_to_load
                            "Distance", distance_vector,
                            "Meta Data", meta_data)
 
-    # plot(doppler_fft_matrix, distance_vector, velocity_vector)
+    plot(doppler_fft_matrix, distance_vector, velocity_vector)
 
 end
