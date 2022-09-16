@@ -2,6 +2,7 @@
 include("Directories.jl")
 include("Utilities.jl")
 include("../Utilities/MakieGL/PlotUtilities.jl")
+include("DopplerMap.jl")
 
 # Convert the velocity samples so that it can be used to index the doppler map.
 function relative_to_absolute_velocity_sample(sample::Number, total_samples::Number)
@@ -57,24 +58,27 @@ Base.Threads.@threads for file in files
     # Load the data.
     cluster_file_data = load(cluster_dir * file)
     doppler_file_data = load(map_dir * file)   
+    doppler_frames_data = load(frames_dir * file)
+    doppler_frames = doppler_frames_data["Doppler FFT Frames"]
     adjacency_matrix = cluster_file_data["Adjacency Matrix"]
-    doppler_fft_matrix = doppler_file_data["Doppler FFT Matrix"]
     distance = doppler_file_data["Distance"]
     velocity = doppler_file_data["Velocity"]
     clusters = cluster_file_data["Clustering Result"]
     labels = load(labels_dir * file)["Target Labels"]
 
-    # Extract the target data.
-    target_map, target_distance, target_velocity = extract_target(doppler_fft_matrix, clusters, labels, adjacency_matrix, distance, velocity)
+    # Extract the target from each frame.
+    target_frames = Vector{AbstractMatrix}(undef, length(doppler_frames))
+    null, target_distance, target_velocity = extract_target(doppler_frames[1], clusters, labels, adjacency_matrix, distance, velocity)
+    for (i, frame) in enumerate(doppler_frames)
+        target_frames[i], null1, null2 = extract_target(frame, clusters, labels, adjacency_matrix, distance, velocity)
+    end
 
     # Save the information.
     save(get_file_path(extracted_targets_dir, file),
-        "Target Map", target_map)
+         "Target Frames", target_frames,
+         "Target Distance", target_distance,
+         "Target Velocity", target_velocity)
 
-    # Debugging.
-    figure = Figure()
-    Axis(figure[1,1])
-    display(figure)
-    heatmap!(target_distance, target_velocity, amp2db.(abs.(target_map)), colorrange = [snr_threshold, 20])
+    animate(target_frames, target_distance, target_velocity, snr_threshold = 0)
   
 end
