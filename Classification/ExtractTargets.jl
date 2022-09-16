@@ -8,6 +8,38 @@ function relative_to_absolute_velocity_sample(sample::Number, total_samples::Num
     return Int(  sample + (total_samples / 2) )
 end
 
+# Extract the target doppler map from the larger doppler map.
+function extract_target(doppler_fft_matrix::AbstractMatrix, clusters::Vector{DbscanCluster}, labels::Vector{Int}, 
+                        adjacency_matrix::AbstractMatrix, distance_range::AbstractRange, velocity_range::AbstractRange)
+
+    # The target cluster has to be extracted from the larger Doppler map.
+    # I am unsure how this should be done exactly, but for now lets extract it
+    # as a rectangular matrix.    
+    target_clusters = clusters[labels] 
+    distance_data, velocity_data = adjacency_to_doppler(adjacency_matrix, target_clusters)
+
+    # Find the limits of the selected blob.
+    distance_limits = [ minimum(distance_data), maximum(distance_data) ]
+    velocity_limits = [ minimum(velocity_data), maximum(velocity_data) ]
+
+    # Find the indices for the doppler map.
+    distance_resolution = step(distance_range)
+    velocity_resolution = step(velocity_range)
+    distance_indices = floor.(Int, distance_limits ./ distance_resolution) .+1
+    velocity_indices = floor.(Int, velocity_limits  ./ velocity_resolution)
+    velocity_indices = relative_to_absolute_velocity_sample.(velocity_indices, length(velocity_range))
+    sort!(velocity_indices)
+
+    # Get the range data for the target.
+    target_distance = distance_limits[1]:distance_resolution:distance_limits[2]
+    target_velocity = velocity_limits[1]:velocity_resolution:velocity_limits[2]
+    
+    # Extract the target and return it.
+    target_map = doppler_fft_matrix[range(distance_indices[1], distance_indices[2]), range(velocity_indices[1], velocity_indices[2])]
+    return target_map, target_distance, target_velocity
+
+end
+
 # The folder from where the data will be loaded.
 folder = "Test"
 
@@ -32,26 +64,10 @@ Base.Threads.@threads for file in files
     clusters = cluster_file_data["Clustering Result"]
     labels = load(labels_dir * file)["Target Labels"]
 
-    # The target cluster has to be extracted from the larger Doppler map.
-    # I am unsure how this should be done exactly, but for now lets extract it
-    # as a rectangular matrix.    
-    target_clusters = clusters[labels] 
-    distance_data, velocity_data = adjacency_to_doppler(adjacency_matrix, target_clusters)
+    # Extract the target data.
+    target_map, target_distance, target_velocity = extract_target(doppler_fft_matrix, clusters, labels, adjacency_matrix, distance, velocity)
 
-    # Find the limits of the selected blob.
-    distance_limits = [ minimum(distance_data), maximum(distance_data) ]
-    velocity_limits = [ minimum(velocity_data), maximum(velocity_data) ]
-
-    # Find the indices for the doppler map.
-    distance_resolution = step(distance)
-    velocity_resolution = step(velocity)
-    distance_indices = floor.(Int, distance_limits ./ distance_resolution) .+1
-    velocity_indices = floor.(Int, velocity_limits  ./ velocity_resolution)
-    velocity_indices = relative_to_absolute_velocity_sample.(velocity_indices, length(velocity))
-    sort!(velocity_indices)
-    
-    # Extract the target and save it.
-    target_map = doppler_fft_matrix[range(distance_indices[1], distance_indices[2]), range(velocity_indices[1], velocity_indices[2])]
+    # Save the information.
     save(get_file_path(extracted_targets_dir, file),
         "Target Map", target_map)
 
@@ -59,8 +75,6 @@ Base.Threads.@threads for file in files
     figure = Figure()
     Axis(figure[1,1])
     display(figure)
-    map_distance = distance_limits[1]:distance_resolution:distance_limits[2]
-    map_velocity = velocity_limits[1]:velocity_resolution:velocity_limits[2]
-    heatmap!(map_distance, map_velocity, amp2db.(abs.(target_map)), colorrange = [snr_threshold, 20])
+    heatmap!(target_distance, target_velocity, amp2db.(abs.(target_map)), colorrange = [snr_threshold, 20])
   
 end
