@@ -75,6 +75,7 @@ Base.Threads.@threads for file in files
         # Save the features.
         save(features_dir * file, "Feature Vector", feature_vector)
 
+    # Could not resize the image.
     catch
         println("Could not resize image: " * file * ".")
     end
