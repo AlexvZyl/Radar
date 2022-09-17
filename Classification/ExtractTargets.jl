@@ -6,7 +6,7 @@ include("DopplerMap.jl")
 
 # Convert the velocity samples so that it can be used to index the doppler map.
 function relative_to_absolute_velocity_sample(sample::Number, total_samples::Number)
-    return Int(  sample + (total_samples / 2) )
+    return floor(Int,  sample + (total_samples / 2) )
 end
 
 # Extract the target doppler map from the larger doppler map.
@@ -46,8 +46,8 @@ folder = "Test"
 
 # Get filesystem data.
 map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
-# files = get_all_files(map_dir)
-files = get_files(folder, [ "012" ])
+files = get_all_files(map_dir)
+# files = get_files(folder, [ "012" ])
 
 # Other parameters.
 snr_threshold = 0
@@ -79,6 +79,4 @@ Base.Threads.@threads for file in files
          "Target Distance", target_distance,
          "Target Velocity", target_velocity)
 
-    animate(target_frames, target_distance, target_velocity, snr_threshold = 0)
-  
 end

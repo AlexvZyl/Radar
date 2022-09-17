@@ -8,30 +8,31 @@ function get_directories(folder::String)
     labels_dir = parent_dir * "ClusterLabels/" * folder * "/"
     features_dir = parent_dir * "Features/" * folder * "/"
     targets_dir = parent_dir * "ExtractedTargets/" * folder * "/"
-    return map_dir, cluster_dir, frames_dir, labels_dir, features_dir, targets_dir
+    map_dir, cluster_dir, frames_dir, labels_dir, features_dir, targets_dir
 end
 
 # Create a file name including the path.
 function get_file_path(dir::String, file::String)
-    return dir * file 
+    dir * file 
 end
 
 # Craete the file name without a path.
 function get_file_name(folder::String, number::String; extension::String = ".jld")
-    return "B210_SAMPLES_" * folder * "_" * number * extension
+    "B210_SAMPLES_" * folder * "_" * number * extension
 end
 
 # Get all of the files contained in the folder.
 function get_all_files(path::String, append_to_path = false)
     files = readdir(path)
-    display(files)
     if append_to_path
         return path .* files
     end
-    return files
+    println("Got files: ")
+    display(files)
+    files
 end
 
 # Create the files based on the numbers and folder.
 function get_files(folder::String, file_numbers::Vector{String})
-    return get_file_name.(folder, file_numbers)
+    get_file_name.(folder, file_numbers)
 end

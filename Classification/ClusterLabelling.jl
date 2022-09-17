@@ -26,19 +26,8 @@ end
 # File data.
 folder = "Test"
 map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
-all_files = false
-# If all files is not true we have to use specific files.
-selected_files = [
-    "012"
-]
-
-# Get the files to load.
-if all_files == true
-    selected_files = get_all_files(cluster_dir)
-else
-    selected_files = get_files(folder, selected_files)
-end
-
+selected_files = get_all_files(cluster_dir)
+# selected_files = get_files(folder, [ "012" ])
 
 # Create the figure and axis. 
 figure = Figure()
@@ -115,7 +104,6 @@ for file in selected_files
         
         # Parse the input.
         parsed_input = parse_cluster_input(input_string)
-        println(parsed_input)
 
         # Validate the input.
         try 
