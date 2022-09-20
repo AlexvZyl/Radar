@@ -5,13 +5,14 @@
 # Spurs (harmonics) causing some peaks.  Can be +- freq added.
 # Laat RX langer hardloop as TX.  Laaste data
 
+# Modules.
 include("../../Utilities/MakieGL/PlotUtilities.jl")
 include("Waveforms/LFM.jl")
 include("Waveforms/NLFM.jl")
 include("../../LowTB-NLFM/Source/Bezier.jl")
 include("../../LowTB-NLFM/Source/Sigmoid.jl")
 include("../../Utilities/Processing/ProcessingHeader.jl")
-
+include("../../Classification/DopplerMap.jl")
 using Statistics
 
 # ================= #
@@ -20,81 +21,75 @@ using Statistics
 
 # Specify as 0 to load all the data.
 # 0 : Loads all of the pulses.
-pulsesToLoad 	= 0
+# pulsesToLoad 	= 0
 # pulsesToLoad 	= 30000
 # pulsesToLoad 	= 10
 
 # pulsesToLoad 	= 5
 # REMEMBER: The Doppler FFT removes two pulses.
-folder 			= "Test"
-fileNumber 		= "012"
+# folder 			= "Test"
+# fileNumber 		= "012"
 
 # File location.
-path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
-filePrefix 		= "B210_SAMPLES_" * folder * "_"
-file 			= path * folder * "/" * filePrefix * fileNumber
-fileBin 		= file * ".bin"
-fileTxt			= file * ".txt"	
-phaseFile       = fileBin * "_PhaseShifts.bin"
+# path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
+# filePrefix 		= "B210_SAMPLES_" * folder * "_"
+# file 			= path * folder * "/" * filePrefix * fileNumber
+# fileBin 		= file * ".bin"
+# fileTxt			= file * ".txt"	
+# phaseFile       = fileBin * "_PhaseShifts.bin"
 
 # =========================== #
 #  M E T A D A T A   F I L E  #
 # =========================== #
 
-dcFreqShift = 0
+# dcFreqShift = 0
+# global LFM = false
+# global NLFM = false
 
-
-
-global LFM = false
-global NLFM = false
-
-println("Total pulses: ", totalPulses)
+# println("Total pulses: ", totalPulses)
 
 # ======================= #
 #  B I N A R Y   F I L E  #
 # ======================= #
 
-rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
-phaseDataArray = Vector{Complex{Float64}}(undef, Int(totalPulses))
-phaseData       = read!(abspath(phaseFile), phaseDataArray)
+# rxSignal 		= loadDataFromBin(abspath(fileBin), pulsesToLoad = pulsesToLoad, samplesPerPulse = nSamplesPulse)
+# phaseDataArray = Vector{Complex{Float64}}(undef, Int(totalPulses))
+# phaseData       = read!(abspath(phaseFile), phaseDataArray)
 
 # =============================== #
 #  P O S T   P R O C E S S I N G  #
 # =============================== #	
 
 # Determine the TX signal.
-if waveStr=="LFM"
-	global txSignal = generateLFM(BW, fs, nSamplesWave, 0)
-elseif waveStr=="Bezier"
-	global txSignal = generateOptimalBezierCF32(nSamplesWave, BW, fs)
-elseif waveStr=="Logit"
-    global txSignal, null = generateOptimalSigmoidForSDR(nSamplesPulse, BW, fs)
-else
-    AssertionError("Unknown waveform.")
-end
-println("Wave type: " * waveStr)            
+# if waveStr=="LFM"
+# 	global txSignal = generateLFM(BW, fs, nSamplesWave, 0)
+# elseif waveStr=="Bezier"
+# 	global txSignal = generateOptimalBezierCF32(nSamplesWave, BW, fs)
+# elseif waveStr=="Logit"
+#     global txSignal, null = generateOptimalSigmoidForSDR(nSamplesPulse, BW, fs)
+# else
+#     AssertionError("Unknown waveform.")
+# end
+# println("Wave type: " * waveStr)            
 
 # ----------------------------------------- #
 #  P R O C E S S I N G  &  P L O T T I N G  #
 # ----------------------------------------- #
 
 # Change the theme for the raw image.
-rawImage = true
-if rawImage
-    update_theme!(figure_padding = (0, 0, 0, 0))
-end
+#rawImage = true
+#if rawImage
+#    update_theme!(figure_padding = (0, 0, 0, 0))
+#end
 
 # Figure for plotting.
-figure = Figure(resolution = (1920, 1080))
+# figure = Figure(resolution = (1920, 1080))
 # figure = Figure()
 # figure = Figure(resolution = (1080, 1080))
 # figure = Figure(resolution = (1920, 1920)) # Square
 
-Imean = -0.004786199
-Qmean = -0.002466153
-
 # rxSignal = rxSignal .- (Imean + im*Qmean)
-PCsignal = pulseCompression(txSignal, rxSignal)
+# PCsignal = pulseCompression(txSignal, rxSignal)
 # pulseMatrix = splitMatrix(PCsignal, nSamplesPulse, [1, nSamplesPulse*2])
 # pulseMatrix = splitMatrix(rxSignal, nSamplesPulse, [1, nSamplesPulse*2])
 # ax = Axis(figure[1, 1], xlabel = "", ylabel = "", title = "")
@@ -113,12 +108,12 @@ PCsignal = pulseCompression(txSignal, rxSignal)
 # PlotIQCircle(figure, txSignal, [1,1], title = string("I vs Q ", waveStr))
 # PlotIQCircle(figure, rxSignal, [1,1], title = string("I vs Q ", waveStr))
 
-freqVal = dcFreqShift
-if freqVal == 0 freqVal = 10000 end
-plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [10, 20], 
+# freqVal = dcFreqShift
+# if freqVal == 0 freqVal = 10000 end
+# plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesPulse, [10, 20], 
 			   # xRange = 500, yRange = 250, nWaveSamples=nSamplesWave, plotDCBin = true, plotFreqLines = false, freqVal = freqVal)
-			   xRange = max_range, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal,
-               removeClutter = true, rawImage = rawImage)
+			   # xRange = max_range, yRange = 5, nWaveSamples=nSamplesWave, plotDCBin = false, plotFreqLines = true, freqVal = freqVal,
+               # removeClutter = true, rawImage = rawImage)
 
 # totalPulses = floor(Int, length(rxSignal)/nSamplesPulse)
 # rxMatrix =  reshape((rxSignal), nSamplesPulse, :) 
@@ -140,7 +135,7 @@ plotDopplerFFT(figure, PCsignal, [1, 1], [1, nSamplesPulse*2], fc, fs, nSamplesP
 # display(figure)
 # save("Testing.pdf", figure)
 # save("Doppler.png", figure)
-save("DopplerThreshold.png", figure)
+# save("DopplerThreshold.png", figure)
 
 # fftMatrix = dopplerFFT(rxSignal, [1, nSamplesPulse*2], nSamplesPulse, PRF)
 # velocityBinCount = length(fftMatrix[])
@@ -181,6 +176,43 @@ save("DopplerThreshold.png", figure)
 # save("PhaseNoise_REALDATA_DIRECT.pdf", figure)
 # save("PhaseNoise_REALDATA_VELD.pdf", figure)
 
+# ------------------- #
+#  F U N C T I O N S  #
+# ------------------- #
+
+function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0)
+
+    # File data.
+    path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
+    filePrefix 		= "B210_SAMPLES_" * folder * "_"
+    file 			= path * folder * "/" * filePrefix * fileNumber
+    fileBin 		= file * ".bin"
+    fileTxt			= file * ".txt"	
+
+    # Get metadata.
+    meta_data = load_meta_data(fileTxt)
+    println("Wave type: " * meta_data.wave_type)            
+
+    # Create signals.
+    rx_signal = loadDataFromBin(abspath(fileBin), meta_data, pulsesToLoad = pulsesToLoad)
+    tx_signal = generate_tx_signal(meta_data)
+
+    # Pulse compression and syncing.
+    rx_signal = pulseCompression(tx_signal, rx_signal)
+    rx_signal = sync_signal(rx_signal, get_sync_index(rx_signal, meta_data, pulses_to_search = 2), meta_data)
+    
+    # Figure for plotting.
+    figure = Figure(resolution = (1920, 1080))
+    freqVal = meta_data.dc_freq_shift
+    if freqVal == 0 freqVal = 10000 end
+    plotDopplerFFT(figure, rx_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [0, 20], 
+    			   xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = freqVal,
+                   removeClutter = true, rawImage = false)
+    
+    display(figure)
+
+end
+    
 # ======= #
 #  E O F  #
 # ======= #
