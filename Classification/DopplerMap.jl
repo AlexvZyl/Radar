@@ -162,7 +162,7 @@ end
 
 # Animate the doppler frames on a figure.
 function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange, velocity::AbstractRange; 
-                 sleep_seconds::Number = 0.5, snr_threshold::Number = 13, clusters = nothing,
+                 sleep_seconds::Number = 0.75, snr_threshold::Number = 13, clusters = nothing,
                  adjacency_matrix = nothing, snr_max = 20, use_db::Bool = true)
 
     # Create the figure and axis. 
@@ -171,13 +171,8 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
     display(figure)
 
     # Get the dB of the doppler data.
-    doppler_frames_db = Vector{AbstractMatrix}(undef, length(doppler_frames))
     if use_db
-        for (index, frame) in enumerate(doppler_frames)
-            doppler_frames_db[index] = amp2db.(abs.(frame))
-        end
-    else
-        doppler_frames_db = doppler_frames
+        doppler_frames = amp2db.(abs.(doppler_frames))
     end
 
     # Setup clusters data.
@@ -217,7 +212,7 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
     while true
         
         # Iterate and display the frames.
-        for (index, frame) in enumerate(doppler_frames_db)
+        for (index, frame) in enumerate(doppler_frames)
             # Plot and display.
             heatmap!(figure[1, 1], distance, velocity, frame, colorrange = [snr_threshold, snr_max])
             # Render clustering data.
