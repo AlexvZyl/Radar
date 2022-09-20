@@ -24,8 +24,17 @@ for file in files
     observation_matrix = hcat(observation_matrix, feature_vector)
 end
 
-# Make each file a different target for testing.
-labels = Vector(1:1:length(files))
-
+# PCA.
 pca_result = fit(PCA, observation_matrix, maxoutdim = 10)
-display(pca_result)
+principle_values = principalvars(pca_result)
+
+# Display the principle values.
+println("Principle Values:")
+println("--------------------------------------------------")
+for (i, pval) in enumerate(principle_values)
+    print("|   ")
+    print("PC", i, "   |   ")
+    print("Eigen Value: ", pval)
+    println("\t |")
+end
+println("--------------------------------------------------")
