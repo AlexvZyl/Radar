@@ -27,15 +27,17 @@ end
 # PCA.
 pca_result = fit(PCA, observation_matrix, maxoutdim = 10)
 principle_values = principalvars(pca_result)
+total_variance = var(pca_result)
 
 # Display the principle values.
-println("\n------------------------------------------")
-println("| Component |  \t     Eigen Value \t |")
-println("------------------------------------------")
+println("\n-------------------------------------------------------------------------")
+println("| Component |  \t     Eigen Value \t |      Variance Explained      |")
+println("-------------------------------------------------------------------------")
 for (i, pval) in enumerate(principle_values)
     print("|    ")
     print("PC", i, "    |     ")
     print(pval)
-    println("\t |")
+    print("\t |     ")
+    println(pval / total_variance, "  \t|")
 end
-println("------------------------------------------")
+println("--------------------------------------------------------------------------")
