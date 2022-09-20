@@ -694,23 +694,6 @@ function fitness(SLL, MLW)
     return result
 end
 
-# --------------------------- #
-#  C + +   I N T E R F A C E  #
-# --------------------------- #
-
-function generateOptimalBezierCF32(nSamples::Int32, BW::Float64, fs::Int32)
-    vertices = [ Vertex2D(-0.047584273f0, -0.42005837f0), Vertex2D(0.5834747f0, 0.8460692f0), Vertex2D(-1.2840363f0, 0.5929221f0) ]
-    BezierSignalParametric(vertices, Real(fs), Int(nSamples), Real(BW))
-end
-
-function generateOptimalBezier(nSamples::Int32, BW::Float64, fs::Int32)
-    complexWave = generateOptimalBezierCF32(nSamples, BW, fs)
-    floatWave = Vector{Float64}(undef, nSamples*2)
-    floatWave[1:2:end-1] =  Float64.(real.(complexWave))
-    floatWave[2:2:end] =  Float64.(imag.(complexWave))
-    floatWave
-end
-
 # ------- #
 #  E O F  #
 # ------- #
