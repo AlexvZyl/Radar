@@ -13,6 +13,7 @@ include("../LowTB-NLFM/Source/Bezier.jl")
 include("../LowTB-NLFM/Source/Sigmoid.jl")
 include("../Utilities/Processing/ProcessingHeader.jl")
 include("../Utilities/Processing/BinaryProcessor.jl")
+include("../LowTB-NLFM/Source/CppInterface.jl")
 
 # Describes the frame.
 mutable struct Frame

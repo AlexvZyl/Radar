@@ -65,7 +65,6 @@ Base.Threads.@threads for file in files
         end
 
         # Append the target frames to the feature vector.
-        display(feature_vector)
         for frame in target_frames
             for row in eachrow(frame)
                 append!(feature_vector, row)
