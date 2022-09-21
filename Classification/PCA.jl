@@ -1,4 +1,4 @@
-# Pcinciple component analysis to see which of the pixels contain the most data.
+# Principle component analysis to see which of the pixels contain the most data.
 
 # Modules.
 include("Directories.jl")
@@ -34,8 +34,7 @@ println("\n---------------------------------------------------------------------
 println("| Component |  \t     Eigen Value \t |      Variance Explained      |")
 println("-------------------------------------------------------------------------")
 for (i, pval) in enumerate(principle_values)
-    print("|    ")
-    print("PC", i, "    |     ")
+    print("|    PC", i, "    |     ")
     print(pval)
     print("\t |     ")
     println(pval / total_variance, "  \t|")
