@@ -3,10 +3,12 @@
 
 # Modules.
 include("RawToDopplerMap.jl")
+include("DBSCAN.jl")
 
 # Data.
 folder = "Test"
-files = String[  ]
+files = String[ "010", "011", "012" ]
 
 # Pipeline.
 raw_to_doppler_map(folder, files)
+cluster_dopplermaps(folder, files)

@@ -3,6 +3,8 @@ include("Directories.jl")
 
 function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
 
+    print("Processing raw data into doppler maps...")
+
     # Location of the data collected by the SDR.
     path = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/"
 
@@ -42,5 +44,7 @@ function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
         # plot(doppler_fft_matrix, distance_vector, velocity_vector)
     
     end
+
+    println(" Done.")
     
 end
