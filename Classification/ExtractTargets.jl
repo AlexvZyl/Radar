@@ -41,42 +41,54 @@ function extract_target(doppler_fft_matrix::AbstractMatrix, clusters::Vector{Dbs
 
 end
 
-# The folder from where the data will be loaded.
-folder = "Test"
+function extract_targets(folder::String, files_to_load::Vector{String} = [])
 
-# Get filesystem data.
-map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
-files = get_all_files(map_dir)
-# files = get_files(folder, [ "012" ])
+    print("Extracting targets...")
 
-# Other parameters.
-snr_threshold = 0
+    # Get filesystem data.
+    map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
 
-# Go through all of the files.
-Base.Threads.@threads for file in files
+    # Get all of the files in the directory.
+    load_all_files = length(files_to_load) == 0
+    if load_all_files 
+        files_to_load = readdir(map_dir)
+    # Convert the file numbers into files.
+    else
+        files_to_load = get_files(folder, files_to_load)
+    end 
     
-    # Load the data.
-    cluster_file_data = load(cluster_dir * file)
-    doppler_file_data = load(map_dir * file)   
-    doppler_frames_data = load(frames_dir * file)
-    doppler_frames = doppler_frames_data["Doppler FFT Frames"]
-    adjacency_matrix = cluster_file_data["Adjacency Matrix"]
-    distance = doppler_file_data["Distance"]
-    velocity = doppler_file_data["Velocity"]
-    clusters = cluster_file_data["Clustering Result"]
-    labels = load(labels_dir * file)["Target Labels"]
-
-    # Extract the target from each frame.
-    target_frames = Vector{AbstractMatrix}(undef, length(doppler_frames))
-    null, target_distance, target_velocity = extract_target(doppler_frames[1], clusters, labels, adjacency_matrix, distance, velocity)
-    for (i, frame) in enumerate(doppler_frames)
-        target_frames[i], null1, null2 = extract_target(frame, clusters, labels, adjacency_matrix, distance, velocity)
+    # Other parameters.
+    snr_threshold = 0
+    
+    # Go through all of the files.
+    Base.Threads.@threads for file in files_to_load
+        
+        # Load the data.
+        cluster_file_data = load(cluster_dir * file)
+        doppler_file_data = load(map_dir * file)   
+        doppler_frames_data = load(frames_dir * file)
+        doppler_frames = doppler_frames_data["Doppler FFT Frames"]
+        adjacency_matrix = cluster_file_data["Adjacency Matrix"]
+        distance = doppler_file_data["Distance"]
+        velocity = doppler_file_data["Velocity"]
+        clusters = cluster_file_data["Clustering Result"]
+        labels = load(labels_dir * file)["Target Labels"]
+    
+        # Extract the target from each frame.
+        target_frames = Vector{AbstractMatrix}(undef, length(doppler_frames))
+        null, target_distance, target_velocity = extract_target(doppler_frames[1], clusters, labels, adjacency_matrix, distance, velocity)
+        for (i, frame) in enumerate(doppler_frames)
+            target_frames[i], null1, null2 = extract_target(frame, clusters, labels, adjacency_matrix, distance, velocity)
+        end
+    
+        # Save the information.
+        save(get_file_path(extracted_targets_dir, file),
+             "Target Frames", target_frames,
+             "Target Distance", target_distance,
+             "Target Velocity", target_velocity)
+    
     end
 
-    # Save the information.
-    save(get_file_path(extracted_targets_dir, file),
-         "Target Frames", target_frames,
-         "Target Distance", target_distance,
-         "Target Velocity", target_velocity)
+    println(" Done.")
 
 end

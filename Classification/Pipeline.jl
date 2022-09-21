@@ -6,6 +6,7 @@ include("RawToDopplerMap.jl")
 include("DBSCAN.jl")
 include("ClusterLabelling.jl")
 include("DopplerFramesGenerator.jl")
+include("ExtractTargets.jl")
 
 # Data.
 folder = "Test"
@@ -16,3 +17,4 @@ raw_to_doppler_map(folder, files)
 cluster_dopplermaps(folder, files)
 # label_clusters(folder, files)
 generate_frames(folder, files)
+extract_targets(folder, files)
