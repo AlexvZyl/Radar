@@ -1,45 +1,46 @@
 include("DopplerMap.jl")
+include("Directories.jl")
 
-# Meta data.
-folder 			= "Test"
-files_to_load = [
-    "004",
-    "005",
-    "006",
-    "007",
-    "008",
-    "009",
-    "010",
-    "011",
-    "012"
-]
+function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
 
-files_to_load = [ "012" ]
+    # Location of the data collected by the SDR.
+    path = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/"
 
-# Fixed data.
-path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
-file_prefix 	= "/B210_SAMPLES_" * folder * "_"
+    # Load the required files (without path).
+    # If no files are specified load the entire directory.
+    if length(files_to_load) == 0
+        files_to_load = get_all_files(path)
+    else
+        files_to_load = get_files(folder, files_to_load)
+    end
 
-# Load all of the files.
-Base.Threads.@threads for file_number in files_to_load
-
-    # Create file.
-    file = path * folder * file_prefix * file_number
+    # Filter the files.
+    filter!(f -> splitext(f)[2] == ".bin", files_to_load)
+    filter!(f -> !occursin("Phase", f), files_to_load)
     
-    # Calculate doppler data.
-    doppler_fft_matrix, distance_vector, velocity_vector = calculate_doppler_map(abspath(file))
-    
-    # Destination file.                                                    
-    destination_folder = "Data/EntireDopplerMap/" * folder * "/"
-    destination_file = relpath(destination_folder * file_prefix * file_number * ".jld")
-    
-    # Save the data to file.
-    meta_data = load_meta_data(file * ".txt")
-    save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
-                           "Velocity", velocity_vector,
-                           "Distance", distance_vector,
-                           "Meta Data", meta_data)
+    # Get the doppler map from each raw file.
+    Base.Threads.@threads for file in files_to_load
+        
+        # The doppler map function takes a file with no extension (very inconsistent API writing on my part).
+        file = remove_extension(file)
 
-    plot(doppler_fft_matrix, distance_vector, velocity_vector)
-
+        # Calculate doppler data.
+        doppler_fft_matrix, distance_vector, velocity_vector = calculate_doppler_map(path * file)
+        
+        # Destination file.                                                    
+        destination_folder = "Data/EntireDopplerMap/" * folder * "/"
+        destination_file = relpath(destination_folder * file * ".jld")
+        
+        # Save the data to file.
+        meta_data = load_meta_data(path * file * ".txt")
+        save(destination_file, "Doppler FFT Matrix", doppler_fft_matrix, 
+                               "Velocity", velocity_vector,
+                               "Distance", distance_vector,
+                               "Meta Data", meta_data)
+    
+        # Plot the map (debug).
+        # plot(doppler_fft_matrix, distance_vector, velocity_vector)
+    
+    end
+    
 end

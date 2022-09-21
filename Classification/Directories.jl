@@ -27,12 +27,15 @@ function get_all_files(path::String, append_to_path = false)
     if append_to_path
         return path .* files
     end
-    println("Got files: ")
-    display(files)
     files
 end
 
 # Create the files based on the numbers and folder.
 function get_files(folder::String, file_numbers::Vector{String})
     get_file_name.(folder, file_numbers)
+end
+
+# Remove the extension from the filename.
+function remove_extension(file::String)
+    splitext(file)[1]
 end
