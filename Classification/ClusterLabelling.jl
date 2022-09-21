@@ -23,104 +23,115 @@ function parse_cluster_input(input::String)
     parsed_input
 end
 
-# File data.
-folder = "Test"
-map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
-selected_files = get_all_files(cluster_dir)
-# selected_files = get_files(folder, [ "012" ])
+function label_clusters(folder::String, files_to_load::Vector{String} = [])
 
-# Create the figure and axis. 
-figure = Figure()
-Axis(figure[1,1])
-display(figure)
+    print("Labelling clusters... ")
 
-# Allow the user to input which cluster contains the target.
-tb = Textbox(figure[2,1], placeholder = "Enter the cluster containing the target. Seperate with spaces for multiple clusters.", tellwidth = false)
+    # File data.
+    map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
 
-# The user now has to identify the cluster that has the target for each doppler map.
-for file in selected_files
+    # Get files.
+    if length(files_to_load) == 0
+        files_to_load = get_all_files(map_dir)
+    else
+        files_to_load = get_files(folder, files_to_load)
+    end
     
-    # Load the data.
-    cluster_file_data = load(cluster_dir * file)
-    doppler_file_data = load(map_dir * file)
-   
-    # Load the data.
-    adjacency_matrix = cluster_file_data["Adjacency Matrix"]
-    doppler_fft_matrix = doppler_file_data["Doppler FFT Matrix"]
-    distance = doppler_file_data["Distance"]
-    velocity = doppler_file_data["Velocity"]
-    snr_threshold = 0
-    result = cluster_file_data["Clustering Result"]
-
-    # Plot the doppler data with the cluster.
-    heatmap!(figure[1, 1], distance, velocity, 20*log10.(abs.(doppler_fft_matrix)), colorrange = [snr_threshold, 20])
-
-    # Plot the cluster labels.
-    for (i, cluster) in enumerate(result)
-
-        # init data.
-        distance_data = Array{Float32}(undef, cluster.size)
-        velocity_data = Array{Float32}(undef, cluster.size)
-        # populate data.
-        for (i, index) in enumerate(cluster.core_indices)
-            distance_data[i] = adjacency_matrix[1, index] 
-            velocity_data[i] = adjacency_matrix[2, index] 
-        end
-        for (i, index) in enumerate(cluster.boundary_indices)
-            distance_data[i] = adjacency_matrix[1, index] 
-            velocity_data[i] = adjacency_matrix[2, index] 
-        end
-        position = [ mean(distance_data), mean(velocity_data) ]    
-        poly_size = [ 8, 0.13 ] 
-        poly_vertices = Point2f[
-            ( position[1] - poly_size[1], position[2] - poly_size[2] ),
-            ( position[1] + poly_size[1], position[2] - poly_size[2] ),
-            ( position[1] + poly_size[1], position[2] + poly_size[2] ),
-            ( position[1] - poly_size[1], position[2] + poly_size[2] ),
-        ]
-        scatter!(distance_data, velocity_data)
-        poly!(poly_vertices, color = (:black, 0.7))
-        text!(position[1], position[2], text = string(i), textsize = 20, align = (:center, :center))
-    end
-
-    # Data required for the input loop.
-    keep_asking = true
-    condition = Threads.Condition()
-
-    # Add a callback the notifies the condition of a change. 
-    on(tb.stored_string) do s
-        lock(condition)
-        notify(condition, s)
-        unlock(condition)
-    end
-
-    # Loop until the user inputs valid data.
-    while keep_asking
-
-        # Wait for the user to input the values.
-        lock(condition)
-        input_string = wait(condition)
-        unlock(condition)
+    # Create the figure and axis. 
+    figure = Figure()
+    Axis(figure[1,1])
+    display(figure)
+    
+    # Allow the user to input which cluster contains the target.
+    tb = Textbox(figure[2,1], placeholder = "Enter the cluster containing the target. Seperate with spaces for multiple clusters.", tellwidth = false)
+    
+    # The user now has to identify the cluster that has the target for each doppler map.
+    for file in files_to_load
         
-        # Parse the input.
-        parsed_input = parse_cluster_input(input_string)
-
-        # Validate the input.
-        try 
-            parsed_input = parse.(Int, parsed_input)
-            println(parsed_input)
-            keep_asking = false
-        # If input is invalid, keep asking.
-        catch
-            keep_asking = true
+        # Load the data.
+        cluster_file_data = load(cluster_dir * file)
+        doppler_file_data = load(map_dir * file)
+       
+        # Load the data.
+        adjacency_matrix = cluster_file_data["Adjacency Matrix"]
+        doppler_fft_matrix = doppler_file_data["Doppler FFT Matrix"]
+        distance = doppler_file_data["Distance"]
+        velocity = doppler_file_data["Velocity"]
+        snr_threshold = 0
+        result = cluster_file_data["Clustering Result"]
+    
+        # Plot the doppler data with the cluster.
+        heatmap!(figure[1, 1], distance, velocity, 20*log10.(abs.(doppler_fft_matrix)), colorrange = [snr_threshold, 20])
+    
+        # Plot the cluster labels.
+        for (i, cluster) in enumerate(result)
+    
+            # init data.
+            distance_data = Array{Float32}(undef, cluster.size)
+            velocity_data = Array{Float32}(undef, cluster.size)
+            # populate data.
+            for (i, index) in enumerate(cluster.core_indices)
+                distance_data[i] = adjacency_matrix[1, index] 
+                velocity_data[i] = adjacency_matrix[2, index] 
+            end
+            for (i, index) in enumerate(cluster.boundary_indices)
+                distance_data[i] = adjacency_matrix[1, index] 
+                velocity_data[i] = adjacency_matrix[2, index] 
+            end
+            position = [ mean(distance_data), mean(velocity_data) ]    
+            poly_size = [ 8, 0.13 ] 
+            poly_vertices = Point2f[
+                ( position[1] - poly_size[1], position[2] - poly_size[2] ),
+                ( position[1] + poly_size[1], position[2] - poly_size[2] ),
+                ( position[1] + poly_size[1], position[2] + poly_size[2] ),
+                ( position[1] - poly_size[1], position[2] + poly_size[2] ),
+            ]
+            scatter!(distance_data, velocity_data)
+            poly!(poly_vertices, color = (:black, 0.7))
+            text!(position[1], position[2], text = string(i), textsize = 20, align = (:center, :center))
         end
-
-        # Now save the cluster label.
-        if keep_asking == false
-            save(get_file_path(labels_dir, file),
-                 "Target Labels", parsed_input)                        
+    
+        # Data required for the input loop.
+        keep_asking = true
+        condition = Threads.Condition()
+    
+        # Add a callback the notifies the condition of a change. 
+        on(tb.stored_string) do s
+            lock(condition)
+            notify(condition, s)
+            unlock(condition)
         end
- 
+    
+        # Loop until the user inputs valid data.
+        while keep_asking
+    
+            # Wait for the user to input the values.
+            lock(condition)
+            input_string = wait(condition)
+            unlock(condition)
+            
+            # Parse the input.
+            parsed_input = parse_cluster_input(input_string)
+    
+            # Validate the input.
+            try 
+                parsed_input = parse.(Int, parsed_input)
+                print(parsed_input, "... ")
+                keep_asking = false
+            # If input is invalid, keep asking.
+            catch
+                keep_asking = true
+            end
+    
+            # Now save the cluster label.
+            if keep_asking == false
+                save(get_file_path(labels_dir, file), "Target Labels", parsed_input)                        
+            end
+     
+        end
+    
     end
+
+    println(" Done.")
 
 end
