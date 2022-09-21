@@ -47,10 +47,10 @@ function cluster_dopplermaps(folder::String, files_to_load::Vector{String} = [])
     leaf_size = 20
     
     # File data.
-    load_all_files = length(files_to_load) == 0
-    map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
     
     # Get all of the files in the directory.
+    load_all_files = length(files_to_load) == 0
+    map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
     if load_all_files 
         files_to_load = readdir(map_dir)
     # Convert the file numbers into files.
