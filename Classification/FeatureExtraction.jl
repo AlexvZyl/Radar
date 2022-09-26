@@ -31,7 +31,7 @@ function extract_features(folder::String, files_to_load::Vector{String} = [])
     # Get all of the files in the directory.
     load_all_files = length(files_to_load) == 0
     if load_all_files 
-        files_to_load = readdir(map_dir)
+        files_to_load = readdir(extracted_targets_dir)
     # Convert the file numbers into files.
     else
         files_to_load = get_files(folder, files_to_load)

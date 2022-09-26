@@ -57,9 +57,6 @@ function extract_targets(folder::String, files_to_load::Vector{String} = [])
         files_to_load = get_files(folder, files_to_load)
     end 
     
-    # Other parameters.
-    snr_threshold = 0
-    
     # Go through all of the files.
     Base.Threads.@threads for file in files_to_load
         
@@ -73,6 +70,11 @@ function extract_targets(folder::String, files_to_load::Vector{String} = [])
         velocity = doppler_file_data["Velocity"]
         clusters = cluster_file_data["Clustering Result"]
         labels = load(labels_dir * file)["Target Labels"]
+
+        # In this case the doppler map did not have a valid target cluster.
+        if(labels[1] == -1)
+            break
+        end
     
         # Extract the target from each frame.
         target_frames = Vector{AbstractMatrix}(undef, length(doppler_frames))

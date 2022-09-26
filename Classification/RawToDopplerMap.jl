@@ -21,7 +21,10 @@ function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
     filter!(f -> !occursin("Phase", f), files_to_load)
     
     # Get the doppler map from each raw file.
-    Base.Threads.@threads for file in files_to_load
+    # Multithreading this task breaks. 
+    # Also. this tends to be slower since it usually needs to start using swap files.
+    # Base.Threads.@threads for file in files_to_load
+    for file in files_to_load
         
         # The doppler map function takes a file with no extension (very inconsistent API writing on my part).
         file = remove_extension(file)
