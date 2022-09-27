@@ -1,48 +1,5 @@
 # Principle component analysis to see which of the pixels contain the most data.
 
-# Load the features as an observation matrix.
-function load_observation_matrix(folder::String)
-
-    features_dir = get_directories(folder)[5]
-    files = get_all_files(features_dir, true)
-    
-    # Get the amount of features.
-    feature_count = length(load(files[1])["Feature Vector"])
-    
-    # Load the features from the files and put them in a matrix.
-    # (Each column is an observation)
-    observation_matrix = Matrix{Float64}(undef, feature_count, 0)
-    for file in files
-        feature_vector = load(file)["Feature Vector"]
-        observation_matrix = hcat(observation_matrix, feature_vector)
-    end
-
-    return observation_matrix
-
-end
-
-# Print the PCA result with a nice table.
-import Base.print
-using MultivariateStats
-function Base.print(pca_result::PCA)
-
-    principle_values = principalvars(pca_result)
-    total_variance = var(pca_result)
-    
-    # Display the principle values.
-    println("\n---------------------------------------------------------------------------------")
-    println("|   Component\t|  \t    Eigen Value \t |      Variance Explained      |")
-    println("---------------------------------------------------------------------------------")
-    for (i, pval) in enumerate(principle_values)
-        print("|      PC", i, "\t|       ")
-        print(pval)
-        print(" \t |     ")
-        println(pval / total_variance, "  \t|")
-    end
-    println("---------------------------------------------------------------------------------")
-
-end
-
 # Plot the LDA result.  Creates a new figure and axis.
 include("../Utilities/MakieGL/PlotUtilities.jl")
 function plot(transformed_observation_matrix::AbstractMatrix, labels::AbstractVector, labels_count::AbstractVector)
@@ -85,10 +42,6 @@ observation_matrix = hcat(observation_matrix_walking_towards, observation_matrix
 labels_walking_away     = [ "WalkingAway" for i in 1:Base.size(observation_matrix_walking_away)[2] ]
 labels_walking_towards  = [ "WalkingTowards" for i in 1:Base.size(observation_matrix_walking_towards)[2] ]
 labels = vcat(labels_walking_away, labels_walking_towards)
-
-# PCA.
-# pca_result = fit(PCA, observation_matrix, maxoutdim = 10)
-# print(pca_result)
 
 # LDA.
 lda_result = fit(MulticlassLDA, observation_matrix, labels; outdim=3)

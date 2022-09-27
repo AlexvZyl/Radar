@@ -53,3 +53,25 @@ function adjacency_to_doppler(adjacency_matrix::AbstractMatrix, clusters::Vector
     end
     return total_distance_data, total_velocity_data
 end
+
+# Load the features as an observation matrix.
+function load_observation_matrix(folder::String)
+
+    features_dir = get_directories(folder)[5]
+    files = get_all_files(features_dir, true)
+    
+    # Get the amount of features.
+    feature_count = length(load(files[1])["Feature Vector"])
+    
+    # Load the features from the files and put them in a matrix.
+    # (Each column is an observation)
+    observation_matrix = Matrix{Float64}(undef, feature_count, 0)
+    for file in files
+        feature_vector = load(file)["Feature Vector"]
+        observation_matrix = hcat(observation_matrix, feature_vector)
+    end
+
+    return observation_matrix
+
+end
+
