@@ -10,10 +10,12 @@ include("ExtractTargets.jl")
 include("FeatureExtraction.jl")
 
 # Data.
+folder  = "Test"
 # folder = "WalkingAway"
-folder = "WalkingTowards"
+# folder = "WalkingTowards"
 files = String[]
 # files = String[ "010", "011", "012" ]
+files = String[ "012" ]
 
 # Pipeline.
 # raw_to_doppler_map(folder, files)

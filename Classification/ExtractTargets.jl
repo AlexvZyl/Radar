@@ -9,9 +9,12 @@ function relative_to_absolute_velocity_sample(sample::Number, total_samples::Num
     return floor(Int,  sample + (total_samples / 2) )
 end
 
+global target_map_size = (15, 15)
+
 # Extract the target doppler map from the larger doppler map.
 function extract_target(doppler_fft_matrix::AbstractMatrix, clusters::Vector{DbscanCluster}, labels::Vector{Int}, 
-                        adjacency_matrix::AbstractMatrix, distance_range::AbstractRange, velocity_range::AbstractRange)
+                        adjacency_matrix::AbstractMatrix, distance_range::AbstractRange, velocity_range::AbstractRange;
+                        target_size::Tuple = target_map_size)
 
     # The target cluster has to be extracted from the larger Doppler map.
     # I am unsure how this should be done exactly, but for now lets extract it
@@ -31,12 +34,23 @@ function extract_target(doppler_fft_matrix::AbstractMatrix, clusters::Vector{Dbs
     velocity_indices = relative_to_absolute_velocity_sample.(velocity_indices, length(velocity_range))
     sort!(velocity_indices)
 
+    # Make sure the indices provided fit the target size.
+    # This can be done by finding the center of the current indices and then adding the 
+    # size to each side.
+    # Should the center be actual centerr or center of mass?
+    distance_size = (target_map_size[1]-1) / 2
+    velocity_size = (target_map_size[2]-1) / 2
+    distance_center_index = (distance_indices[end] + distance_indices[1]) / 2
+    velocity_center_index = (velocity_indices[end] + velocity_indices[1]) / 2
+    distance_indices = floor(Int, distance_center_index - distance_size):1:floor(Int, distance_center_index + distance_size)
+    velocity_indices = floor(Int, velocity_center_index - velocity_size):1:floor(Int, velocity_center_index + velocity_size)
+
     # Get the range data for the target.
-    target_distance = distance_limits[1]:distance_resolution:distance_limits[2]
-    target_velocity = velocity_limits[1]:velocity_resolution:velocity_limits[2]
+    target_distance = distance_range[distance_indices[1]]:distance_resolution:distance_range[distance_indices[2]]
+    target_velocity = velocity_range[velocity_indices[1]]:velocity_resolution:velocity_range[velocity_indices[2]]
     
     # Extract the target and return it.
-    target_map = doppler_fft_matrix[range(distance_indices[1], distance_indices[2]), range(velocity_indices[1], velocity_indices[2])]
+    target_map = doppler_fft_matrix[distance_indices, velocity_indices]
     return target_map, target_distance, target_velocity
 
 end

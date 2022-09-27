@@ -3,7 +3,6 @@ include("Directories.jl")
 include("Utilities.jl")
 include("../Utilities/MakieGL/PlotUtilities.jl")
 include("DopplerMap.jl")
-import Images
 
 # Remove the distance and velocity means from the matrix.
 function normalise!(matrix_vector::Vector{AbstractMatrix})
@@ -17,10 +16,7 @@ function normalise!(matrix_vector::Vector{AbstractMatrix})
     end
 end
 
-# The size used for the features.
-# Some images will have to be upscaled to fit (or downscaled).
-const image_base_size = (25, 25)
-
+# Extract the features from the doppler frames stored in the file.
 function extract_features(folder::String, files_to_load::Vector{String} = [])
     
     print("Extracting features...")
@@ -37,21 +33,16 @@ function extract_features(folder::String, files_to_load::Vector{String} = [])
         files_to_load = get_files(folder, files_to_load)
     end
     
-    # Other parameters.
-    snr_threshold = 0
-    
     # Iterate over the files.
     Base.Threads.@threads for file in files_to_load
     
         # Load data.
         target_frame_data = load(extracted_targets_dir * file)
         target_frames = target_frame_data["Target Frames"]
-        target_distance = target_frame_data["Target Distance"]
-        target_velocity = target_frame_data["Target Velocity"]
     
         # Get absolute value.
         for (i, frame) in enumerate(target_frames) 
-            target_frames[i] = abs.(frame)
+            target_frames[i] = abs.(target_frames[i])
         end
     
         # Need to normalise the doppler values since the classifier has to be able to detect targets 
@@ -59,36 +50,23 @@ function extract_features(folder::String, files_to_load::Vector{String} = [])
         # I wonder if the higher noise at longer distances will confuse the classifier... Using a
         # NN would really be better.
         normalise!(target_frames)
-        
-        # If one of the dimensions of the image is of size one it cant be upsampled.
-        # This should not happen in any case, so these files can just be discarded.
-        try 
-    
-            # Init.
-            feature_vector = Vector{Float64}(undef, 0)
-    
-            # Need to resize the image to fit the base.
-            for (i, frame) in enumerate(target_frames)
-                target_frames[i] = Images.imresize(frame, image_base_size) 
+
+        # Append the target frames (rows) to the feature vector.
+        feature_vector = Vector{Float64}(undef, 0)
+        for frame in target_frames
+            for row in eachrow(frame)
+                append!(feature_vector, row)
             end
-    
-            # Append the target frames to the feature vector.
-            for frame in target_frames
-                for row in eachrow(frame)
-                    append!(feature_vector, row)
-                end
-            end
-    
-            # Save the features.
-            save(features_dir * file, "Feature Vector", feature_vector)
-    
-        # Could not resize the image.
-        catch
-            print(" Could not resize image: " * file * "...")
         end
     
+        # Save the features.
+        save(features_dir * file, "Feature Vector", feature_vector)
+    
         # Debugging.
-        # animate(target_frames, target_distance, target_velocity, snr_threshold = 0, snr_max = 1, use_db = false)
+        target_distance = target_frame_data["Target Distance"]
+        target_velocity = target_frame_data["Target Velocity"]
+        snr_threshold = 0
+        animate(target_frames, target_distance, target_velocity, snr_threshold = 0, snr_max = 1, use_db = false)
     
     end
 
