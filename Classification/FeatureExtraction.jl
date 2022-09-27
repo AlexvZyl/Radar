@@ -63,10 +63,9 @@ function extract_features(folder::String, files_to_load::Vector{String} = [])
         save(features_dir * file, "Feature Vector", feature_vector)
     
         # Debugging.
-        target_distance = target_frame_data["Target Distance"]
-        target_velocity = target_frame_data["Target Velocity"]
-        snr_threshold = 0
-        animate(target_frames, target_distance, target_velocity, snr_threshold = 0, snr_max = 1, use_db = false)
+        # target_distance = target_frame_data["Target Distance"]
+        # target_velocity = target_frame_data["Target Velocity"]
+        # animate(target_frames, target_distance, target_velocity, snr_threshold = 0, snr_max = 1, use_db = false)
     
     end
 
