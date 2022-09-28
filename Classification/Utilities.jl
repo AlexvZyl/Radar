@@ -75,3 +75,15 @@ function load_observation_matrix(folder::String)
 
 end
 
+# Convert a vector into a vector of vectors to limit the amount of instances Julia's
+# multithreading can use.
+function vectorise(data::AbstractVector; size = 2)
+    vectorised_data = Vector{typeof(data)}(undef, 0)
+    for (i, entry) in enumerate(data)
+        if( (i-1) % size == 0 ) 
+            push!(vectorised_data, typeof(data)(undef, 0))
+        end
+        push!(vectorised_data[ceil(Int, i/size)], entry)    
+    end   
+    return vectorised_data
+end
