@@ -1,6 +1,7 @@
 # Principle component analysis to see which of the pixels contain the most data.
 
 using MultivariateStats
+using MLUtils
 
 # Plot the LDA result.  Creates a new figure and axis.
 include("../Utilities/MakieGL/PlotUtilities.jl")
@@ -28,28 +29,13 @@ function plot(transformed_observation_matrix::AbstractMatrix, labels::AbstractVe
 
 end
 
-# Randomly remove the amount of data requested and return it.
-function random_delete(data::AbstractMatrix; ratio = 0.15, dimension = 2)
-
-    # Calculate the amount to delte.
-    to_delete = floor(Int, Base.size(data)[dimension] * ratio)
-
-    # Delete the amount.
-    for _ in 1:to_delete
-        random_index = rand(1:Base.size(data)[dimension])
-        data = data[:, 1:end .!= random_index]
-    end
-
-    # Return the deleted amount.
-    return data
-
-end
-
 # Modules.
 include("Directories.jl")
 include("Utilities.jl")
 include("../Utilities/MakieGL/PlotUtilities.jl")
 include("DopplerMap.jl")
+
+# Use splitobs for train/test splits.
 
 # Load the matrices.
 observation_matrix_walking_away     = load_observation_matrix("WalkingAway")
@@ -62,9 +48,9 @@ labels_walking_towards  = [ "WalkingTowards" for i in 1:Base.size(observation_ma
 labels                  = vcat(labels_walking_away, labels_walking_towards)
 
 # LDA with all of the data.
-lda_result = fit(MulticlassLDA, observation_matrix, labels; outdim=3)
-new_samples_space = predict(lda_result, observation_matrix)
-plot(new_samples_space, [ "WalkingAway", "WalkingTowards" ], [ length(labels_walking_away), length(labels_walking_towards) ])
+# lda_result = fit(MulticlassLDA, observation_matrix, labels; outdim=3)
+# new_samples_space = predict(lda_result, observation_matrix)
+# plot(new_samples_space, [ "WalkingAway", "WalkingTowards" ], [ length(labels_walking_away), length(labels_walking_towards) ])
 
 # Remove some of the data for training so that we can test it.
 observation_matrix_walking_away_reduced = random_delete(observation_matrix_walking_away)
@@ -77,6 +63,6 @@ labels_walking_towards_reduced  = [ "WalkingTowards" for _ in 1:Base.size(observ
 labels_reduced                  = vcat(labels_walking_away_reduced, labels_walking_towards_reduced)
 
 # LDA on the reduced data.
-# lda_result_reduced = fit(MulticlassLDA, observation_matrix_reduced, labels_reduced, outdim=3)
-# results_reduced = predict(lda_result_reduced, observation_matrix)
-# plot(results_reduced, [ "WalkingAway", "WalkingTowards" ], [ length(labels_walking_away), length(labels_walking_towards) ])
+lda_result_reduced = fit(MulticlassLDA, observation_matrix_reduced, labels_reduced, outdim=3)
+results_reduced = predict(lda_result_reduced, observation_matrix)
+plot(results_reduced, [ "WalkingAway", "WalkingTowards" ], [ length(labels_walking_away), length(labels_walking_towards) ])

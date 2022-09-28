@@ -87,3 +87,20 @@ function vectorise(data::AbstractVector; size = 2)
     end   
     return vectorised_data
 end
+
+# Randomly remove the amount of data requested and return it.
+function random_delete(data::AbstractMatrix; ratio = 0.3, dimension = 2)
+
+    # Calculate the amount to delte.
+    to_delete = floor(Int, Base.size(data)[dimension] * ratio)
+
+    # Delete the amount.
+    for _ in 1:to_delete
+        random_index = rand(1:Base.size(data)[dimension])
+        data = data[:, 1:end .!= random_index]
+    end
+
+    # Return the deleted amount.
+    return data
+
+end
