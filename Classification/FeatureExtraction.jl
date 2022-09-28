@@ -49,7 +49,7 @@ function extract_features(folder::String, files_to_load::Vector{String} = [])
         # at different ranges.  Targets at longer distances have smaller magnitudes.
         # I wonder if the higher noise at longer distances will confuse the classifier... Using a
         # NN would really be better.
-        normalise!(target_frames)
+        # normalise!(target_frames)
 
         # Append the target frames (rows) to the feature vector.
         feature_vector = Vector{Float64}(undef, 0)
