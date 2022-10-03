@@ -32,13 +32,6 @@ F(ρ, α) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 # Round Earth Model #
 #-------------------#
 
-# Required variables:
-# See Fig. 8.11 for descriptions.
-# ht: Height of target.
-# hr: Height of radar.
-# ϕ1: Radar to reflection point from center of earth.
-# ϕ2: Target to reflection point from center of earth.
-
 # Radius of the earth.
 global const k = 1 # What is this constant supposed to be?
 global const r0 = 6371000
@@ -55,7 +48,7 @@ R1(hr, ϕ1) = sqrt( hr^2 + 4*re*(re+hr)*(sin(ϕ1/2))^2 )
 
 # (8.52)
 # See Fig. 8.11 for description and parameters.
-R2(ht, ϕ2) = R1_re(ht, re, ϕ2)
+R2(ht, ϕ2) = R1(ht, ϕ2)
 
 # (8.53)
 # See Fig. 8.11 for description and parameters.
@@ -76,3 +69,27 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # -------------- #
 # Implementation #
 # -------------- #
+
+# Calculate the loss caused by the multipath.
+# ht: Height of target.
+# hr: Height of radar.
+# ϕ1: Radar to reflection point from center of earth.
+# ϕ2: Target to reflection point from center of earth.
+# (angles in radians)
+function calculate_multipath_loss(ht::Number, hr::Number, ϕ1::Number, ϕ2::Number, λ::Number;
+                                  dB::Bool = true, ρ::Number = 0.9)
+    
+    # Calculate the parameters.
+    v_R1 = R1(hr, ϕ1)
+    v_R2 = R2(ht, ϕ2)
+    v_Rd = Rd(ht, hr, ϕ1, ϕ2)
+    v_ψg = ψg(ht, v_R1)
+    v_ΔR = ΔR(v_R1, v_R2, v_Rd, v_ψg)
+    v_ΔΦ = ΔΦ(λ, v_ΔR)
+    v_ϕ = ϕ(v_ϕ1, v_ϕ2)
+    v_α = α(v_ΔΦ, v_ϕ)
+
+    # Return the loss.
+    if !dB return F(ρ, v_α) end
+    return 20*log10(F(ρ, α))
+end
