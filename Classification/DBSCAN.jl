@@ -40,13 +40,13 @@ function cluster_dopplermaps(folder::String, files_to_load::Vector{String} = [])
     
     # Parameters.
     # These are curently hard coded. Oof.
+    # For now lets make the seperation between clusters smaller, since I am ssuming the person is walking relatively
+    # fast.
     snr_threshold = 12
-    dbscan_radius = 0.18
-    min_cluster_size = 5
+    dbscan_radius = 0.24
+    min_cluster_size = 3
     min_neighbors = 1
     leaf_size = 20
-    
-    # File data.
     
     # Get all of the files in the directory.
     load_all_files = length(files_to_load) == 0
@@ -94,4 +94,5 @@ function cluster_dopplermaps(folder::String, files_to_load::Vector{String} = [])
     end
 
     println(" Done.")
+
 end

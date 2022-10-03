@@ -102,6 +102,9 @@ function extract_targets(folder::String, files_to_load::Vector{String} = [])
              "Target Frames", target_frames,
              "Target Distance", target_distance,
              "Target Velocity", target_velocity)
+
+        # Debugging.
+        # animate(target_frames, target_distance, target_velocity, snr_threshold = 0)
     
     end
 

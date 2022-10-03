@@ -4,8 +4,8 @@ using Clustering
 include("DopplerMap.jl")
 
 # Meta data.
-folder 			 = "Test"
-file_number 	 = "010"
+folder 			 = "WalkingTowards"
+file_number 	 = "000"
 
 # Fixed metdata.
 path 			 = "/home/alex/GitHub/Masters-Julia/Classification/Data/"

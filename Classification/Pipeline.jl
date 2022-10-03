@@ -10,17 +10,21 @@ include("ExtractTargets.jl")
 include("FeatureExtraction.jl")
 
 # Data.
-folder  = "Test"
-# folder = "WalkingAway"
-# folder = "WalkingTowards"
+# folders = [ "WalkingTowards", "WalkingAway" ]
+# folders = [ "WalkingAway" ]
+folders = [ "JoggingAway_Elevated_90deg",  "JoggingTowards_Elevated_90deg", "WalkingAway_Elevated_90deg",  "WalkingTowards_Elevated_90deg" ]
+folders = [ "WalkingAway_Elevated_90deg",  "WalkingTowards_Elevated_90deg" ]
 files = String[]
+
 # files = String[ "010", "011", "012" ]
-files = String[ "012" ]
+# files = String[ "001" ]
 
 # Pipeline.
-# raw_to_doppler_map(folder, files)
-# cluster_dopplermaps(folder, files)
-# label_clusters(folder, files)
-# generate_frames(folder, files)
-extract_targets(folder, files)
-extract_features(folder, files)
+for folder in folders
+    # raw_to_doppler_map(folder, files)
+    # cluster_dopplermaps(folder, files)
+    label_clusters(folder, files)
+    # generate_frames(folder, files)
+    # extract_targets(folder, files)
+    # extract_features(folder, files)
+end

@@ -56,12 +56,8 @@ function generate_frames(folder::String, files_to_load::Vector{String} = [])
     # Multithreading over all of the files at the same time causes the program to us
     # way too much ram.  Instead load three files at a time.
     # Is there a way to limit the amount of iterations that runs at a time?
-    display(files_to_load)
     vectorised_files_to_load = vectorise(files_to_load, size = 1)
-    display(vectorised_files_to_load)
 
-    return
-    
     # Iterate over the file segments.
     for file_segment in vectorised_files_to_load
     

@@ -110,23 +110,30 @@ function calculate_doppler_map(file::String, frames::Vector{Frame}; return_doppl
     # Sync the signal.
     pc_signal = sync_signal(pc_signal, get_sync_index(pc_signal, meta_data, pulses_to_search = 2), meta_data)
 
-    # Calculate the doppler frames.
-    Threads.@threads for index in range(1, length(frames))
+    # Vectorised iteration.
+    vectorised_frames = vectorise(frames, size = 5)
+    frame_index_offset = 0
+    for frames_segment in vectorised_frames
 
-        # Extract the frame data from the pulse compressed signal.
-        signal = pc_signal[get_sample_range(frames[index], meta_data)]
+        # Calculate the doppler frames.
+        Threads.@threads for index in range(1, length(frames_segment))
 
-        # We need to padd the signal since the frames are going to be smaller than the entire signal.
-        padding_count = meta_data.total_pulses - size(frames[index])
+            # Extract the frame data from the pulse compressed signal.
+            signal = pc_signal[get_sample_range(frames[index+frame_index_offset], meta_data)]
 
-        # Calculate doppler matrix.
-        doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
-    			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
-                                                               removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
+            # We need to padd the signal since the frames are going to be smaller than the entire signal.
+            padding_count = meta_data.total_pulses - size(frames[index+frame_index_offset])
 
-        # Add current doppler matrix to the list of frames.
-        doppler_frames[index] = doppler_fft_matrix
+            # Calculate doppler matrix.
+            doppler_fft_matrix, distance_vector, velocity_vector = plotDopplerFFT(false, signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [10, 20], 
+        			                                               xRange = meta_data.max_range, yRange = 5, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = 100000,
+                                                                   removeClutter = true, rawImage = false, return_doppler_fft = true, padding_count = padding_count)
 
+            # Add current doppler matrix to the list of frames.
+            doppler_frames[index+frame_index_offset] = doppler_fft_matrix
+
+        end
+        frame_index_offset += length(frames_segment)
     end
 
     # Returning. 
@@ -171,8 +178,8 @@ function animate(doppler_frames::Vector{AbstractMatrix}, distance::AbstractRange
     display(figure)
 
     # Get the dB of the doppler data.
-    if use_db
-        doppler_frames = amp2db.(abs.(doppler_frames))
+    for (i, frame) in enumerate(doppler_frames)
+        doppler_frames[i] = amp2db.(abs.(doppler_frames[i]))
     end
 
     # Setup clusters data.
