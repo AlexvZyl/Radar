@@ -30,6 +30,11 @@ const j = complex(0, 1)
 # α: See previous function.
 F(ρ, α) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 
+# (N/A)
+# Calculate the loss due to the propagation factor.
+# F: Propagation factor.
+loss(F) = F^4 
+
 #-------------------#
 # Round Earth Model #
 #-------------------#
@@ -100,10 +105,12 @@ function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number
     _ψg = ψg(ht, _R1)
     _ΔR = ΔR(_R1, _R2, _Rd, _ψg)
     _ΔΦ = ΔΦ(λ, _ΔR)
-    _ϕ = ϕ(_ϕ1, _ϕ2)
-    _α = α(_ΔΦ, _ϕ)
+    _ϕ  = ϕ(_ϕ1, _ϕ2)
+    _α  = α(_ΔΦ, _ϕ)
+    _F  = F(ρ, _α)
 
     # Return the loss.
-    if !dB return F(ρ, _α) end
-    return 20*log10(F(ρ, _α))
+    if !dB return loss(_F) end
+    return 20*log10(loss(_F))
+
 end
