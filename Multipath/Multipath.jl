@@ -14,21 +14,27 @@ const j = complex(0, 1)
 
 # (8.18)
 # Calculate the phase difference.
-# λ: Wavelength.
+# λ:  Wavelength.
 # ΔR: Difference between direct and indirect path.
 ΔΦ(λ, ΔR) = (2π / λ) * ΔR
 
+# (8.19)
+# Earth's reflection coefficient.
+# ρ: Amplitude loss.
+# θ: Phase shift.
+Γ(ρ, θ) = ρ * exp( j * θ )
+
 # (N/A)
-# Calculate α.
-# ϕ:
-# ΔΦ:
-α(ΔΦ, ϕ) = ΔΦ + ϕ
+# Calculate total phase change.
+# θ:  Phase shift induced on the indirect path signal due to surface roughness.
+# ΔΦ: Phase difference between the two paths.
+α(ΔΦ, θ = π) = ΔΦ + θ
 
 # (8.25)
 # Calculate the propagation factor.
-# ρ: The aperture efficiency of the antenna (less than unity).
-# α: See previous function.
-F(ρ, α) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
+# ρ: Amplitude loss from surface reflection.
+# α: Total phase change.
+F(α, ρ = 1) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 
 # (N/A)
 # Calculate the loss due to the propagation factor.
@@ -61,7 +67,7 @@ global const re = k * r0  # Effective radius.
 
 # (8.51)
 # See Fig. 8.11 for description and parameters.
-R1(hr, ϕ1) = sqrt( hr^2 + 4*re*(re+hr)*(sin(ϕ1/2))^2 )
+R1(hr, ϕ1) = sqrt( hr^2 + 4*re*(re+hr)*(sin(ϕ1/2)^2) )
 
 # (8.52)
 # See Fig. 8.11 for description and parameters.
@@ -92,20 +98,19 @@ global const c = 299792458
 
 # (N/A)
 # Calculate the wavelength.
-# ft: Transmission frequency.
-λ(ft) = c / ft
+# ft: Frequency.
+λ(f) = c / f
 
-# Calculate the loss caused by the multipath.
+# Calculate the effect caused by the multipath.
 # ht: Height of target.
 # hr: Height of radar.
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
 # ft: Transmission frequency.
-function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number, ft::Number;
-                                  dB::Bool = true, ρ::Number = 0.9)
+function calculate_multipath(ht::Number, hr::Number, r1::Number, r2::Number, ft::Number; dB::Bool = true)
     
     # Calculate the parameters.
-    _λ= λ(ft)    
+    _λ  = λ(ft)    
     _ϕ1 = ϕ1(r1)
     _ϕ2 = ϕ2(r2)
     _R1 = R1(hr, _ϕ1)
@@ -114,12 +119,16 @@ function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number
     _ψg = ψg(ht, _R1)
     _ΔR = ΔR(_R1, _R2, _Rd, _ψg)
     _ΔΦ = ΔΦ(_λ, _ΔR)
-    _ϕ  = ϕ(_ϕ1, _ϕ2)
-    _α  = α(_ΔΦ, _ϕ)
-    _F  = F(ρ, _α)
+    _α  = α(_ΔΦ)
+    _F  = F(_α)
 
     # Return the loss.
     if !dB return loss(_F) end
     return 20*log10(loss(_F))
+
+end
+
+# Plot the effect of the multipath.
+function plot_multipath()
 
 end
