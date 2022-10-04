@@ -37,6 +37,16 @@ global const k = 1 # What is this constant supposed to be?
 global const r0 = 6371000
 global const re = k * r0
 
+# (8.47)
+# Calculate the angle: radar to reflection point from center of earth.
+# r1: See Fig. 8.11.
+ϕ1(r1) = r1 / re
+
+# (8.47)
+# Calculate the angle: target to reflection point from center of earth.
+# r2: See Fig. 8.11.
+ϕ2(r2) = ϕ1(r2)
+
 # (N/A)
 # Calculate the total angle.
 # Parameters described in required parameters.
@@ -73,13 +83,14 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # Calculate the loss caused by the multipath.
 # ht: Height of target.
 # hr: Height of radar.
-# ϕ1: Radar to reflection point from center of earth.
-# ϕ2: Target to reflection point from center of earth.
-# (angles in radians)
-function calculate_multipath_loss(ht::Number, hr::Number, ϕ1::Number, ϕ2::Number, λ::Number;
+# r1: Radial distance between radar and reflection point.
+# r2: Radial distance between target and reflection point.
+function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number, λ::Number;
                                   dB::Bool = true, ρ::Number = 0.9)
     
     # Calculate the parameters.
+    v_ϕ1 = ϕ1(r1)
+    v_ϕ2 = ϕ2(r2)
     v_R1 = R1(hr, ϕ1)
     v_R2 = R2(ht, ϕ2)
     v_Rd = Rd(ht, hr, ϕ1, ϕ2)
