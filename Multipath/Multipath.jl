@@ -13,18 +13,20 @@ const j = complex(0, 1)
 #----------------------------#
 
 # (8.18)
-# Calculate the phase difference, assuming a flat earth.
+# Calculate the phase difference.
 # λ: Wavelength.
 # ΔR: Difference between direct and indirect path.
 ΔΦ(λ, ΔR) = (2π / λ) * ΔR
 
 # (N/A)
 # Calculate α.
+# ϕ:
+# ΔΦ:
 α(ΔΦ, ϕ) = ΔΦ + ϕ
 
 # (8.25)
 # Calculate the propagation factor.
-# ρ: Is the aperture efficiency (less than unity).
+# ρ: The aperture efficiency of the antenna (less than unity).
 # α: See previous function.
 F(ρ, α) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 
@@ -34,8 +36,8 @@ F(ρ, α) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 
 # Radius of the earth.
 global const k = 1 # What is this constant supposed to be?
-global const r0 = 6371000
-global const re = k * r0
+global const r0 = 6371000 # Actual radius.
+global const re = k * r0  # Effective radius.
 
 # (8.47)
 # Calculate the angle: radar to reflection point from center of earth.
@@ -67,7 +69,7 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # (8.55)
 # See Fig. 8.11 for description and parameters.
 # Note: This is not from Mahafza, but from Blake.
-ψg(ht, R1) = asin( (ht/R1) - (R1/2*re) )
+ψg(ht, R1) = asin( ht/R1 - R1/(2*re) )
 
 # (8.54)
 # Calculate the difference in distance between the direct and indirect paths,
@@ -85,22 +87,23 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # hr: Height of radar.
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
+# λ:  Wavelength.
 function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number, λ::Number;
                                   dB::Bool = true, ρ::Number = 0.9)
     
     # Calculate the parameters.
-    v_ϕ1 = ϕ1(r1)
-    v_ϕ2 = ϕ2(r2)
-    v_R1 = R1(hr, ϕ1)
-    v_R2 = R2(ht, ϕ2)
-    v_Rd = Rd(ht, hr, ϕ1, ϕ2)
-    v_ψg = ψg(ht, v_R1)
-    v_ΔR = ΔR(v_R1, v_R2, v_Rd, v_ψg)
-    v_ΔΦ = ΔΦ(λ, v_ΔR)
-    v_ϕ = ϕ(v_ϕ1, v_ϕ2)
-    v_α = α(v_ΔΦ, v_ϕ)
+    _ϕ1 = ϕ1(r1)
+    _ϕ2 = ϕ2(r2)
+    _R1 = R1(hr, _ϕ1)
+    _R2 = R2(ht, _ϕ2)
+    _Rd = Rd(ht, hr, _ϕ1, _ϕ2)
+    _ψg = ψg(ht, _R1)
+    _ΔR = ΔR(_R1, _R2, _Rd, _ψg)
+    _ΔΦ = ΔΦ(λ, _ΔR)
+    _ϕ = ϕ(_ϕ1, _ϕ2)
+    _α = α(_ΔΦ, _ϕ)
 
     # Return the loss.
-    if !dB return F(ρ, v_α) end
-    return 20*log10(F(ρ, α))
+    if !dB return F(ρ, _α) end
+    return 20*log10(F(ρ, _α))
 end
