@@ -87,16 +87,25 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # Implementation #
 # -------------- #
 
+# Speed of light (m/s).
+global const c = 299792458 
+
+# (N/A)
+# Calculate the wavelength.
+# ft: Transmission frequency.
+λ(ft) = c / ft
+
 # Calculate the loss caused by the multipath.
 # ht: Height of target.
 # hr: Height of radar.
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
-# λ:  Wavelength.
-function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number, λ::Number;
+# ft: Transmission frequency.
+function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number, ft::Number;
                                   dB::Bool = true, ρ::Number = 0.9)
     
     # Calculate the parameters.
+    _λ= λ(ft)    
     _ϕ1 = ϕ1(r1)
     _ϕ2 = ϕ2(r2)
     _R1 = R1(hr, _ϕ1)
@@ -104,7 +113,7 @@ function calculate_multipath_loss(ht::Number, hr::Number, r1::Number, r2::Number
     _Rd = Rd(ht, hr, _ϕ1, _ϕ2)
     _ψg = ψg(ht, _R1)
     _ΔR = ΔR(_R1, _R2, _Rd, _ψg)
-    _ΔΦ = ΔΦ(λ, _ΔR)
+    _ΔΦ = ΔΦ(_λ, _ΔR)
     _ϕ  = ϕ(_ϕ1, _ϕ2)
     _α  = α(_ΔΦ, _ϕ)
     _F  = F(ρ, _α)
