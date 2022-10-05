@@ -128,7 +128,29 @@ function calculate_multipath(ht::Number, hr::Number, r1::Number, r2::Number, ft:
 
 end
 
+include("../Utilities/MakieGL/MakieGL.jl")
+
 # Plot the effect of the multipath.
-function plot_multipath()
+# (Creates a new figure and axis)
+# ht: Height of target.
+# hr_range: Range of heights for the radar.
+# r1: Radial distance between radar and reflection point.
+# r2: Radial distance between target and reflection point.
+# ft_range: Range of transmission frequencies.
+function plot_multipath(ht::Number, hr_range::AbstractRange, r1::Number, r2::Number, ft_range::AbstractRange; dB::Bool = true)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "Radar Height (m)", ylabel = "Multipath effect (dB)", title = "Multipath")
+
+    # Plot for each frequency.
+    for ft in ft_range
+        loss_vector = calculate_multipath.(ht, hr_range, r1, r2, ft, dB = dB)    
+        scatterlines!(hr_range, loss_vector, label = string(ft) * " Hz")
+    end
+
+    # Display the plot on the screen.
+    axislegend(axis)
+    display(figure)
 
 end
