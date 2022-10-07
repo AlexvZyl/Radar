@@ -50,24 +50,35 @@ global const k = 1 # What is this constant supposed to be?
 global const r0 = 6371000 # Actual radius.
 global const re = k * r0  # Effective radius.
 
+# (8.44)
+# See Fig. 8.11 for description and parameters.
+r1(r, p, ξ) = r/2 - p*sin(ξ/3)
+# where:
+# (8.45)
+p(ht, hr, r) = (2/√(3)) * √( re*(ht+hr) + (r/2)^2 )
+# (8.46)
+ξ(ht, hr, r, p) = asin( (2*re*r*(ht-hr)) / (p^3) )
+
+# (N/A)
+# See Fig. 8.11 for description and parameters.
+r2(r, r1) = r - r1
+
 # (8.47)
-# Calculate the angle: radar to reflection point from center of earth.
-# r1: See Fig. 8.11.
+# See Fig. 8.11 for description and parameter.
 ϕ1(r1) = r1 / re
 
 # (8.47)
-# Calculate the angle: target to reflection point from center of earth.
-# r2: See Fig. 8.11.
+# See Fig. 8.11 for description and parameter.
 ϕ2(r2) = ϕ1(r2)
 
 # (N/A)
 # Calculate the total angle.
-# Parameters described in required parameters.
+# See Fig. 8.11 for description and parameter.
 ϕ(ϕ1, ϕ2) = ϕ1 + ϕ2
 
 # (8.51)
 # See Fig. 8.11 for description and parameters.
-R1(hr, ϕ1) = sqrt( hr^2 + 4*re*(re+hr)*(sin(ϕ1/2)^2) )
+R1(hr, ϕ1) = √( hr^2 + 4*re*(re+hr)*(sin(ϕ1/2)^2) )
 
 # (8.52)
 # See Fig. 8.11 for description and parameters.
@@ -80,7 +91,7 @@ Rd(ht, hr, ϕ1, ϕ2) = sqrt( (ht-hr)^2 + 4*(re+ht)*(re+hr)*(sin((ϕ1+ϕ2)/2)^2) 
 # (8.55)
 # See Fig. 8.11 for description and parameters.
 # Note: This is not from Mahafza, but from Blake.
-ψg(ht, R1) = asin( ht/R1 - R1/(2*re) )
+ψg(ht, R1) = asin( (ht/R1) - (R1/(2*re)) )
 
 # (8.54)
 # Calculate the difference in distance between the direct and indirect paths,
@@ -107,12 +118,16 @@ global const c = 299792458
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
 # ft: Transmission frequency.
-function calculate_multipath(ht::Number, hr::Number, r1::Number, r2::Number, ft::Number; dB::Bool = true)
-    
+function calculate_multipath(ht::Number, hr::Number, r::Number, ft::Number; dB::Bool = true) 
+
     # Calculate the parameters.
+    _p = p(ht, hr, r)
+    _ξ = ξ(ht, hr, r, _p)
+    _r1 = r1(r, _p, _ξ)
+    _r2 = r2(r, _r1)
     _λ  = λ(ft)    
-    _ϕ1 = ϕ1(r1)
-    _ϕ2 = ϕ2(r2)
+    _ϕ1 = ϕ1(_r1)
+    _ϕ2 = ϕ2(_r2)
     _R1 = R1(hr, _ϕ1)
     _R2 = R2(ht, _ϕ2)
     _Rd = Rd(ht, hr, _ϕ1, _ϕ2)
@@ -137,7 +152,7 @@ include("../Utilities/MakieGL/MakieGL.jl")
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
 # ft_range: Range of transmission frequencies.
-function plot_multipath(ht::Number, hr_range::AbstractRange, r1::Number, r2::Number, ft_range::AbstractRange; dB::Bool = true)
+function plot_multipath(ht::Number, hr_range::AbstractRange, r::Number, ft_range::AbstractRange; dB::Bool = true)
 
     # Setup plotting.
     figure = Figure()
@@ -145,7 +160,7 @@ function plot_multipath(ht::Number, hr_range::AbstractRange, r1::Number, r2::Num
 
     # Plot for each frequency.
     for ft in ft_range
-        loss_vector = calculate_multipath.(ht, hr_range, r1, r2, ft, dB = dB)    
+        loss_vector = calculate_multipath.(ht, hr_range, r, ft, dB = dB)    
         scatterlines!(hr_range, loss_vector, label = string(ft) * " Hz")
     end
 
