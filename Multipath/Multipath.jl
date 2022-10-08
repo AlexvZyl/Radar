@@ -208,6 +208,51 @@ function plot_multipath(ht_range::AbstractRange, hr::Number, r::Number, ft_range
 
 end
 
+# Get a full elevation angles vector with the corresponding target height.
+function _lobe_structure_polar(hr::Number, r::Number, ft::Number;
+                               height_resolution::Number = 0.001, normalise_mp::Bool = true)
+
+    # If the loop should continue.
+    should_cont = true
+    ht = 0
+    polar_coords = Vector{Polar}(undef, 0)
+    max_mp = -Inf
+
+    # Calculate the values.
+    # This while loop is very sketchy programming.
+    while(should_cont)
+
+        # Try to calculate the polar coord.
+        try
+            mp = calculate_multipath(ht, hr, r, ft, dB = false) 
+            # Keep track of the max.
+            if mp > max_mp
+                max_mp = mp
+            end
+            ea = calculate_elevation_angle(ht, hr, r)
+            ht += height_resolution
+            push!(polar_coords, Polar(mp, ea))
+            
+        # This will occur when the angle goes past 90 deg.
+        catch 
+            should_cont = false 
+        end
+
+    end 
+
+    # Do not normalise.
+    if !normalise_mp 
+        return polar_coords
+    end
+
+    # Normalise the mp.
+    for (i, coord) in enumerate(polar_coords)
+        polar_coords[i] = Polar(coord.r / max_mp, coord.θ)
+    end
+    return polar_coords
+    
+end
+
 # Plot the effect of the multipath.
 # (Creates a new figure and axis)
 # ht: Height of target.
@@ -215,7 +260,7 @@ end
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
 # ft_range: Range of transmission frequencies.
-function plot_lobe_structure(ht_range::AbstractRange, hr::Number, r::Number, ft_range::AbstractRange)
+function plot_lobe_structure(hr::Number, r::Number, ft_range::AbstractRange)
 
     # Setup plotting.
     figure = Figure()
@@ -223,11 +268,7 @@ function plot_lobe_structure(ht_range::AbstractRange, hr::Number, r::Number, ft_
 
     # Plot for each frequency.
     for ft in ft_range
-        loss_vector = calculate_multipath.(ht_range, hr, r, ft, dB = false)    
-        loss_vector = loss_vector ./ maximum(loss_vector)
-        elevation_angles = calculate_elevation_angle.(ht_range, hr, r)
-        # The above to values can be viewed as polar coordinates to plot the lobe structure.
-        polar_coords = Polar.(loss_vector, elevation_angles)
+        polar_coords = _lobe_structure_polar(hr, r, ft) 
         cartesian_coords = CartesianFromPolar().(polar_coords)
         x = [ coord[1] for coord in cartesian_coords ]
         y = [ coord[2] for coord in cartesian_coords ]
