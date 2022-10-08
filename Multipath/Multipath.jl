@@ -5,6 +5,10 @@
 # Multipath is worse near the surface of the earth.
 # ------
 
+using CoordinateTransformations
+using StaticArrays
+include("../Utilities/MakieGL/MakieGL.jl")
+
 # Define the complex number.
 const j = complex(0, 1)
 
@@ -39,7 +43,7 @@ F(α, ρ = 1) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 # (N/A)
 # Calculate the loss due to the propagation factor.
 # F: Propagation factor.
-loss(F) = F^4 
+loss(F) = F^4
 
 #-------------------#
 # Round Earth Model #
@@ -47,8 +51,8 @@ loss(F) = F^4
 
 # Radius of the earth.
 global const k = 1 # What is this constant supposed to be?
-global const r0 = 6371000 # Actual radius.
-global const re = k * r0  # Effective radius.
+global const r0 = 6371000 # Actual radius (m).
+global const re = k * r0  # Effective radius (m).
 
 # (8.44)
 # See Fig. 8.11 for description and parameters.
@@ -143,8 +147,6 @@ function calculate_multipath(ht::Number, hr::Number, r::Number, ft::Number; dB::
 
 end
 
-include("../Utilities/MakieGL/MakieGL.jl")
-
 # Plot the effect of the multipath.
 # (Creates a new figure and axis)
 # ht: Height of target.
@@ -156,12 +158,80 @@ function plot_multipath(ht::Number, hr_range::AbstractRange, r::Number, ft_range
 
     # Setup plotting.
     figure = Figure()
-    axis = Axis(figure[1,1], xlabel = "Radar Height (m)", ylabel = "Multipath effect (dB)", title = "Multipath")
+    axis = Axis(figure[1,1], xlabel = "Radar Height (m)", ylabel = "Multipath Factor (dB)", title = "Multipath")
 
     # Plot for each frequency.
     for ft in ft_range
         loss_vector = calculate_multipath.(ht, hr_range, r, ft, dB = dB)    
         scatterlines!(hr_range, loss_vector, label = string(ft) * " Hz")
+    end
+
+    # Display the plot on the screen.
+    axislegend(axis)
+    display(figure)
+
+end
+
+# Calculate the elevation angles for different target heights.
+# This is easier than changing the math in the textbook.
+function calculate_elevation_angle(ht::Number, hr::Number, r::Number)
+    _p = p(ht, hr, r)
+    _ξ = ξ(ht, hr, r, _p)
+    _r1 = r1(r, _p, _ξ)
+    _ϕ1 = ϕ1(_r1)
+    _R1 = R1(hr, _ϕ1)
+    return ψg(ht, _R1)
+end
+
+# Plot the effect of the multipath.
+# (Creates a new figure and axis)
+# ht: Range of heights for the target.
+# hr: Height of the radar.
+# r1: Radial distance between radar and reflection point.
+# r2: Radial distance between target and reflection point.
+# ft_range: Range of transmission frequencies.
+function plot_multipath(ht_range::AbstractRange, hr::Number, r::Number, ft_range::AbstractRange; dB::Bool = true)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "Target Height (m)", ylabel = "Multipath Factor (dB)", title = "Multipath")
+
+    # Plot for each frequency.
+    for ft in ft_range
+        loss_vector = calculate_multipath.(ht_range, hr, r, ft, dB = dB)    
+        scatterlines!(ht_range, loss_vector, label = string(ft) * " Hz")
+    end
+
+    # Display the plot on the screen.
+    axislegend(axis)
+    display(figure)
+
+end
+
+# Plot the effect of the multipath.
+# (Creates a new figure and axis)
+# ht: Height of target.
+# hr_range: Range of heights for the radar.
+# r1: Radial distance between radar and reflection point.
+# r2: Radial distance between target and reflection point.
+# ft_range: Range of transmission frequencies.
+function plot_lobe_structure(ht_range::AbstractRange, hr::Number, r::Number, ft_range::AbstractRange)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "θ = Elevation Angle", ylabel = "R = Normalised Propagation Factor", title = "Multipath")
+
+    # Plot for each frequency.
+    for ft in ft_range
+        loss_vector = calculate_multipath.(ht_range, hr, r, ft, dB = false)    
+        loss_vector = loss_vector ./ maximum(loss_vector)
+        elevation_angles = calculate_elevation_angle.(ht_range, hr, r)
+        # The above to values can be viewed as polar coordinates to plot the lobe structure.
+        polar_coords = Polar.(loss_vector, elevation_angles)
+        cartesian_coords = CartesianFromPolar().(polar_coords)
+        x = [ coord[1] for coord in cartesian_coords ]
+        y = [ coord[2] for coord in cartesian_coords ]
+        scatterlines!(x, y, label = string(ft) * " Hz")
     end
 
     # Display the plot on the screen.
