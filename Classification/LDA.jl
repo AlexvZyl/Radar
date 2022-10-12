@@ -4,7 +4,6 @@ using MLUtils
 
 # Modules.
 include("../Utilities/MakieGL/PlotUtilities.jl")
-include("Directories.jl")
 include("Utilities.jl")
 include("../Utilities/MakieGL/PlotUtilities.jl")
 include("DopplerMap.jl")

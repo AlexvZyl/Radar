@@ -1,5 +1,5 @@
 include("DopplerMap.jl")
-include("Directories.jl")
+include("Utilities.jl")
 
 function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
 

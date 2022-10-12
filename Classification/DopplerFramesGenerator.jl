@@ -2,7 +2,7 @@
 
 # Includes.
 include("DopplerMap.jl")
-include("Directories.jl")
+include("Utilities.jl")
 
 # Create the frame based on the data provided.
 # Frame advance is given in samples (or in the case of a doppler map, pulses).
@@ -54,8 +54,8 @@ function generate_frames(folder::String, files_to_load::Vector{String} = [])
     end
     
     # Multithreading over all of the files at the same time causes the program to us
-    # way too much ram.  Instead load three files at a time.
-    # Is there a way to limit the amount of iterations that runs at a time?
+    # way too much ram.  Instead load three files at a time (was the original idea).
+    # Still uses too much ram, even at 2 files per segment.
     vectorised_files_to_load = vectorise(files_to_load, size = 1)
 
     # Iterate over the file segments.

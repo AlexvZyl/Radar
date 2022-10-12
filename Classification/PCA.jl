@@ -23,7 +23,6 @@ function Base.print(pca_result::PCA)
 end
 
 # Modules.
-include("Directories.jl")
 include("Utilities.jl")
 include("../Utilities/MakieGL/PlotUtilities.jl")
 include("DopplerMap.jl")

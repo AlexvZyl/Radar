@@ -3,7 +3,7 @@
 
 # Modules.
 include("DopplerMap.jl")
-include("Directories.jl")
+include("Utilities.jl")
 using JLD
 using Base.Threads
 

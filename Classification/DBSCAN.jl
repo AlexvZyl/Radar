@@ -1,5 +1,4 @@
 include("../Utilities/MakieGL/PlotUtilities.jl")
-include("Directories.jl")
 include("../Utilities/Processing/BinaryProcessor.jl")
 include("Utilities.jl")
 
