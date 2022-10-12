@@ -12,4 +12,5 @@ folder = "JoggingTowards_Elevated_90deg"
 file_number = "010"
 
 # Display processing.
-process_intput(folder, file_number)
+process_intput(folder, file_number, snr_min = 0)
+

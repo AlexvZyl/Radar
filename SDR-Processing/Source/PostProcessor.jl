@@ -180,7 +180,7 @@ using Statistics
 #  F U N C T I O N S  #
 # ------------------- #
 
-function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0)
+function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0, snr_min::Number = 13)
 
     # File data.
     path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
@@ -205,7 +205,7 @@ function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0)
     figure = Figure(resolution = (1920, 1080))
     freqVal = meta_data.dc_freq_shift
     if freqVal == 0 freqVal = 10000 end
-    plotDopplerFFT(figure, rx_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [13, 20], 
+    plotDopplerFFT(figure, rx_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [snr_min, 20], 
     			   xRange = meta_data.max_range, yRange = 8, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = freqVal,
                    removeClutter = true, rawImage = false)
     
