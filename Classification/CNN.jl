@@ -1,6 +1,6 @@
 include("Utilities.jl")
 
-# Packages used in the example.
+using MLUtils
 using Flux
 using Flux.Data: DataLoader
 using Flux.Optimise: Optimiser, WeightDecay
@@ -47,7 +47,7 @@ end
 # and not the magnitudes.
 # 110 000 000 samples per measurement (complex samples).
 # 556 480 pixels per measurement.
-function load_doppler_frames(folder::String)
+function load_doppler_frames_from_folder(folder::String)
     map_dir = get_directories(folder)[3]
     files = get_all_files(map_dir, true)  
     doppler_frames = Vector{Vector{AbstractMatrix}}()
@@ -67,9 +67,36 @@ function get_one_hot_index(labels, label)
     @assert false "Label not found."
 end
 
+# Format the data for the DataLoader and split for training and testing.
+function format_and_split_data(frames_data; labels = false, split_at = 0.7)
+    train_x = Vector{Array{ComplexF64, 3}}(undef, 0)
+    test_x = Vector{Array{ComplexF64, 3}}(undef, 0)
+    train_y = Vector{Int32}(undef, 0)
+    test_y = Vector{Int32}(undef, 0)
+    # Combine the frames into on large matrix, with labels.
+    for (c, _) in enumerate(frames_data)
+        # Combine and split frames data.
+        tr_x, tst_x = Vector.(splitobs(combine.(frames_data[c]), at = split_at))
+        # Labels.
+        if labels == false
+            tr_y = [ c for _ in 1:1:length(tr_x) ]
+            tst_y = [ c for _ in 1:1:length(tst_x) ]
+        else
+            tr_y = [ labels[c] for _ in 1:1:length(tr_x) ]
+            tst_y = [ labels[c] for _ in 1:1:length(tst_x) ]
+        end
+        # Add to total.
+        train_x = vcat(train_x, tr_x) 
+        train_y = vcat(train_y, tr_y) 
+        test_x = vcat(test_x, tst_x) 
+        test_y = vcat(test_y, tst_y) 
+    end
+    return train_x, train_y, test_x, test_y
+end
+
 # Load the data from the jdl files and prepare them for training.
 # Preparation includes using `Flux.DataLoader()`.
-function get_prepared_data(args::Args)
+function get_data_loaders(args::Args)
 
     classes = get_elevated_folder_list()
     @info "Classes: " classes
@@ -78,27 +105,16 @@ function get_prepared_data(args::Args)
     #   Vector                      - Iterations
     #       Vector                  - Frames
     #           AbstractMatrix      - Frame
-    frames_data = load_doppler_frames.(classes)
+    frames_data = load_doppler_frames_from_folder.(classes)
 
-    # The data has to be in a tuple with `features` and `targets`.
-    # features = the data.
-    # targets = the labels.
-    # See flow `display` for example.
-    formatted_data = (
-        features = Vector{Array{ComplexF64, 3}}(undef, 0),
-        targets = Vector{Int32}(undef, 0)
-    )
-
-    # Combine the frames into on large matrix, with labels.
-    for (c, _) in enumerate(frames_data)
-        for (i, _) in enumerate(frames_data[c])
-            push!(formatted_data[:features], combine(frames_data[c][i]))
-            push!(formatted_data[:targets], get_one_hot_index(classes, classes[c]))
-        end
-    end
-
-    # Load the data for Flux.
-    loader = DataLoader((formatted_data[:features], formatted_data[:targets]), batchsize = args.batchsize, shuffle = true) 
+    # Format the data (combine matrices, assign labels).
+    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, labels = classes)
+    frames_data = nothing # Free memory.
+     
+    # Generate the Flux loaders.
+    train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
+    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize, shuffle = true) 
+    return train_loader, test_loader
 
 end
 
@@ -112,6 +128,7 @@ end
 # Train a CNN on the dataset.
 function train(; kwargs...)
 
+    # Setup args.
     args = Args(; kwargs...)
     args.seed > 0 && Random.seed!(args.seed)
     use_cuda = args.use_cuda && CUDA.functional()
@@ -124,9 +141,12 @@ function train(; kwargs...)
         device = cpu
         @error "Training on CPU."
     end
-    data = get_prepared_data(args)
+
+    # Get the data.
+    train_data, test_data = get_data_loaders(args)
 
 end
 
 # Run the training script.
 train()
+1
