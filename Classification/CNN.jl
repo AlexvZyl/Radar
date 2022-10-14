@@ -96,10 +96,10 @@ end
 
 # Load the data from the jdl files and prepare them for training.
 # Preparation includes using `Flux.DataLoader()`.
-function get_data_loaders(args::Args)
+function get_data_loaders(args::Args; split_at = 0.7)
 
     classes = get_elevated_folder_list()
-    @info "Classes: " classes
+    # @info "Classes: " classes
     # Format of `frames_data`:
     # Vector                        - Classes (folders)
     #   Vector                      - Iterations
@@ -108,20 +108,28 @@ function get_data_loaders(args::Args)
     frames_data = load_doppler_frames_from_folder.(classes)
 
     # Format the data (combine matrices, assign labels).
-    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, labels = classes)
+    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, labels = classes, split_at = split_at)
     frames_data = nothing # Free memory.
      
     # Generate the Flux loaders.
     train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
     test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize, shuffle = true) 
-    return train_loader, test_loader
+    return train_loader, test_loader, classes
 
 end
 
 # Create the network chain.
-function create_network()
+function create_network(imgsize, nclasses)
+    out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 16)
     return Chain(
-        Conv((5,5))
+        Conv((5, 5), imgsize[end]=>6, relu),
+        MaxPool((2, 2)),
+        Conv((5, 5), 6=>16, relu),
+        MaxPool((2, 2)),
+        flatten,
+        Dense(prod(out_conv_size), 120, relu), 
+        Dense(120, 84, relu), 
+        Dense(84, nclasses)
     )
 end
 
@@ -143,10 +151,21 @@ function train(; kwargs...)
     end
 
     # Get the data.
-    train_data, test_data = get_data_loaders(args)
+    train_loader, test_loader, classes = get_data_loaders(args, split_at = 0.8)
+    @info "Training samples: $(length(train_loader.data[1]))"
+    @info "Testing samples: $(length(test_loader.data[1]))"
+
+    # Get the image size.
+    image_size = size(train_loader.data[1][1])
+    @info "Image size: $(image_size)"
+    features = image_size[1] * image_size[2] * image_size[3]
+    @info "Features: $(features)"
+
+    # Create and pass network to device.
+    network = create_network(image_size, length(classes)) |> device
+    @info "Network parameters: $(num_params(network))"
 
 end
 
 # Run the training script.
 train()
-1
