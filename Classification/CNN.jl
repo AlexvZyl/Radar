@@ -27,6 +27,7 @@ Base.@kwdef mutable struct Args
     checktime = 5        ## Save the model every `checktime` epochs. Set to 0 for no checkpoints.
     tblogger = true      ## log training with tensorboard
     savepath = "Runs/"   ## results path (relative)
+    split = 0.8          ## Train/test split
 end
 
 # Utility functions.
@@ -93,11 +94,11 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
         tr_x, tst_x = splitobs(combined_data, at = split_at)
         # Labels.
         if labels == false
-            tr_y = [ c for _ in 1:1:length(tr_x) ]
-            tst_y = [ c for _ in 1:1:length(tst_x) ]
+            tr_y = [ c for _ in 1:1:size(tr_x)[4] ]
+            tst_y = [ c for _ in 1:1:size(tst_x)[4] ]
         else
-            tr_y = [ labels[c] for _ in 1:1:length(tr_x) ]
-            tst_y = [ labels[c] for _ in 1:1:length(tst_x) ]
+            tr_y = [ labels[c] for _ in 1:1:size(tr_x)[4] ]
+                tst_y = [ labels[c] for _ in 1:1:size(tst_x)[4] ]
         end
         # Add to total.
         train_x = cat(train_x, tr_x, dims = 4) 
@@ -195,7 +196,7 @@ function train(; kwargs...)
     end
 
     # Get the data.
-    train_loader, test_loader, classes = get_data_loaders(args, split_at = 0.8)
+    train_loader, test_loader, classes = get_data_loaders(args, split_at = args.split)
     @info "Training samples: $(size(train_loader.data[1])[4])"
     @info "Testing samples: $(size(test_loader.data[1])[4])"
 
@@ -263,7 +264,7 @@ function train(; kwargs...)
 end
 
 # Run the training script.
-train(batchsize = 40)
+train(batchsize = 40, split = 0.8)
 
 # xtrain, ytrain = MLDatasets.MNIST(:train)[:]
 # display(typeof(xtrain))
