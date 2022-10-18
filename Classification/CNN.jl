@@ -1,6 +1,4 @@
-using Base: dataids
 include("Utilities.jl")
-
 using MLUtils
 using Flux
 using Flux.Data: DataLoader
@@ -14,6 +12,7 @@ using ProgressMeter: @showprogress
 import MLDatasets
 import BSON
 using CUDA
+using JLD2
 
 # Arguments used.
 Base.@kwdef mutable struct Args
@@ -51,7 +50,7 @@ function combine(instances::Vector{Vector{AbstractMatrix}})
         # Add instance to total 4D matrix.
         total_matrix = cat(total_matrix, reshape(instance_matrix, (image_size[1], image_size[2], frames, :)), dims = 4)
     end
-    total_matrix
+    convert(Array{ComplexF64, 4}, total_matrix)
 end
 
 # Load the doppler frames from the folder into a vector.
@@ -129,16 +128,14 @@ function get_data_loaders(args::Args; split_at = 0.7)
     frames_data = nothing # Free memory.
     # Generate the Flux loaders.
     train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
-    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize, shuffle = true) 
-
-    @info "Done processing data."
+    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize, parallel = true) 
 
     return train_loader, test_loader, classes
 
 end
 
 # Create the network chain presented in the example.
-function create_network_from_example(imgsize, nclasses)
+function create_LeNet5(imgsize, nclasses)
     out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 16)
     return Chain(
         Conv((5, 5), imgsize[end]=>6, relu),
@@ -156,7 +153,7 @@ end
 function create_network(imgsize, nclasses)
     total_features = imgsize[1] * imgsize[2] * imgsize[3] 
     return Chain(
-        Conv((5,5), total_features => nclasses, relu)  
+        Conv((5,5), imgsize[3] => nclasses, relu)  
     )
 end
 
@@ -169,10 +166,11 @@ function eval_loss_accuracy(loader, model, device)
     acc = 0
     ntot = 0
     for (x, y) in loader
-        x, y = device(x), device(y)
+        @info "Loading $((sizeof(x)+sizeof(y)) / 1e6) Mb to the $(device)."
+        x, y = x |> device, y |> device
         ŷ = model(x)
         l += loss(ŷ, y) * size(x)[end]        
-        acc += sum(onecold(cpu(ŷ)) .== onecold(cpu(y)))
+        acc += sum(onecold(ŷ |> cpu) .== onecold(y |> cpu))
         ntot += size(x)[end]
     end
     return (loss = l/ntot |> round4, acc = acc/ntot*100 |> round4)
@@ -207,17 +205,17 @@ function train(; kwargs...)
         @info "TensorBoard logging at \"$(args.savepath)\""
     end
 
-    # Get the image size.
+    # Display meta data.
     image_size = size(train_loader.data[1])[1:3]
     @info "Image size: $(image_size)"
     features = image_size[1] * image_size[2] * image_size[3]
     @info "Features: $(features)"
 
     ## Model and optimiser.
-    model = create_network_from_example(image_size, length(classes)) |> device
+    model = create_LeNet5(image_size, length(classes)) |> device
     @info "Model parameters: $(num_params(model))"
     ps = Flux.params(model)
-    opt = Adam(args.η) 
+    opt = ADAM(args.η) # Why is my LSP upset about this?  It works fine?
     if args.λ > 0 ## add weight decay, equivalent to L2 regularization
         opt = Optimiser(WeightDecay(args.λ), opt)
     end
@@ -230,14 +228,14 @@ function train(; kwargs...)
         if args.tblogger
             set_step!(tblogger, epoch)
             with_logger(tblogger) do
-                @info "train" loss=train.loss  acc=train.acc
-                @info "test"  loss=test.loss   acc=test.acc
+                @info "Train" loss=train.loss  acc=train.acc
+                @info "Test"  loss=test.loss   acc=test.acc
             end
         end
     end
 
     ## TRAINING
-    @info "Start Training"
+    @info "Start Training."
     report(0)
     for epoch in 1:args.epochs
         # Train.
@@ -264,9 +262,4 @@ function train(; kwargs...)
 end
 
 # Run the training script.
-train(batchsize = 40, split = 0.8)
-
-# xtrain, ytrain = MLDatasets.MNIST(:train)[:]
-# display(typeof(xtrain))
-# xtrain = reshape(xtrain, 28, 28, 1, :)
-# display(typeof(xtrain))
+train(batchsize = 5, split = 0.8)
