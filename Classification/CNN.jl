@@ -105,6 +105,8 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
         train_y = cat(train_y, tr_y, dims = 1) 
         test_y = cat(test_y, tst_y, dims = 1) 
     end
+    train_y = onehotbatch(train_y, 1:4)
+    test_y = onehotbatch(test_y, 1:4)
     return train_x, train_y, test_x, test_y
 end
 
@@ -124,11 +126,13 @@ function get_data_loaders(args::Args; split_at = 0.7)
     frames_data = load_doppler_frames_from_folder.(classes)
 
     # Format the data (combine matrices, assign labels).
-    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, labels = classes, split_at = split_at)
+    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)
+    train_x = abs.(train_x)
+    test_x = abs.(test_x)
     frames_data = nothing # Free memory.
     # Generate the Flux loaders.
     train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
-    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize, parallel = true) 
+    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize) 
 
     return train_loader, test_loader, classes
 
@@ -166,7 +170,7 @@ function eval_loss_accuracy(loader, model, device)
     acc = 0
     ntot = 0
     for (x, y) in loader
-        @info "Loading $((sizeof(x)+sizeof(y)) / 1e6) Mb to the $(device)."
+        @debug "Loading $((sizeof(x)+sizeof(y)) / 1e6) Mb to the $(device)."
         x, y = x |> device, y |> device
         ŷ = model(x)
         l += loss(ŷ, y) * size(x)[end]        
@@ -194,8 +198,10 @@ function train(; kwargs...)
     end
 
     # Get the data.
+    @info "Train ratio: $(args.split)"
     train_loader, test_loader, classes = get_data_loaders(args, split_at = args.split)
-    @info "Training samples: $(size(train_loader.data[1])[4])"
+    training_samples_count = size(train_loader.data[1])[4]
+    @info "Training samples: $(training_samples_count)"
     @info "Testing samples: $(size(test_loader.data[1])[4])"
 
     ## LOGGING UTILITIES
@@ -213,7 +219,8 @@ function train(; kwargs...)
 
     ## Model and optimiser.
     model = create_LeNet5(image_size, length(classes)) |> device
-    @info "Model parameters: $(num_params(model))"
+    # model = create_network(image_size, length(classes)) |> device
+    # @info "Model parameters: $(num_params(model))"
     ps = Flux.params(model)
     opt = ADAM(args.η) # Why is my LSP upset about this?  It works fine?
     if args.λ > 0 ## add weight decay, equivalent to L2 regularization
@@ -234,6 +241,11 @@ function train(; kwargs...)
         end
     end
 
+    train_data_size = sizeof(train_loader.data[1]) / 1e6 # Mb
+    @info "Train data size: $(train_data_size) Mb"
+    batch_size = train_data_size / (training_samples_count / args.batchsize)
+    @info "Batch size: $(batch_size) Mb"
+
     ## TRAINING
     @info "Start Training."
     report(0)
@@ -247,8 +259,9 @@ function train(; kwargs...)
                 end
             Flux.Optimise.update!(opt, ps, gs)
         end
-        ## Printing and logging.
+        # Check performance of model.
         epoch % args.infotime == 0 && report(epoch)
+        # Save model to file.
         if args.checktime > 0 && epoch % args.checktime == 0
             !ispath(args.savepath) && mkpath(args.savepath)
             modelpath = joinpath(args.savepath, "model.bson") 
@@ -262,4 +275,4 @@ function train(; kwargs...)
 end
 
 # Run the training script.
-train(batchsize = 5, split = 0.8)
+train(batchsize = 10, split = 0.5, epochs = 10000, checktime = 100)
