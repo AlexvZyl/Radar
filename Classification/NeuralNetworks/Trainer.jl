@@ -40,9 +40,9 @@ function train(chain_type::ChainType; kwargs...)
 
     # Get the model.
     model = nothing
-    if chain_type == Custom
+    if chain_type == LeNet5
         model = create_LeNet5(image_size, length(classes)) |> device
-    elseif chain_type == CNN
+    elseif chain_type == Custom
         model = create_network(image_size, length(classes)) |> device
     else
         @assert false "Invalid model type."

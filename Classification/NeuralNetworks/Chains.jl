@@ -3,7 +3,7 @@ using Flux
 
 # Chain types.
 @enum ChainType begin 
-    CNN
+    LeNet5
     Custom
 end
 
