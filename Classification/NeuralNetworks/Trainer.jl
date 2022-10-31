@@ -6,6 +6,7 @@ function train(chain_type::ChainType; kwargs...)
 
     # Setup args.
     args = Args(; kwargs...)
+    args.savepath = args.savepath * get_type_string(chain_type) * "/"
     args.seed > 0 && Random.seed!(args.seed)
     use_cuda = args.use_cuda && CUDA.functional()
 
@@ -38,15 +39,8 @@ function train(chain_type::ChainType; kwargs...)
     features = image_size[1] * image_size[2] * image_size[3]
     @info "Features: $(features)"
 
-    # Get the model.
-    model = nothing
-    if chain_type == LeNet5
-        model = create_LeNet5(image_size, length(classes)) |> device
-    elseif chain_type == Custom
-        model = create_network(image_size, length(classes)) |> device
-    else
-        @assert false "Invalid model type."
-    end
+    # Get the model. 
+    model = create_network(chain_type, image_size, length(classes)) |> device
 
     ## Model and optimiser.
     @info "Model parameters: $(num_params(model))"

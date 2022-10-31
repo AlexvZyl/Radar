@@ -4,10 +4,35 @@ using Flux
 # Chain types.
 @enum ChainType begin 
     LeNet5
+    AlexNet
     Custom
 end
 
-# Create the network chain presented in the example.
+# Get the type as a string.
+function get_type_string(type::ChainType)
+    if type == LeNet5
+        return "LeNet5"
+    elseif type == Custom
+        return "Custom"
+    else 
+        @assert false "Invalid chain type."
+    end
+end
+
+# Create the network given the type.
+function create_network(chain_type::ChainType, image_size, n_classes)
+    if chain_type == LeNet5
+        return create_LeNet5(image_size, n_classes)
+    elseif chain_type == Custom
+        return create_network(image_size, n_classes)
+    elseif chain_type == AlexNet
+        return create_AlexNet(image_size, n_classes)
+    else
+        @assert false "Invalid model type."
+    end
+end
+
+# LeNet5.
 function create_LeNet5(imgsize, nclasses)
     out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 16)
     return Chain(
@@ -20,6 +45,11 @@ function create_LeNet5(imgsize, nclasses)
         Dense(120, 84, relu), 
         Dense(84, nclasses)
     )
+end
+
+# AlexNet.
+function create_AlexNet(imgsize, nclasses)
+    
 end
 
 # Create own network.
