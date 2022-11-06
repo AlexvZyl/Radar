@@ -27,6 +27,7 @@ Base.@kwdef mutable struct Args
     tblogger = true      ## log training with tensorboard
     savepath = "Runs/"   ## results path (relative)
     split = 0.8          ## Train/test split
+    frames_folder = "10-Frames"   ## The folder containing the frames to use.
 end
 
 # Utility functions.
@@ -58,8 +59,8 @@ end
 # and not the magnitudes.
 # 110 000 000 samples per measurement (complex samples).
 # 556 480 pixels per measurement.
-function load_doppler_frames_from_folder(folder::String)
-    map_dir = get_directories(folder)[3]
+function load_doppler_frames_from_folder(folder::String, args::Args)
+    map_dir = get_directories(folder, subdirectory =  args.frames_folder)[3]
     files = get_all_files(map_dir, true)  
     doppler_frames = Vector{Vector{AbstractMatrix}}()
     for file in files
@@ -105,8 +106,9 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
         train_y = cat(train_y, tr_y, dims = 1) 
         test_y = cat(test_y, tst_y, dims = 1) 
     end
-    train_y = onehotbatch(train_y, 1:4)
-    test_y = onehotbatch(test_y, 1:4)
+    classes = length(get_elevated_folder_list())
+    train_y = onehotbatch(train_y, 1:classes)
+    test_y = onehotbatch(test_y, 1:classes)
     return train_x, train_y, test_x, test_y
 end
 
@@ -123,7 +125,7 @@ function get_data_loaders(args::Args; split_at = 0.7)
     #   Vector                      - Iterations
     #       Vector                  - Frames
     #           AbstractMatrix      - Frame
-    frames_data = load_doppler_frames_from_folder.(classes)
+    frames_data = load_doppler_frames_from_folder.(classes, args)
 
     # Format the data (combine matrices, assign labels).
     train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)

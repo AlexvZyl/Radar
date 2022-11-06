@@ -1,4 +1,6 @@
 include("Trainer.jl")
 
 # Run the training script.
-train(LeNet5, batchsize = 20, split = 0.55, epochs = 10000, checktime = 100, infotime = 100)
+split = 0.6
+batchsize = floor(Int64, 100 * (1 - split))
+train(LeNet5, batchsize = 37, split = split, epochs = 10000, checktime = 100, infotime = 100, frames_folder = "30-Frames")

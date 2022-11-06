@@ -32,16 +32,12 @@ function create_frames(total_pulses::Number, frame_count::Number, frame_advance:
     return frames
 end
 
-function generate_frames(folder::String, files_to_load::Vector{String} = [])
+function generate_frames(folder::String, files_to_load::Vector{String} = []; frame_count = 10, frame_advance = 15000)
 
     print("Generating frames...")
 
     # Meta data.
     load_all_files = length(files_to_load) == 0
-    
-    # Frame data.
-    frame_count     = 10
-    frame_advance   = 15000
     
     # Directories.
     map_dir, cluster_dir, frames_dir, labels_dir, features_dir, extracted_targets_dir = get_directories(folder)
