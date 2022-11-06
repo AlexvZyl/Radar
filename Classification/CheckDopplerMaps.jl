@@ -4,7 +4,6 @@
 using JLD2
 include("../Utilities/MakieGL/PlotUtilities.jl")
 
-
 # Start Makie.
 figure = Figure()
 Axis(figure[1,1])

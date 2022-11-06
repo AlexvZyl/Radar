@@ -74,7 +74,7 @@ function generate_frames(folder::String, files_to_load::Vector{String} = []; fra
             doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(raw_file, frames)
             
             # Destination file.                                                    
-            frames_folder = string(frame_count * "-Frames/")
+            frames_folder = string(frame_count) * "-Frames/"
             save_folder = get_directories(frames_folder * folder)[3]
             destination_file = get_file_path(save_folder, file)  
             
