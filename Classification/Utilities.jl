@@ -107,8 +107,8 @@ end
 
 # Get the paths of the directories to be used for the data.
 # These directories are used by a few files and this makes it easier to work with.
-function get_directories(folder::String)
-    parent_dir = "/home/alex/GitHub/Radar/Classification/Data/"
+function get_directories(folder::String; subdirectory = "")
+    parent_dir = "/home/alex/GitHub/Radar/Classification/Data/" .. subdirectory
     cluster_dir = parent_dir * "DopplerClustering/" * folder * "/"
     frames_dir = parent_dir * "DopplerFrames/" * folder * "/"
     map_dir = parent_dir * "EntireDopplerMap/" * folder * "/"
@@ -151,8 +151,13 @@ end
 function get_elevated_folder_list()
     return String[
         "WalkingAway_Elevated_90deg",
+        # "WalkingAway_Elevated_90deg_Stick",
         "WalkingTowards_Elevated_90deg",
+        # "WalkingTowards_Elevated_90deg_Stick",
         "JoggingAway_Elevated_90deg",
+        "JoggingAway_Elevated_90deg_Stick",
         "JoggingTowards_Elevated_90deg",
+        "JoggingTowards_Elevated_90deg_Stick",
+        # "Clutter"
     ]
 end

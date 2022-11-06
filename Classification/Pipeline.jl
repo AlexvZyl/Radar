@@ -11,16 +11,15 @@ include("FeatureExtraction.jl")
 include("Utilities.jl")
 
 # Data.
-# folders = [ "JoggingAway_Elevated_90deg",  "JoggingTowards_Elevated_90deg", "WalkingAway_Elevated_90deg",  "WalkingTowards_Elevated_90deg" ]
 folders = get_elevated_folder_list()
 files = String[]
 
 # Pipeline.
 for folder in folders
-    # raw_to_doppler_map(folder, files)
+    raw_to_doppler_map(folder, files)
     # cluster_dopplermaps(folder, files)
     # label_clusters(folder, files)
-    generate_frames(folder, files)
+    generate_frames(folder, files, frame_count = 30, frame_advance = 10000)
     # extract_targets(folder, files)
     # extract_features(folder, files)
 end
