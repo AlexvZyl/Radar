@@ -74,7 +74,7 @@ function train(chain_type::ChainType; kwargs...)
     report(0)
     for epoch in 1:args.epochs
         # Train.
-        @showprogress for (x, y) in train_loader
+        for (x, y) in train_loader
             x, y = x |> device, y |> device
             gs = Flux.gradient(ps) do
                     ŷ = model(x)
