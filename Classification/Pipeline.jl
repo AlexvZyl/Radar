@@ -11,15 +11,18 @@ include("FeatureExtraction.jl")
 include("Utilities.jl")
 
 # Data.
+frame_counts = [ 5, 10, 15, 20 ]
 folders = get_elevated_folder_list()
 files = String[]
 
 # Pipeline.
-for folder in folders
-    raw_to_doppler_map(folder, files)
-    # cluster_dopplermaps(folder, files)
-    # label_clusters(folder, files)
-    generate_frames(folder, files, frame_count = 30, frame_advance = 10000)
-    # extract_targets(folder, files)
-    # extract_features(folder, files)
+for frame_count in frame_counts
+    for folder in folders
+        # raw_to_doppler_map(folder, files)
+        # cluster_dopplermaps(folder, files)
+        # label_clusters(folder, files)
+        generate_frames(folder, files, frame_count = frame_count, frame_overlap_ratio = 0.5)
+        # extract_targets(folder, files)
+        # extract_features(folder, files)
+    end
 end
