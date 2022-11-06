@@ -4,16 +4,23 @@
 using JLD2
 include("../Utilities/MakieGL/PlotUtilities.jl")
 
-# Frames folder to use.
-frames_folder = "10-Frames"
 
 # Start Makie.
 figure = Figure()
 Axis(figure[1,1])
+button = Makie.Button(figure[2,1], label = "Continue", tellwidth = false)
 display(figure)
 
+# Button callback.
+condition = Threads.Condition()
+on(button.clicks) do val
+    lock(condition)
+    notify(condition, val)
+    unlock(condition)
+end
+
 # Iterate folders.
-data_dir = "Data/" * frames_folder * "/EntireDopplerMap/"
+data_dir = "Data/EntireDopplerMap/"
 folders = readdir(data_dir)
 for folder in folders
     
@@ -27,7 +34,11 @@ for folder in folders
         velocity = data["Velocity"]
         heatmap!(figure[1, 1], distance, velocity, abs.(doppler), colorrange = [0, 13])
         text!(distance[1] , velocity[1], text = "File: " * file)
-        sleep(2)
+
+        # Wait for the button to be pressed.
+        lock(condition)
+        _val = wait(condition)
+        unlock(condition)
 
     end
 end

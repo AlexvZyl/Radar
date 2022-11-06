@@ -11,7 +11,8 @@ include("FeatureExtraction.jl")
 include("Utilities.jl")
 
 # Data.
-frame_counts = [ 5, 10, 15, 20 ]
+frame_counts = [ 1 ]
+frame_counts = [ 1, 5, 10, 15, 20 ]
 folders = get_elevated_folder_list()
 files = String[]
 

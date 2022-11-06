@@ -151,13 +151,13 @@ end
 function get_elevated_folder_list()
     return String[
         "WalkingAway_Elevated_90deg",
-        # "WalkingAway_Elevated_90deg_Stick",
+        "WalkingAway_Elevated_90deg_Stick",
         "WalkingTowards_Elevated_90deg",
-        # "WalkingTowards_Elevated_90deg_Stick",
+        "WalkingTowards_Elevated_90deg_Stick",
         "JoggingAway_Elevated_90deg",
         "JoggingAway_Elevated_90deg_Stick",
         "JoggingTowards_Elevated_90deg",
         "JoggingTowards_Elevated_90deg_Stick",
-        # "Clutter"
+        "Clutter"
     ]
 end
