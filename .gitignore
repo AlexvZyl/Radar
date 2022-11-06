@@ -1,3 +1,5 @@
 *.jld
 *.bin
 .vscode
+*.bson
+*.archlinux
