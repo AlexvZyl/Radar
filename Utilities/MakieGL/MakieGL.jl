@@ -86,6 +86,8 @@ if cairomakie
 
 	update_theme!(
 		Axis = (
+		    font = "Latin Modern Math", # Linux.
+		    titlefont = "Latin Modern Math", # Linux.
 			leftspinevisible = true,
 			rightspinevisible = true,
 			topspinevisible = true,
@@ -110,6 +112,8 @@ if cairomakie
 			spinewidth = 3
 		),
 		Axis3 = (
+		    font = "Latin Modern Math", # Linux.
+		    titlefont = "Latin Modern Math", # Linux.
 			# Visibility.
 	    	xspinesvisible = true,
 	    	yspinesvisible = true,	
@@ -152,7 +156,9 @@ if cairomakie
 			leftspinecolor = :gray90,
 			rightspinecolor = :gray90,
 			backgroundcolor = :gray90,
-			framewidth = 2
+			framewidth = 2,
+		    font = "Latin Modern Math", # Linux.
+		    titlefont = "Latin Modern Math", # Linux.
 		),
 		# fontsize = 50, # 3D
 		fontsize = 65, # 2D

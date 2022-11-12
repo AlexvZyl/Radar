@@ -2,6 +2,10 @@
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("PostProcessor.jl")
 
+update_theme!(
+	font = "Latin Modern Math", # Linux.
+)
+
 # Input.
 # folder = "WalkingAway"
 # folder = "WalkingTowards"
