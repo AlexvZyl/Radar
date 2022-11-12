@@ -108,9 +108,9 @@ end
 # Get the paths of the directories to be used for the data.
 # These directories are used by a few files and this makes it easier to work with.
 function get_directories(folder::String; subdirectory = "")
-    parent_dir = "/home/alex/GitHub/Radar/Classification/Data/" * subdirectory
+    parent_dir = "/home/alex/GitHub/Radar/Classification/Data/"
     cluster_dir = parent_dir * "DopplerClustering/" * folder * "/"
-    frames_dir = parent_dir * "DopplerFrames/" * folder * "/"
+    frames_dir = parent_dir * "DopplerFrames/" * subdirectory * folder * "/"
     map_dir = parent_dir * "EntireDopplerMap/" * folder * "/"
     labels_dir = parent_dir * "ClusterLabels/" * folder * "/"
     features_dir = parent_dir * "Features/" * folder * "/"

@@ -11,7 +11,8 @@ include("FeatureExtraction.jl")
 include("Utilities.jl")
 
 # Data.
-frame_counts = [ 1, 5, 10, 15, 20 ]
+# frame_counts = [ 1, 3, 5, 7, 10, 15, 20, 25, 30]
+frame_counts = [ 25, 30 ]
 frame_overlap_ratio = 0.5
 folders = get_elevated_folder_list()
 files = String[]

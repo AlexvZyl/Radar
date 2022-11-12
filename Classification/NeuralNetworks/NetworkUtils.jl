@@ -59,8 +59,8 @@ end
 # and not the magnitudes.
 # 110 000 000 samples per measurement (complex samples).
 # 556 480 pixels per measurement.
-function load_doppler_frames_from_folder(folder::String, args::Args)
-    map_dir = get_directories(folder, subdirectory =  args.frames_folder)[3]
+function load_doppler_frames_from_folder(folder::String, subdirectory::String = "")
+    map_dir = get_directories(folder, subdirectory = subdirectory * "/")[3]
     files = get_all_files(map_dir, true)  
     doppler_frames = Vector{Vector{AbstractMatrix}}()
     for file in files
@@ -125,7 +125,7 @@ function get_data_loaders(args::Args; split_at = 0.7)
     #   Vector                      - Iterations
     #       Vector                  - Frames
     #           AbstractMatrix      - Frame
-    frames_data = load_doppler_frames_from_folder.(classes, args)
+    frames_data = load_doppler_frames_from_folder.(classes, args.frames_folder)
 
     # Format the data (combine matrices, assign labels).
     train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)

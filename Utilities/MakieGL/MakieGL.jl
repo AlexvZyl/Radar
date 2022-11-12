@@ -2,8 +2,8 @@
 #  G L M A K I E   T H E M E S  #
 # ----------------------------- #
 
-# glmakie = false
-glmakie = true
+glmakie = false
+# glmakie = true
 cairomakie = !glmakie
 
 if glmakie
@@ -81,8 +81,8 @@ end
 if cairomakie
 
 	using CairoMakie
-	# CairoMakie.activate!(type = "pdf")
-	CairoMakie.activate!(type = "png")
+	CairoMakie.activate!(type = "pdf")
+	# CairoMakie.activate!(type = "png")
 
 	update_theme!(
 		Axis = (
@@ -157,8 +157,10 @@ if cairomakie
 		# fontsize = 50, # 3D
 		fontsize = 65, # 2D
 		textcolor = :black,
-		font = "Fonts/ComputerModern/cmunrm.ttf",  # Windows.
-		# font = "/home/alex/GitHub/Masters-Julia/Fonts/ComputerModern/cmunrm.ttf", # Linux.
+		# font = "Fonts/ComputerModern/cmunrm.ttf",  # Windows.
+		# font = "/home/alex/GitHub/Radar/Fonts/ComputerModern/cmunrm.ttf", # Linux.
+		font = "Latin Modern Math", # Linux.
+		titlefont = "Latin Modern Math", # Linux.
 		figure_padding = (0, 50, 0, 0)
 	)
 
