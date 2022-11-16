@@ -180,7 +180,7 @@ function plot_multipath(ht::Number, hr_range::AbstractRange, r::Number, ft_range
 
     # Plot for each frequency.
     for ft in ft_range
-        loss_vector = calculate_multipath.(ht, hr_range, r, ft, dB = dB)    
+        loss_vector = calculate_multipath_loss_round_earth.(ht, hr_range, r, ft, dB = dB)    
         scatterlines!(hr_range, loss_vector, label = string(ft) * " Hz")
     end
 
@@ -216,7 +216,7 @@ function plot_multipath(ht_range::AbstractRange, hr::Number, r::Number, ft_range
 
     # Plot for each frequency.
     for ft in ft_range
-        loss_vector = calculate_multipath.(ht_range, hr, r, ft, dB = dB)    
+        loss_vector = calculate_multipath_loss_round_earth.(ht_range, hr, r, ft, dB = dB)    
         scatterlines!(ht_range, loss_vector, label = string(ft) * " Hz")
     end
 
@@ -242,7 +242,7 @@ function _lobe_structure_polar(hr::Number, r::Number, ft::Number;
 
         # Try to calculate the polar coord.
         try
-            mp = calculate_multipath(ht, hr, r, ft, dB = false) 
+            mp = calculate_multipath_loss_round_earth(ht, hr, r, ft, dB = false) 
             # Keep track of the max.
             if mp > max_mp
                 max_mp = mp
