@@ -42,7 +42,8 @@ function cluster_dopplermaps(folder::String, files_to_load::Vector{String} = [])
     # For now lets make the seperation between clusters smaller, since I am ssuming the person is walking relatively
     # fast.
     snr_threshold = 12
-    dbscan_radius = 0.24
+    # dbscan_radius = 0.24 # Original.
+    dbscan_radius = 0.30
     min_cluster_size = 3
     min_neighbors = 1
     leaf_size = 20

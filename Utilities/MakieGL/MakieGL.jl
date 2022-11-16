@@ -3,7 +3,7 @@
 # ----------------------------- #
 
 glmakie = false
-# glmakie = true
+glmakie = true
 cairomakie = !glmakie
 
 if glmakie
@@ -102,14 +102,16 @@ if cairomakie
 			ygridcolor = :gray50,
 			cycle = [],
 			yticklabelpad = 20,
-			ylabelpadding = 20,
+			ylabelpadding = 30,
+            xlabelpadding = 20,
 			xtickwidth = 3,
 			ytickwidth = 3,
 			xticksize = 24,
 			yticksize = 24,
 			xtickalign = 0,
 			ytickalign = 1,
-			spinewidth = 3
+			spinewidth = 3,
+			titlegap = 40,
 		),
 		Axis3 = (
 		    font = "Latin Modern Math", # Linux.

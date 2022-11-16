@@ -137,9 +137,9 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector, fc::Number, fs
 
         # Plot heatmap with dB scale.
         dopplerFFTMatrix = 20 * log10.(dopplerFFTMatrix) 
-        hm = heatmap!(figure[position[1], position[2]], 
-                      rangeVector, velocityVector, dopplerFFTMatrix,
-                      colorrange = dBRange)
+        heatmap!(figure[position[1], position[2]], 
+                 rangeVector, velocityVector, dopplerFFTMatrix,
+                 colorrange = dBRange)
 
         # Plot velocities.
         if plotFreqLines && !rawImage
@@ -159,7 +159,7 @@ function plotDopplerFFT(figure, signal::Vector, position::Vector, fc::Number, fs
                     
         # Plot the colorbar.
         if !rawImage
-            cbar = Colorbar(figure[position[1], position[2]+1], colorrange=(dBRange[1], dBRange[2]), label="SNR (dB)")
+            Colorbar(figure[position[1], position[2]+1], colorrange=(dBRange[1], dBRange[2]), label="SNR (dB)")
         end
 
         # Plot a line at the deadzone.

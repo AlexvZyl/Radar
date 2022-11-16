@@ -45,6 +45,13 @@ F(α, ρ = 1) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 # F: Propagation factor.
 loss(F) = F^4
 
+#------------------#
+# Flat Earth Model #
+#------------------#
+
+# Calculate the propogation factor based on the flat earth model.
+F(ht, hr, R, f) = ( 2 * π * ht * hr ) / ( λ(f) * R )
+
 #-------------------#
 # Round Earth Model #
 #-------------------#
@@ -122,7 +129,7 @@ global const c = 299792458
 # r1: Radial distance between radar and reflection point.
 # r2: Radial distance between target and reflection point.
 # ft: Transmission frequency.
-function calculate_multipath(ht::Number, hr::Number, r::Number, ft::Number; dB::Bool = true) 
+function calculate_multipath_loss_round_earth(ht::Number, hr::Number, r::Number, ft::Number; dB::Bool = true) 
 
     # Calculate the parameters.
     _p = p(ht, hr, r)
@@ -145,6 +152,17 @@ function calculate_multipath(ht::Number, hr::Number, r::Number, ft::Number; dB::
     if !dB return loss(_F) end
     return 20*log10(loss(_F))
 
+end
+
+# Calculate the multipath loss based on the flat earth model.
+# Defaults to returning dB.
+# ht: Height of target.
+# hr: Height of radar.
+# R: Distance between target and radar.
+# f: Carrier frequency.
+function calculate_multipath_loss_flat_earth(ht::Number, hr::Number, R::Number, f::Number; dB::Bool = true)
+    if !dB return F(ht, hr, R, f) end
+    return 20*log10(F(ht, hr, R, f))
 end
 
 # Plot the effect of the multipath.

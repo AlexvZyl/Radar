@@ -20,7 +20,9 @@ end
 
 # Iterate folders.
 data_dir = "Data/EntireDopplerMap/"
-folders = readdir(data_dir)
+# folders = readdir(data_dir)
+# folders = [ "WalkingAway", "WalkingTowards" ]
+folders = [ "WalkingTowards_Elevated_90deg" ]
 for folder in folders
     
     # Iterate files.

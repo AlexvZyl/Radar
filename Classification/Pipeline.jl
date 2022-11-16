@@ -12,18 +12,26 @@ include("Utilities.jl")
 
 # Data.
 # frame_counts = [ 1, 3, 5, 7, 10, 15, 20, 25, 30]
-frame_counts = [ 25, 30 ]
+# frame_counts = [ 25, 30 ]
 frame_overlap_ratio = 0.5
 folders = get_elevated_folder_list()
-files = String[]
+frame_counts = 1
+# folders = [ "WalkingAway", "WalkingTowards" ]
+# files = String[]
+
+# Clustering display for thesis.
+# files = [ "000" ]
+# folders = [ "WalkingTowards" ]
+files = [ "002" ]
+folders = [ "WalkingTowards_Elevated_90deg" ]
 
 # Pipeline.
 for frame_count in frame_counts
     for folder in folders
         # raw_to_doppler_map(folder, files)
-        # cluster_dopplermaps(folder, files)
-        # label_clusters(folder, files)
-        generate_frames(folder, files, frame_count = frame_count, frame_overlap_ratio = frame_overlap_ratio)
+        cluster_dopplermaps(folder, files)
+        label_clusters(folder, files)
+        # generate_frames(folder, files, frame_count = frame_count, frame_overlap_ratio = frame_overlap_ratio)
         # extract_targets(folder, files)
         # extract_features(folder, files)
     end

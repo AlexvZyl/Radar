@@ -213,7 +213,7 @@ function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0, sn
     if freqVal == 0 freqVal = 10000 end
     plotDopplerFFT(figure, rx_signal, [1, 1], meta_data.center_freq, Int32(meta_data.sampling_freq), meta_data.pulse_sample_count, [snr_min, 20], 
     			   xRange = meta_data.max_range, yRange = 8, nWaveSamples=meta_data.wave_sample_count, plotDCBin = false, plotFreqLines = false, freqVal = freqVal,
-                   removeClutter = false, rawImage = false)
+                   removeClutter = true, rawImage = false)
     
     return figure
 
