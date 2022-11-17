@@ -232,7 +232,7 @@ function _lobe_structure_polar(hr::Number, r::Number, ft::Number;
 
     # If the loop should continue.
     should_cont = true
-    ht = 0
+    local ht = 0
     polar_coords = Vector{Polar}(undef, 0)
     max_mp = -Inf
 
@@ -295,6 +295,142 @@ function plot_lobe_structure(hr::Number, r::Number, ft_range::AbstractRange)
 
     # Display the plot on the screen.
     axislegend(axis)
+    display(figure)
+
+end
+
+# I can't remember what you call this angle...
+ϕ(ht, hr, R) = atan(ht-hr, R)
+
+# Calculate the height of the target based on the angle.
+ht(R, ϕ, hr) = R * tan(ϕ) + hr
+
+# Calculate the lobe structure in polar coordinate format.
+function _lobe_structure_polar_flat_earth(hr, R, f; resolution::Number = 0.5)
+
+    # Range of values for the angle.
+    ϕ_range = 0:resolution:π
+
+    # Calculate all of the target heights.
+    ht_vec = ht.(R, ϕ_range, hr)
+
+    # Calculate the loss vector.
+    F_vec = calculate_multipath_loss_flat_earth.(ht_vec, hr, R, f)
+    
+    # Return in polar coordinates.
+    max_loss = maximum(F_vec)
+    return Polar.(F_vec / max_loss, ϕ_range)
+
+end
+
+# Plot the lobe structure based on the flat earth model.
+# ht: Height of target.
+# hr: Height of radar.
+# R: Distance between target and radar.
+# f: Carrier frequency.
+function plot_lobe_structure_flat_earth(hr::Number, R::Number, f_range::Number)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "θ = Elevation Angle", ylabel = "R = Normalised Propagation Factor", title = "Multipath")
+
+    # Calculate and plot the multipath for each frequency.
+    for f in f_range
+        polar_coords = _lobe_structure_polar_flat_earth(hr, R, f)            
+        cart_coords = CartesianFromPolar().(polar_coords)
+        x = [ coord[1] for coord in cart_coords ]
+        y = [ coord[2] for coord in cart_coords ]
+        scatterlines!(x, y, label = string(f) * " Hz")
+    end
+
+    # Display the plot on the screen.
+    axislegend(axis)
+    display(figure)
+    
+end
+
+# PLot the lobe structure based on the flat earth model.
+function compare_flat_round_lobe_structure(hr::Number, R::Number, f::Number)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "θ = Elevation Angle", ylabel = "R = Normalised Propagation Factor", title = "Multipath")
+
+    # Calculate and plot the multipath for each frequency.
+    for f in f_range
+        polar_coords = _lobe_structure_polar_flat_earth(hr, R, f)            
+        cart_coords = CartesianFromPolar().(polar_coords)
+        x = [ coord[1] for coord in cart_coords ]
+        y = [ coord[2] for coord in cart_coords ]
+        scatterlines!(x, y, label = string(f) * " Hz")
+    end
+
+    # Display the plot on the screen.
+    axislegend(axis)
+    display(figure)
+
+end
+
+# Calculate the multipath heatmap varying the target.
+function calculate_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, ht_range::AbstractRange, hr::Number, f::Number; dB::Bool = true)
+    loss_map = Array{Float64}(undef, length(R_range), length(ht_range))
+    # Iterate map.
+    for (index_r, range) in enumerate(R_range)
+        for (index_ht, ht) in enumerate(ht_range)
+            loss_map[index_r, index_ht] = calculate_multipath_loss_flat_earth(ht, hr, range, f, dB = dB)
+        end
+    end
+    return loss_map
+end
+
+# Calculate the multipath heatmap varying the radar.
+function calculate_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true)
+    loss_map = Array{Float64}(undef, length(R_range), length(hr_range))
+    # Iterate map.
+    for (index_r, range) in enumerate(R_range)
+        for (index_ht, hr) in enumerate(hr_range)
+            loss_map[index_r, index_ht] = calculate_multipath_loss_flat_earth(ht, hr, range, f, dB = dB)
+        end
+    end
+    return loss_map
+end
+
+# Plot the multipath loss heatmap varying the target height.
+function plot_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, ht_range::AbstractRange, hr::Number, f::Number; dB::Bool = true)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "Ground distance from radar to target", ylabel = "Height of target above ground", title = "Multipath Loss (Radar Height = " * string(hr) * "m)")
+
+    # Plot the heatmap.
+    loss_map = calculate_multipath_heatmap_flat_earth_vary_target(R_range, ht_range, hr, f, dB = dB)
+    hm = heatmap!(figure[1,1], R_range, ht_range, loss_map)
+    colorbar_label = "SNR (dB)"
+    if !dB colorbar_label = "SNR" end
+    Colorbar(figure[1, 2], hm, label = "SNR (dB)")
+
+    # Display.
+    # axislegend(axis)
+    display(figure)
+
+end
+
+# Plot the multipath loss heatmap varying the radar height.
+function plot_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true)
+
+    # Setup plotting.
+    figure = Figure()
+    axis = Axis(figure[1,1], xlabel = "Ground distance from radar to target", ylabel = "Height of radar above ground", title = "Multipath Loss (Target Height = " * string(ht) * "m)")
+
+    # Plot the heatmap.
+    loss_map = calculate_multipath_heatmap_flat_earth_vary_radar(R_range, hr_range, ht, f, dB = dB)
+    hm = heatmap!(figure[1,1], R_range, hr_range, loss_map)
+    colorbar_label = "SNR (dB)"
+    if !dB colorbar_label = "SNR" end
+    Colorbar(figure[1, 2], hm, label = colorbar_label)
+
+    # Display.
+    # axislegend(axis)
     display(figure)
 
 end
