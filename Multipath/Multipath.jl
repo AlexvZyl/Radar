@@ -405,9 +405,9 @@ function plot_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, h
     # Plot the heatmap.
     loss_map = calculate_multipath_heatmap_flat_earth_vary_target(R_range, ht_range, hr, f, dB = dB)
     hm = heatmap!(figure[1,1], R_range, ht_range, loss_map)
-    colorbar_label = "SNR (dB)"
-    if !dB colorbar_label = "SNR" end
-    Colorbar(figure[1, 2], hm, label = "SNR (dB)")
+    colorbar_label = "Multipath Loss (dB)"
+    if !dB colorbar_label = "Multipath Loss" end
+    Colorbar(figure[1, 2], hm, label = colorbar_label)
 
     # Display.
     # axislegend(axis)
@@ -416,18 +416,18 @@ function plot_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, h
 end
 
 # Plot the multipath loss heatmap varying the radar height.
-function plot_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true)
+function plot_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true, dB_range = (-40, 0))
 
     # Setup plotting.
     figure = Figure()
-    axis = Axis(figure[1,1], xlabel = "Ground distance from radar to target", ylabel = "Height of radar above ground", title = "Multipath Loss (Target Height = " * string(ht) * "m)")
+    axis = Axis(figure[1,1], xlabel = "Target Ground Distance", ylabel = "Radar Height Above Ground", title = "Multipath Loss (Target Height = " * string(ht) * "m)")
 
     # Plot the heatmap.
     loss_map = calculate_multipath_heatmap_flat_earth_vary_radar(R_range, hr_range, ht, f, dB = dB)
-    hm = heatmap!(figure[1,1], R_range, hr_range, loss_map)
-    colorbar_label = "SNR (dB)"
-    if !dB colorbar_label = "SNR" end
-    Colorbar(figure[1, 2], hm, label = colorbar_label)
+    heatmap!(figure[1,1], R_range, hr_range, loss_map, colorrange = dB_range)
+    colorbar_label = "Multipath Loss (dB)"
+    if !dB colorbar_label = "Multipath Loss" end
+    Colorbar(figure[1, 2], label = colorbar_label, colorrange = dB_range)
 
     # Display.
     # axislegend(axis)
