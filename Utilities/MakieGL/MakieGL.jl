@@ -3,7 +3,7 @@
 # ----------------------------- #
 
 glmakie = false
-glmakie = true
+# glmakie = true
 cairomakie = !glmakie
 
 if glmakie
@@ -169,7 +169,7 @@ if cairomakie
 		# font = "/home/alex/GitHub/Radar/Fonts/ComputerModern/cmunrm.ttf", # Linux.
 		font = "Latin Modern Math", # Linux.
 		titlefont = "Latin Modern Math", # Linux.
-		figure_padding = (0, 50, 0, 0)
+		figure_padding = (20, 20, 10, 10)
 	)
 
 	originColor = :black
