@@ -137,7 +137,7 @@ if cairomakie
 			xlabeloffset = 130,
 			ylabeloffset = 130,
 			zlabeloffset = 130,
-			titlegap = -70,
+			titlegap = -160,
 			# Ticks.
 			xticksvisible = true,
 			yticksvisible = true,
@@ -146,7 +146,7 @@ if cairomakie
 			ytickcolor = :grey10,
 			ztickcolor = :grey10,
 			cycle = [],
-			viewmode = :fit
+			viewmode = :fit,
 			),
 		Legend = (
 			leftspinevisible = true,
@@ -162,8 +162,8 @@ if cairomakie
 		    font = "Latin Modern Math", # Linux.
 		    titlefont = "Latin Modern Math", # Linux.
 		),
-		# fontsize = 50, # 3D
-		fontsize = 65, # 2D
+		fontsize = 50, # 3D
+		# fontsize = 65, # 2D
 		textcolor = :black,
 		# font = "Fonts/ComputerModern/cmunrm.ttf",  # Windows.
 		# font = "/home/alex/GitHub/Radar/Fonts/ComputerModern/cmunrm.ttf", # Linux.

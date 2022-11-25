@@ -1,5 +1,6 @@
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("Utilities.jl")
+include("../../Utilities/Processing/ProcessingHeader.jl")
 using QuadGK
 
 sigmoid(x, scale) = 1 ./ ( 1 .+ exp.(-1 .* scale .* x) )
@@ -60,7 +61,7 @@ function generateSigmoidWaveform(fs::Number, BW::Number, nSamples::Real;
 
 end
 
-function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::Real, lobeCount::Real;
+function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::Real;
                          plot::Bool = false, axis = false, label = "Sigmoid", title = "Sigmoid SLL over TBP", figure = false,
                          color = :blue, scalingParameter::Real = 1)
 
@@ -76,7 +77,9 @@ function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::
         tiVector[1] = tiRange[1]
     elseif tiIncrements == 0
         tiVector .= tiRange[2]
-        tiVector = tiRange[1]:tiIncrements:tiRange[2]
+        if tiIncrements != 0
+            tiVector = tiRange[1]:tiIncrements:tiRange[2]
+        end
     end
 
     if tbSamples == 1
@@ -116,7 +119,7 @@ function sigmoidSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::
 
 end
 
-function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount;
+function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples;
                      axis = false, title = "Logit Plane", plot = true, figure = false)
 
     # Parameter vector.
@@ -128,10 +131,8 @@ function sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tb
     TBPvector = Array{Float32}(undef, tbSamples)
     sigmoidSLLTBPMatrix = Array{Float32}(undef, 0)
     for pScale in parameterVector
-
-        TBPvector, SLLVector, ax = sigmoidSLLvsTBP(fs, tiRange, bwRange, tbSamples, lobeCount, plot = false, figure = figure, scalingParameter = pScale)
+        TBPvector, SLLVector, ax = sigmoidSLLvsTBP(fs, tiRange, bwRange, tbSamples, plot = false, figure = figure, scalingParameter = pScale)
         append!(sigmoidSLLTBPMatrix, SLLVector)
-
     end
     sigmoidSLLTBPMatrix = reshape(sigmoidSLLTBPMatrix, (tbSamples, parameterSamples))
 

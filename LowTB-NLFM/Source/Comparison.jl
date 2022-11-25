@@ -57,7 +57,7 @@ figure = Figure(resolution = (1920, 1080)) # 2D
 # plotMatchedFilter(figure, sigmoidWave, [1,1], fs, yRange = 80, title = "", color = :blue, label = "Logit", axis = ax)
 
 # Plot plance.
-# sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
+sigmoidPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount, figure = figure)
 
 # ----------- # 
 #  S E T U P  #
