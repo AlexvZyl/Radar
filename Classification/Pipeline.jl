@@ -28,9 +28,9 @@ folders = [ "WalkingTowards_Elevated_90deg" ]
 # Pipeline.
 for frame_count in frame_counts
     for folder in folders
-        # raw_to_doppler_map(folder, files)
-        cluster_dopplermaps(folder, files)
-        label_clusters(folder, files)
+        raw_to_doppler_map(folder, files)
+        # cluster_dopplermaps(folder, files)
+        # label_clusters(folder, files)
         # generate_frames(folder, files, frame_count = frame_count, frame_overlap_ratio = frame_overlap_ratio)
         # extract_targets(folder, files)
         # extract_features(folder, files)
