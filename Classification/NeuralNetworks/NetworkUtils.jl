@@ -1,4 +1,5 @@
 include("../Utilities.jl")
+include("Chains.jl")
 using MLUtils
 using Flux
 using Flux.Data: DataLoader
@@ -13,6 +14,7 @@ import MLDatasets
 import BSON
 using CUDA
 using JLD2
+using Base.Threads
 
 # Arguments used.
 Base.@kwdef mutable struct Args
@@ -28,6 +30,7 @@ Base.@kwdef mutable struct Args
     savepath = "Runs/"   ## results path (relative)
     split = 0.8          ## Train/test split
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
+    model::ChainType = AlexNet
 end
 
 # Utility functions.
@@ -112,11 +115,37 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
     return train_x, train_y, test_x, test_y
 end
 
+# Make sure the images are not too small for the AlexNet network.
+function ensure_alexnet_imgsize(frames_data; min_size = (227,227))
+    old_imgsize = size(frames_data[1][1][1])
+
+    if (old_imgsize[1] >= min_size[1]) && (old_imgsize[2] >= min_size[2])
+        return frames_data
+    end
+
+    new_imgsize = (
+        old_imgsize[1] >= min_size[1] ? old_imgsize[1] : min_size[1],
+        old_imgsize[2] >= min_size[2] ? old_imgsize[2] : min_size[2]
+    )
+
+    @inbounds for (c, class) in enumerate(frames_data)
+        for (s, sample) in enumerate(class)
+            for (f, _) in enumerate(sample)
+                new_mat = zeros(ComplexF64, new_imgsize)
+                copyto!(view(new_mat, 1:old_imgsize[1], 1:old_imgsize[2]), view(frames_data[c][s][f], 1:old_imgsize[1], 1:old_imgsize[2]))
+                frames_data[c][s][f] = new_mat
+            end
+        end
+    end
+
+    return frames_data
+end
+
 # Load the data from the jdl files and prepare them for training.
 # Preparation includes using `Flux.DataLoader()`.
 function get_data_loaders(args::Args; split_at = 0.7)
 
-    @info "Processing data..."
+    @info "Preparing data..."
 
     classes = get_elevated_folder_list()
     # @info "Classes: " classes
@@ -126,6 +155,11 @@ function get_data_loaders(args::Args; split_at = 0.7)
     #       Vector                  - Frames
     #           AbstractMatrix      - Frame
     frames_data = load_doppler_frames_from_folder.(classes, args.frames_folder)
+
+    # Need to ensure the images are the minimum size to fit into AlexNet.
+    if args.model == AlexNet 
+        frames_data = ensure_alexnet_imgsize(frames_data)
+    end
 
     # Format the data (combine matrices, assign labels).
     train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)

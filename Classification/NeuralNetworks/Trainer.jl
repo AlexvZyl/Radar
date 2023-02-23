@@ -9,6 +9,7 @@ function train(chain_type::ChainType; kwargs...)
     args.savepath = args.savepath * get_type_string(chain_type) * "/"
     args.seed > 0 && Random.seed!(args.seed)
     use_cuda = args.use_cuda && CUDA.functional()
+    args.model = chain_type
 
     # Display training device.
     if use_cuda
