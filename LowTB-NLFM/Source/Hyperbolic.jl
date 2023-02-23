@@ -1,5 +1,6 @@
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("Utilities.jl")
+include("../../Utilities/Processing/ProcessingHeader.jl")
 using QuadGK
 
 normHyper(m) = log(ℯ, 1/m + sqrt((1/m)^2 + 1) )
@@ -59,7 +60,7 @@ function generateHyperbolicWaveform(fs::Number, BW::Number, nSamples::Real;
 
 end
 
-function HyperbolicSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::Real, lobeCount::Real;
+function HyperbolicSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSamples::Real;
                          plot::Bool = false, axis = false, label = "Hyperbolic", title = "Hyperbolic SLL over TBP", figure = false,
                          color = :blue, scalingParameter::Real = 1)
 
@@ -75,7 +76,9 @@ function HyperbolicSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSample
         tiVector[1] = tiRange[1]
     elseif tiIncrements == 0
         tiVector .= tiRange[2]
-        tiVector = tiRange[1]:tiIncrements:tiRange[2]
+        if tiIncrements != 0
+            tiVector = tiRange[1]:tiIncrements:tiRange[2]
+        end
     end
 
     if tbSamples == 1
@@ -91,7 +94,7 @@ function HyperbolicSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSample
         nSamples = floor(Int, tiVector[i] * fs)
         signal, null = generateHyperbolicWaveform(fs, bwVector[i], nSamples, plot = false, scalingParameter = scalingParameter)
         mf = plotMatchedFilter(0, signal, [], fs, plot = false)
-        SLLvector[i] = calculateSideLobeLevel(mf, lobeCount)
+        SLLvector[i] = calculateSideLobeLevel(mf)
         TBPvector[i] = bwVector[i] * tiVector[i] 
     end
 
@@ -115,7 +118,7 @@ function HyperbolicSLLvsTBP(fs::Real, tiRange::Vector, bwRange::Vector, tbSample
 
 end
 
-function HyperbolicPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples, lobeCount;
+function HyperbolicPlane(fs, tiRange, bwRange, parameterRange, parameterSamples, tbSamples;
                      axis = false, title = "Hyperbolic Plane", plot = true, figure = false)
 
     # Parameter vector.
@@ -128,7 +131,7 @@ function HyperbolicPlane(fs, tiRange, bwRange, parameterRange, parameterSamples,
     HyperbolicSLLTBPMatrix = Array{Float32}(undef, 0)
     for pScale in parameterVector
 
-        TBPvector, SLLVector, ax = HyperbolicSLLvsTBP(fs, tiRange, bwRange, tbSamples, lobeCount, plot = false, figure = figure, scalingParameter = pScale)
+        TBPvector, SLLVector, ax = HyperbolicSLLvsTBP(fs, tiRange, bwRange, tbSamples, plot = false, figure = figure, scalingParameter = pScale)
         append!(HyperbolicSLLTBPMatrix, SLLVector)
 
     end

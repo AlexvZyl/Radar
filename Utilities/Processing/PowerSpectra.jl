@@ -15,7 +15,7 @@ function plotPowerSpectra(fig::Figure, signal::Vector, graphPosition::Vector, fs
     
     ax = nothing
 
-    fftY, frequencies = powerSpectra(signal, fs, true, paddingCount=paddingCount)
+    fftY, _ = powerSpectra(signal, fs, true, paddingCount=paddingCount)
 
     # Create dB axis.
     if dB
