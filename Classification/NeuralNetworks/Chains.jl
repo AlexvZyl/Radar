@@ -97,30 +97,30 @@ function create_LeNet5(imgsize, nclasses)
     )
 end
 
-# AlexNet implementation, from FluxML/Metalhead.jl with slight modification.
-function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5)
+function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5, maxpool1_kernel_stride = 2)
     inchannels = imgsize[end]
+    maxpool1_kernel_x = floor(Int, (imgsize[1] - 11) / 4) + 1 - 26 * maxpool1_kernel_stride
+    maxpool1_kernel_y = floor(Int, (imgsize[2] - 11) / 4) + 1 - 26 * maxpool1_kernel_stride
+    println("Kernel X: ", maxpool1_kernel_x)
+    println("Kernel Y: ", maxpool1_kernel_y)
     return Chain(
-
         # Backbone.
-        Conv((11, 11, inchannels), inchannels => 96, relu; stride = 4, pad = 2),
-        MaxPool((3, 3, 1); stride = 2),
-        Conv((5, 5, 96), 96 => 256, relu; pad = 2),
+        Conv((11, 11), inchannels => 96, relu; stride = 4, pad = 2),
+        MaxPool((maxpool1_kernel_x, maxpool1_kernel_y); stride = maxpool1_kernel_stride),
+        Conv((5, 5), 96 => 256, relu; pad = 2),
         MaxPool((3, 3); stride = 2),
-        Conv((3, 3, 256), 256 => 384, relu; pad = 1),
-        Conv((3, 3, 256), 384 => 256, relu; pad = 1),
-        Conv((3, 3, 256), 256 => 256, relu; pad = 1),
+        Conv((3, 3), 256 => 384, relu; pad = 1),
+        Conv((3, 3), 384 => 384, relu; pad = 1),
+        Conv((3, 3), 384 => 256, relu; pad = 1),
         MaxPool((3, 3); stride = 2),
-
         # Classifier.
-        AdaptiveMeanPool((6, 6)), 
         MLUtils.flatten,
         Dropout(dropout_prob),
-        Dense(256 * 6 * 6, 4096, relu),
+        Dense(9216, 4096, relu),
         Dropout(dropout_prob),
-        Dense(4096, 4096, relu),
-        Dense(4096, nclasses)
-
+        Dense(4096, nclasses),
+        Dropout(dropout_prob),
+        softmax
     )
 end
 
