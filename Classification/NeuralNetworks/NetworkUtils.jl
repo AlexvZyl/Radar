@@ -28,7 +28,7 @@ Base.@kwdef mutable struct Args
     checktime = 5        ## Save the model every `checktime` epochs. Set to 0 for no checkpoints.
     tblogger = true      ## log training with tensorboard
     savepath = "Runs/"   ## results path (relative)
-    split = 0.8          ## Train/test split
+    split = nothing      ## Train/test split
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
     model::ChainType = AlexNet
 end
@@ -57,15 +57,6 @@ function parse_label(label::String)
         end
     end
     @assert false "Invalid label."
-end
-
-# Merge the dict if already exists, otherwise create new entry.
-function merge(dict::Dict, key::String, value::Vector{Vector{AbstractMatrix}})
-    if haskey(dict, key)
-        dict[key] = append!(dict[key], value)
-    else
-        dict[key] = value
-    end
 end
 
 # Utility functions.
@@ -124,7 +115,7 @@ function prepare_for_flux(classes_data::Dict{String, Vector{Vector{AbstractMatri
 
     # Get meta data.
     image_size = size(first(classes_data)[2][1][1])
-    frame_count = length(first(classes_data)[1][1])
+    frame_count = length(first(classes_data)[2][1])
     if seperate_channels 
         frame_count *= 2 
     end

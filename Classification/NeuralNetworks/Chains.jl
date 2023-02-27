@@ -166,16 +166,16 @@ function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5)
         Conv((11, 11), inchannels => 96, relu; stride = 4, pad = 2),
         MaxPool((3, 3); stride = 2),
         Conv((5, 5), 96 => 256, relu; pad = 2),
-        MaxPool((3, 3); stride = 2),
+        MaxPool((7, 7); stride = 4),
         Conv((3, 3), 256 => 384, relu; pad = 1),
         Conv((3, 3), 384 => 384, relu; pad = 1),
         Conv((3, 3), 384 => 256, relu; pad = 1),
         MaxPool((3, 3); stride = 2),
         # Classifier.
         MLUtils.flatten,
-        Dense(4096, relu),
+        Dense(1024, 4096, relu),
         Dropout(dropout_prob),
-        Dense(4096, nclasses),
+        Dense(4096, nclasses, relu),
         Dropout(dropout_prob),
         softmax
     )
