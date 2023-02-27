@@ -33,53 +33,145 @@ Base.@kwdef mutable struct Args
     model::ChainType = AlexNet
 end
 
+# Labels used in the classification.
+function get_labels()
+    return String["Walking", "Jogging", "WalkingStick", "JoggingStick", "Clutter"]
+end
+
+# Determiine the classification label based on the folder label.
+# Need this since some of the folders are being thrown togther.
+function parse_label(label::String)
+    labels = get_labels()
+    if label == labels[end] return label end
+    if occursin("Stick", label)
+        if occursin("Walking", label)
+            return labels[3]
+        else
+            return labels[4]
+        end
+    else
+        if occursin("Walking", label)
+            return labels[1]
+        else
+            return labels[2]
+        end
+    end
+    @assert false "Invalid label."
+end
+
+# Merge the dict if already exists, otherwise create new entry.
+function merge(dict::Dict, key::String, value::Vector{Vector{AbstractMatrix}})
+    if haskey(dict, key)
+        dict[key] = append!(dict[key], value)
+    else
+        dict[key] = value
+    end
+end
+
 # Utility functions.
 num_params(model) = sum(length, Flux.params(model))
 round4(x::Number) = round(x, digits = 4)
 
 # Format the different frames so that everything is contained in one matrix.
-function combine(instances::Vector{Vector{AbstractMatrix}})
+function combine(class_samples::Vector{Vector{AbstractMatrix}})
+
     # Get meta data.
-    image_size = size(instances[1][1])
-    frames = size(instances[1])[1]
-    data_type = typeof(instances[1][1])
-    total_matrix = Array{data_type, 4}(undef, image_size[1], image_size[2], frames, 0)
+    image_size = size(class_samples[1][1])
+    frame_count = length(class_samples[1])
+    data_type = typeof(class_samples[1][1])
+    class_matrix = Array{data_type, 4}(undef, image_size[1], image_size[2], frame_count, 1)
+
     # Create the new 4D matrix.
-    for i in instances
-        # Create instance matrix containing all of the frames.
-        instance_matrix = Array{data_type, 3}(undef, image_size[1], image_size[2], 0)
-        for m in i
-            instance_matrix = cat(instance_matrix, reshape(m, (image_size[1], image_size[2], 1)), dims = 3)
+    for (s, sample) in enumerate(class_samples)
+        for (f, frame) in enumerate(sample)
+            class_matrix[s][f] = reshape(frame, (image_size[1], image_size[2], 1))
         end
-        # Add instance to total 4D matrix.
-        total_matrix = cat(total_matrix, reshape(instance_matrix, (image_size[1], image_size[2], frames, :)), dims = 4)
     end
-    convert(Array{ComplexF64, 4}, total_matrix)
+
+    return class_matrix 
+
 end
 
 # Load the doppler frames from the folder into a vector.
-# All of the numbers below should be doubled when using the complex numbers
-# and not the magnitudes.
-# 110 000 000 samples per measurement (complex samples).
-# 556 480 pixels per measurement.
-function load_doppler_frames_from_folder(folder::String, subdirectory::String = "")
-    map_dir = get_directories(folder, subdirectory = subdirectory * "/")[3]
-    files = get_all_files(map_dir, true)  
-    doppler_frames = Vector{Vector{AbstractMatrix}}()
-    for file in files
-        push!(doppler_frames, load(file)["Doppler FFT Frames"])
+function load_classes_from_folders(folders::Vector{String}, subdirectory::String = "")
+
+    doppler_frames = Dict{String, Vector{Vector{AbstractMatrix}}}()
+
+    for folder in folders
+        index = 1
+        label = parse_label(folder)
+        map_dir = get_directories(folder, subdirectory = subdirectory * "/")[3]
+        files = get_all_files(map_dir, true)  
+        if haskey(doppler_frames, label)
+            index = length(doppler_frames[label]) + 1
+            resize!(doppler_frames[label], length(doppler_frames[label]) + length(files))
+        else
+            doppler_frames[label] = Vector{Vector{AbstractMatrix}}(undef, length(files))
+        end
+        for file in files
+            doppler_frames[label][index] =  load(file)["Doppler FFT Frames"] 
+            index += 1
+        end
     end
+
     return doppler_frames
+
+end
+
+# Prepare the data for the Flux loaders.
+# Optionally seperates the I and Q samples from the Complex samples.
+function prepare_for_flux(classes_data::Dict{String, Vector{Vector{AbstractMatrix}}}; seperate_channels = true)
+
+    # Get meta data.
+    image_size = size(first(classes_data)[2][1][1])
+    frame_count = length(first(classes_data)[1][1])
+    if seperate_channels 
+        frame_count *= 2 
+    end
+
+    # Calculate total samples.
+    total_samples = 0
+    for (_, samples) in classes_data
+        total_samples += length(samples)
+    end
+
+    # Prep new memory.
+    samples_flux = Array{Float64, 4}(undef, image_size[1], image_size[2], frame_count, total_samples)
+    labels = Array{Int}(undef, total_samples)
+
+    arr_sample = 0
+    for (label, samples) in classes_data
+        for (s, sample) in enumerate(samples)
+            arr_sample += 1
+            for (f, frame) in enumerate(sample)
+                if seperate_channels
+                    samples_flux[:,:,f*2-1,arr_sample] = real(frame)
+                    samples_flux[:,:,f*2,arr_sample] = imag(frame)
+                else
+                    samples_flux[:,:,f,arr_sample] = abs(frame)
+                end
+                labels[arr_sample] = get_one_hot_index(label)
+            end
+        end
+    end
+
+    return samples_flux, labels
+
+end
+
+# Use the Flux data loaders.
+function flux_load(classes_data::Array{Float64, 4}, labels, args::Args; shuffle = false)
+    y = onehotbatch(labels, 1:length(get_labels()))
+    return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
 end
 
 # Get the index related to the label.
-function get_one_hot_index(labels, label)
-    for (i, _) in enumerate(labels)
-        if labels[i] == label
-            return i
-        end
+function get_one_hot_index(label)
+    label = parse_label(label)
+    for (i, l) in enumerate(get_labels())
+        if l == label return i end
     end
-    @assert false "Label not found."
+    @assert false "Invalid label."
 end
 
 # Format the data for the DataLoader and split for training and testing.
@@ -119,34 +211,35 @@ end
 
 # Load the data from the jdl files and prepare them for training.
 # Preparation includes using `Flux.DataLoader()`.
-function get_data_loaders(args::Args; split_at = 0.7)
+function get_data_loaders(args::Args)
 
     @info "Preparing data..."
 
+    # Metadata.
     steph_folders = get_elevated_folder_list()
     janke_folders = get_janke_folder_list()
-    classes = {
-        "Walking", "Jogging", "WalkingStick", "JoggingStick", "Clutter"
-    }
+    labels = get_labels()
 
-    # @info "Classes: " classes
-    # Format of `frames_data`:
-    # Vector                        - Classes (folders)
-    #   Vector                      - Iterations
-    #       Vector                  - Frames
-    #           AbstractMatrix      - Frame
-    frames_data = load_doppler_frames_from_folder.(classes, args.frames_folder)
+    # Get data in a nicer format and combined classes.
+    # Output format: 
+    # Dict { 
+    #   Label::String, 
+    #   Samples::Vector{Vector{AbstractMatrix}}
+    #            (Samples,Frames,Frame)
+    # }
+    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder)
+    janke_classes = load_classes_from_folders(janke_folders, args.frames_folder) 
 
-    # Format the data (combine matrices, assign labels).
-    train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)
-    frames_data = nothing # Free memory.
-    train_x = abs.(train_x)
-    test_x = abs.(test_x)
-    # Generate the Flux loaders.
-    train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
-    test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize) 
+    # Convert to  format that the Flux loaders can use.
+    # Sets up the IQ samples as well.
+    steph_classes, steph_labels = prepare_for_flux(steph_classes)
+    janke_classes, janke_labels = prepare_for_flux(janke_classes)
 
-    return train_loader, test_loader, classes
+    # Load the data for Flux.
+    train = flux_load(steph_classes, steph_labels, args, shuffle = true)
+    test = flux_load(janke_classes, janke_labels, args)
+
+    return train, test, labels
 
 end
 
