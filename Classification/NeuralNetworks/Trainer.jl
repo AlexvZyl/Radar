@@ -1,7 +1,6 @@
 using Flux: Train
 using Base: @kwdef, File
 include("NetworkUtils.jl")
-include("Chains.jl")
 
 Base.@kwdef mutable struct TrainingResults
     train_acc  = 0
