@@ -2,8 +2,8 @@
 #  G L M A K I E   T H E M E S  #
 # ----------------------------- #
 
-glmakie = false
-# glmakie = true
+# glmakie = false
+glmakie = true
 cairomakie = !glmakie
 
 if glmakie

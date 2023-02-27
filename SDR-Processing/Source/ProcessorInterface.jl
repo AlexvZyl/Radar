@@ -29,12 +29,10 @@ update_theme!(
 # file_number = "000"
 # folder = "WalkingTowards"
 # file_name = "MP_EFFECT_GROUND.pdf"
-# Elevated.
-file_number = "000"
-folder = "Walking_Away_Aleza"
-file_name = "MP_EFFECT_ELEVATED.pdf"
 
-# Display processing.
+# Testings.
+file_number = "002"
+folder = "JoggingAwayStick_Janke"
+file_name = "Test.pdf"
 figure = process_intput(folder, file_number, snr_min = 0, pulsesToLoad = 0)
-# display(figure)
-# save(file_name, figure)
+save(file_name, figure)

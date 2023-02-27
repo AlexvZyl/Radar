@@ -1,6 +1,7 @@
 include("Trainer.jl")
 
 # Run the training script.
-split = 0.75
+model = LeNet5Adapted
+split = 0.8
 batchsize = floor(Int64, 100 * (1 - split))
-train(AlexNet, batchsize = 37, split = split, epochs = 100, checktime = 1, infotime = 1, frames_folder = "1-Frames")
+train(model, batchsize = batchsize, split = split, epochs = 10000, checktime = 100, infotime = 1, frames_folder = "1-Frames")

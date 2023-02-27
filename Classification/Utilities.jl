@@ -161,3 +161,16 @@ function get_elevated_folder_list()
         "Clutter"
     ]
 end
+
+function get_janke_folder_list()
+    return String[
+        "WalkingAway_Janke",
+        "WalkingTowards_Janke",
+        "WalkingAwayStick_Janke",
+        "WalkingTowardsStick_Janke",
+        "JoggingAway_Janke",
+        "JoggingTowards_Janke",
+        "JoggingAwayStick_Janke",
+        "JoggingTowardsStick_Janke"
+    ]
+end

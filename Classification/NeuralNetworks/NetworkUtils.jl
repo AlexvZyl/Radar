@@ -84,6 +84,7 @@ end
 
 # Format the data for the DataLoader and split for training and testing.
 function format_and_split_data(frames_data; labels = false, split_at = 0.7)
+
     frames_count = size(frames_data[1][1])[1]
     image_size = size(frames_data[1][1][1])
     train_x = Array{ComplexF64, 4}(undef, image_size[1], image_size[2], frames_count, 0)
@@ -113,32 +114,7 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
     train_y = onehotbatch(train_y, 1:classes)
     test_y = onehotbatch(test_y, 1:classes)
     return train_x, train_y, test_x, test_y
-end
 
-# Make sure the images are not too small for the AlexNet network.
-function ensure_alexnet_imgsize(frames_data; min_size = (227,227))
-    old_imgsize = size(frames_data[1][1][1])
-
-    if (old_imgsize[1] >= min_size[1]) && (old_imgsize[2] >= min_size[2])
-        return frames_data
-    end
-
-    new_imgsize = (
-        old_imgsize[1] >= min_size[1] ? old_imgsize[1] : min_size[1],
-        old_imgsize[2] >= min_size[2] ? old_imgsize[2] : min_size[2]
-    )
-
-    @inbounds for (c, class) in enumerate(frames_data)
-        for (s, sample) in enumerate(class)
-            for (f, _) in enumerate(sample)
-                new_mat = zeros(ComplexF64, new_imgsize)
-                copyto!(view(new_mat, 1:old_imgsize[1], 1:old_imgsize[2]), view(frames_data[c][s][f], 1:old_imgsize[1], 1:old_imgsize[2]))
-                frames_data[c][s][f] = new_mat
-            end
-        end
-    end
-
-    return frames_data
 end
 
 # Load the data from the jdl files and prepare them for training.
@@ -147,7 +123,12 @@ function get_data_loaders(args::Args; split_at = 0.7)
 
     @info "Preparing data..."
 
-    classes = get_elevated_folder_list()
+    steph_folders = get_elevated_folder_list()
+    janke_folders = get_janke_folder_list()
+    classes = {
+        "Walking", "Jogging", "WalkingStick", "JoggingStick", "Clutter"
+    }
+
     # @info "Classes: " classes
     # Format of `frames_data`:
     # Vector                        - Classes (folders)
@@ -156,16 +137,11 @@ function get_data_loaders(args::Args; split_at = 0.7)
     #           AbstractMatrix      - Frame
     frames_data = load_doppler_frames_from_folder.(classes, args.frames_folder)
 
-    # Need to ensure the images are the minimum size to fit into AlexNet.
-    if args.model == AlexNet 
-        frames_data = ensure_alexnet_imgsize(frames_data)
-    end
-
     # Format the data (combine matrices, assign labels).
     train_x, train_y, test_x, test_y = format_and_split_data(frames_data, split_at = split_at)
+    frames_data = nothing # Free memory.
     train_x = abs.(train_x)
     test_x = abs.(test_x)
-    frames_data = nothing # Free memory.
     # Generate the Flux loaders.
     train_loader = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = true) 
     test_loader = DataLoader((test_x, test_y), batchsize = args.batchsize) 

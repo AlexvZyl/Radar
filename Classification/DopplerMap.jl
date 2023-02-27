@@ -157,13 +157,11 @@ function plot(doppler_fft_matrix::AbstractMatrix, distance_vector::AbstractRange
     end
 
     # Calculate dB.
-    if dB
-        doppler_fft_matrix = 20*log10.(abs.(doppler_fft_matrix))
-    end
+    if dB doppler_fft_matrix = 20*log10.(abs.(doppler_fft_matrix)) end
 
     # Plot and display.
     heatmap!(figure[1, 1], distance_vector, velocity_vector, doppler_fft_matrix, colorrange = [snr_threshold, 20])
-    display(figure)
+    return figure
 
 end
 
