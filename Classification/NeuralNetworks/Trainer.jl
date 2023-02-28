@@ -91,9 +91,9 @@ function train(chain_type::ChainType; kwargs...)
     # Get the data.
     @info "Train ratio: $(args.split)"
     train_loader, test_loader, classes = get_data_loaders(args)
-    training_samples_count = size(train_loader.data[1])[4]
+    training_samples_count = size(train_loader.data[1])[end]
     @info "Training samples: $(training_samples_count)"
-    @info "Testing samples: $(size(test_loader.data[1])[4])"
+    @info "Testing samples: $(size(test_loader.data[1])[end])"
 
     ## LOGGING UTILITIES
     if args.tblogger 

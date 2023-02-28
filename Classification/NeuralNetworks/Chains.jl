@@ -88,37 +88,28 @@ function create_LeNet5_Adapted(imgsize, nclasses)
 
     layers = gen_lenet_layers(imgsize)
 
-    display(layers["c1"])
-    display(output_size(layers["c1"]))
-    display(layers["a1"])
-    display(output_size(layers["a1"]))
-    display(layers["c2"])
-    display(output_size(layers["c2"]))
-    display(layers["a2"])
-    display(output_size(layers["a2"]))
-    display(layers["c3"])
-    display(output_size(layers["c3"]))
+    for (k,v) in layers
+        display(k * ": ")
+        display(v)
+    end
 
-    nd = prod(output_size(layers["c3"]))
+    nd = Int(prod(layers["c3"].output_size) * layers["c3"].channels)
     ns = floor(Int, 0.7*nd)
 
     # Create chain.
     return Chain(
-
         # Image processing.
         flux(layers["c1"]),
         flux(layers["a1"]),
         flux(layers["c2"]),
         flux(layers["a2"]),
         flux(layers["c3"]),
-
         # Classifier.
         MLUtils.flatten,
         Dense(nd, ns, relu), 
-        Dense(ns, nclasses, softmax)
-
+        Dense(ns, nclasses),
+        softmax
     )
-
 end
 
 # LeNet5 original.
@@ -132,7 +123,7 @@ function create_LeNet5(imgsize, nclasses)
         flatten,
         Dense(prod(out_conv_size), 120, relu), 
         Dense(120, 84, relu), 
-        Dense(84, nclasses)
+        Dense(84, nclasses),
     )
 end
 

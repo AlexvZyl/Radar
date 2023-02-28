@@ -127,19 +127,19 @@ function prepare_for_flux(classes_data::Dict{String, Vector{Vector{AbstractMatri
     end
 
     # Prep new memory.
-    samples_flux = Array{Float64, 4}(undef, image_size[1], image_size[2], frame_count, total_samples)
+    samples_flux = Array{Float64, 5}(undef, image_size[1], image_size[2], frame_count, 1, total_samples)
     labels = Array{Int}(undef, total_samples)
 
     arr_sample = 0
     for (label, samples) in classes_data
-        for (s, sample) in enumerate(samples)
+        for (_, sample) in enumerate(samples)
             arr_sample += 1
             for (f, frame) in enumerate(sample)
                 if seperate_channels
-                    samples_flux[:,:,f*2-1,arr_sample] = real(frame)
-                    samples_flux[:,:,f*2,arr_sample] = imag(frame)
+                    samples_flux[:,:,f*2-1,1,arr_sample] = real(frame)
+                    samples_flux[:,:,f*2,1,arr_sample] = imag(frame)
                 else
-                    samples_flux[:,:,f,arr_sample] = abs(frame)
+                    samples_flux[:,:,f,1,arr_sample] = abs(frame)
                 end
                 labels[arr_sample] = get_one_hot_index(label)
             end
@@ -151,7 +151,7 @@ function prepare_for_flux(classes_data::Dict{String, Vector{Vector{AbstractMatri
 end
 
 # Use the Flux data loaders.
-function flux_load(classes_data::Array{Float64, 4}, labels, args::Args; shuffle = false)
+function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
     y = onehotbatch(labels, 1:length(get_labels()))
     return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
 end
