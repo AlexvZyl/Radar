@@ -1,5 +1,8 @@
 using Flux: Train
 using Base: @kwdef, File
+using Flux
+using ForwardDiff
+
 include("NetworkUtils.jl")
 
 Base.@kwdef mutable struct TrainingResults
@@ -150,9 +153,9 @@ function train(chain_type::ChainType; kwargs...)
         for (x, y) in train_loader
             x, y = x |> device, y |> device
             gs = Flux.gradient(ps) do
-                    ŷ = model(x)
-                    loss(ŷ, y)
-                end
+                ŷ = model(x)
+                loss(ŷ, y)
+            end
             Flux.Optimise.update!(opt, ps, gs)
         end
 

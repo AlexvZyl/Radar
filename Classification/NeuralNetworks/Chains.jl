@@ -88,10 +88,16 @@ function create_LeNet5_Adapted(imgsize, nclasses)
 
     layers = gen_lenet_layers(imgsize)
 
-    for (k,v) in layers
-        display(k * ": ")
-        display(v)
-    end
+    display("C1:")
+    display(layers["c1"])
+    display("A1:")
+    display(layers["a1"])
+    display("C2:")
+    display(layers["c2"])
+    display("A2:")
+    display(layers["a2"])
+    display("C3:")
+    display(layers["c3"])
 
     nd = Int(prod(layers["c3"].output_size) * layers["c3"].channels)
     ns = floor(Int, 0.7*nd)

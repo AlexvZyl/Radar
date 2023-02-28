@@ -1,3 +1,4 @@
+using Base: AbstractVecOrTuple
 using Flux: convfilter, create_bias
 using Flux
 using CUDA
@@ -24,6 +25,22 @@ Base.@kwdef mutable struct Layer
     type = TemporalConv
     dilation = 1
     channels = 1
+end
+
+function Base.display(layer::Layer)
+    display("------------------------------------------------------------")
+    display("Type: $(layer.type)") 
+    display("Input Size: $(layer.input_size)") 
+    display("Output Size: $(layer.output_size)") 
+    display("Kernel: $(layer.kernel)") 
+    display("Stride: $(layer.stride)") 
+    display("Padding: $(layer.padding)") 
+    display("Kernel Count: $(layer.kernel_count)") 
+    display("Temporal Kernel Frames: $(layer.temporal_kernel_frames)") 
+    display("Temporal Stride Frames: $(layer.temporal_stride_frames)") 
+    display("Temporal Frame Size: $(layer.temporal_frame_size)") 
+    display("Temporal Frame Count: $(layer.temporal_frame_count)") 
+    display("------------------------------------------------------------")
 end
 
 function should_pad(layer::Layer)
@@ -59,11 +76,9 @@ end
 
 function kernel(layer::Layer)
     if is_pool(layer) return layer.kernel end
-    layer.kernel = (
-        layer.kernel[1],
-        layer.kernel[2],
-        ceil(Int, layer.temporal_kernel_frames * layer.temporal_frame_size)
-    )
+    k_z = ceil(Int, layer.temporal_kernel_frames * layer.temporal_frame_size)
+    k_z = k_z > layer.input_size[3] ? layer.input_size[3] : k_z
+    layer.kernel = ( layer.kernel[1], layer.kernel[2], k_z )
     return layer.kernel
 end
 
@@ -122,7 +137,7 @@ function flux(layer::Layer; act_func = relu)
     if layer.type == TemporalConv
         return TempConv(layer, act_func)
     elseif layer.type == StdConv
-        return Conv(layer.kernel, 1 => 1, act_func, stride = layer.stride, pad = layer.padding, dilation = layer.dilation)
+        return Conv(layer.kernel, layer.channels => layer.channels, act_func, stride = layer.stride, pad = layer.padding, dilation = layer.dilation)
     elseif layer.type == Meanpool
         return MeanPool(layer.kernel, stride = layer.stride, pad = layer.padding)
     elseif layer.type == Maxpool
@@ -139,22 +154,30 @@ mutable struct TempConv{L,F,W,B}
     bias::B
 end
 
+# Trainable parameters.
+Flux.params(t::TempConv) = Flux.params([Flux.params(t.weight), Flux.params(t.bias)])
+Flux.trainable(t::TempConv) = (t.weight, t.bias)
+Flux.@functor TempConv
+
 function TempConv(L::Layer, F::Function)
-    W = convfilter(L.kernel, L.channels => L.channels)[:,:,:,:,1]
-    B = create_bias(W, true, size(W, 4))
+    W = convfilter(L.kernel, L.channels => L.channels)
+    for _ in 1:L.kernel_count-1
+        W = cat(W, convfilter(L.kernel, L.channels => L.channels), dims=5)
+    end
+    B = create_bias(W[:,:,:,:,1], true, size(W, 4))
     return TempConv(L, F, W, B)
 end
 
-function NNlib.conv(input::AbstractArray, m::TempConv)
-    NNlib.conv(input, m.weight, stride=m.layer.stride[1:2])
+function conv_kernel(input::AbstractArray, w::AbstractArray, s::AbstractVecOrTuple)
+    return NNlib.conv(input, w, stride=s)
 end
 
 function conv_kernels(input::AbstractArray, m::TempConv)
-    return cat([ conv(input, m) for _ in 1:m.layer.kernel_count ]..., dims=3)
+    return cat([ conv_kernel(input, w, m.layer.stride[1:2]) for w in eachslice(m.weight, dims=5) ]..., dims=3)
 end
 
 function conv_temporal(input::AbstractArray, m::TempConv)
-    return cat([ conv_kernels(input[:,:,start:start+m.layer.kernel[3]-1,:], m) for start in 1:m.layer.stride[3]:m.layer.input_size[3] ]..., dims=3)
+    return cat([ conv_kernels(input[:,:,start:start+m.layer.kernel[3]-1,:], m) for start in 1:m.layer.stride[3]:m.layer.input_size[3]-m.layer.kernel[3]+1 ]..., dims=3)
 end
 
 function conv_batches(input::AbstractArray, m::TempConv)
@@ -162,13 +185,29 @@ function conv_batches(input::AbstractArray, m::TempConv)
 end
 
 function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
-    result = conv_batches(input, m)
-    σ = NNlib.fast_act(m.σ, result)
-    return σ.(result.+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
-end
 
-# Make trainable.
-Flux.@functor TempConv
+    # Zygote.  The memory allocation is crazy.
+    result = conv_batches(input, m)
+
+    #=
+    # Back.
+    batch_size = size(input)[end]
+    # result = CuArray{T, 5}(undef, m.layer.output_size..., m.layer.channels, batch_size)
+    @inbounds for b in 1:batch_size
+        z = 0
+        @inbounds for start in 1:m.layer.stride[3]:m.layer.input_size[3]-m.layer.kernel[3]+1
+            range = start:start+m.layer.kernel[3]-1
+            @inbounds for _ in 1:m.layer.kernel_count
+                z += 1
+                result[:,:,z,1,b] = NNlib.conv(input[:,:,range,:,b], m.weight, stride=m.layer.stride[1:2])
+            end
+        end
+    end
+    =#
+
+    σ = NNlib.fast_act(m.σ, result)
+    return σ.(result .+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
+end
 
 # Generate LeNet5 with temporal convolution.
 
@@ -179,9 +218,9 @@ function gen_lenet_layers(inputsize)
     c1.type = TemporalConv
     c1.input_size = inputsize
     c1.kernel_count = 6
-    c1.kernel = (11,11)
-    c1.stride = (4,4)
-    c1.temporal_kernel_frames = 1
+    c1.kernel = (7,7)
+    c1.stride = (2,2)
+    c1.temporal_kernel_frames = 2
     c1.temporal_stride_frames = 1
     c1.temporal_frame_size = 2
     c1.temporal_frame_count = inputsize[3] / c1.temporal_frame_size
@@ -196,11 +235,11 @@ function gen_lenet_layers(inputsize)
 
     # Conv 2.
     c2 = init(a1, TemporalConv)
-    c2.kernel = (5,5) 
+    c2.kernel = (3,3) 
     c2.stride = (1,1) 
-    c2.kernel_count = 16
+    c2.kernel_count = 1
     c2.temporal_stride_frames = 1
-    c2.temporal_kernel_frames = 1
+    c2.temporal_kernel_frames = 2
     setup(c2) 
 
     # Pool 2.
@@ -214,9 +253,9 @@ function gen_lenet_layers(inputsize)
     c3 = init(a2, TemporalConv)
     c3.kernel = c3.input_size
     c3.stride = (1,1) 
-    c3.kernel_count = 120
+    c3.kernel_count = 1
     c3.temporal_stride_frames = 1
-    c3.temporal_kernel_frames = 1
+    c3.temporal_kernel_frames = 2
     setup(c3) 
 
     return Dict([
