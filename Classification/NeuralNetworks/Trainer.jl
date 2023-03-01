@@ -1,7 +1,8 @@
-using Flux: Train
+using Flux: Train, Optimisers
 using Base: @kwdef, File
 using Flux
-using ForwardDiff
+using FiniteDiff
+# using Optimisers
 
 include("NetworkUtils.jl")
 
@@ -150,10 +151,17 @@ function train(chain_type::ChainType; kwargs...)
     for epoch in 1:args.epochs
 
         # ForwardDiff.
-
+        # par, re = Optimisers.destructure(model)
+        # for (x, y) in train_loader
+            # x, y = x |> device, y |> device
+            # g = FiniteDiff.finite_difference_gradient(par) do
+                # ŷ = model(x)
+                # loss(ŷ, y)
+            # end
+            # Flux.Optimise.update!(opt, par, g)
+        # end
 
         # Zygote.
-        #=
         for (x, y) in train_loader
             x, y = x |> device, y |> device
             gs = Flux.gradient(ps) do
@@ -162,7 +170,6 @@ function train(chain_type::ChainType; kwargs...)
             end
             Flux.Optimise.update!(opt, ps, gs)
         end
-        =#
 
         train = eval_loss_accuracy(train_loader, model, device)
         test = eval_loss_accuracy(test_loader, model, device)        

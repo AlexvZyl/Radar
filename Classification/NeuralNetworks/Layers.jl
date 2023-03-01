@@ -156,7 +156,7 @@ end
 
 # Trainable parameters.
 Flux.params(t::TempConv) = Flux.params([Flux.params(t.weight), Flux.params(t.bias)])
-Flux.trainable(t::TempConv) = (t.weight, t.bias)
+Flux.trainable(t::TempConv) = (w=t.weight, b=t.bias)
 Flux.@functor TempConv
 
 function TempConv(L::Layer, F::Function)
@@ -203,10 +203,10 @@ end
 function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
 
     # Zygote.  The memory allocation is crazy.
-    # result = conv_batches(input, m)
+    result = conv_batches(input, m)
 
     # Non Zygote.
-    result = conv_mutate(input, m)
+    # result = conv_mutate(input, m)
 
     σ = NNlib.fast_act(m.σ, result)
     return σ.(result .+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
