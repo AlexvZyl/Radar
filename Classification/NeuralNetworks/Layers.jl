@@ -184,26 +184,29 @@ function conv_batches(input::AbstractArray, m::TempConv)
     return cat([ conv_temporal(input[:,:,:,:,b], m) for b in 1:size(input)[end] ]..., dims=5)
 end
 
-function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
-
-    # Zygote.  The memory allocation is crazy.
-    result = conv_batches(input, m)
-
-    #=
-    # Back.
+function conv_mutate(input::AbstractArray{T}, m::TempConv) where T <: AbstractFloat
     batch_size = size(input)[end]
-    # result = CuArray{T, 5}(undef, m.layer.output_size..., m.layer.channels, batch_size)
+    result = CuArray{T, 5}(undef, m.layer.output_size..., m.layer.channels, batch_size)
     @inbounds for b in 1:batch_size
         z = 0
         @inbounds for start in 1:m.layer.stride[3]:m.layer.input_size[3]-m.layer.kernel[3]+1
             range = start:start+m.layer.kernel[3]-1
-            @inbounds for _ in 1:m.layer.kernel_count
+            @inbounds for k in eachslice(m.weight, dims=5)
                 z += 1
-                result[:,:,z,1,b] = NNlib.conv(input[:,:,range,:,b], m.weight, stride=m.layer.stride[1:2])
+                result[:,:,z,:,b] = NNlib.conv(input[:,:,range,:,b], k, stride=m.layer.stride[1:2])
             end
         end
     end
-    =#
+    return result
+end
+
+function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
+
+    # Zygote.  The memory allocation is crazy.
+    # result = conv_batches(input, m)
+
+    # Non Zygote.
+    result = conv_mutate(input, m)
 
     σ = NNlib.fast_act(m.σ, result)
     return σ.(result .+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
@@ -237,7 +240,7 @@ function gen_lenet_layers(inputsize)
     c2 = init(a1, TemporalConv)
     c2.kernel = (3,3) 
     c2.stride = (1,1) 
-    c2.kernel_count = 1
+    c2.kernel_count = 16
     c2.temporal_stride_frames = 1
     c2.temporal_kernel_frames = 2
     setup(c2) 
@@ -253,7 +256,7 @@ function gen_lenet_layers(inputsize)
     c3 = init(a2, TemporalConv)
     c3.kernel = c3.input_size
     c3.stride = (1,1) 
-    c3.kernel_count = 1
+    c3.kernel_count = 120
     c3.temporal_stride_frames = 1
     c3.temporal_kernel_frames = 2
     setup(c3) 

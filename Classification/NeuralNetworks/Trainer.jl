@@ -149,7 +149,11 @@ function train(chain_type::ChainType; kwargs...)
     report(0)
     for epoch in 1:args.epochs
 
-        # Train.
+        # ForwardDiff.
+
+
+        # Zygote.
+        #=
         for (x, y) in train_loader
             x, y = x |> device, y |> device
             gs = Flux.gradient(ps) do
@@ -158,6 +162,7 @@ function train(chain_type::ChainType; kwargs...)
             end
             Flux.Optimise.update!(opt, ps, gs)
         end
+        =#
 
         train = eval_loss_accuracy(train_loader, model, device)
         test = eval_loss_accuracy(test_loader, model, device)        
