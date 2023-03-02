@@ -1,8 +1,11 @@
-using Base: AbstractVecOrTuple
+using Zygote: @ignore
+using Base: AbstractVecOrTuple, batch_size_err_str
 using Flux: convfilter, create_bias
 using Flux
 using CUDA
 using Zygote
+using ChainRulesCore
+using Reduce
 
 @enum LayerType begin 
     StdConv
@@ -22,6 +25,7 @@ Base.@kwdef mutable struct Layer
     temporal_kernel_frames = 0
     temporal_frame_size = 0
     temporal_frame_count = 0
+    temporal_frames_count_out = 0
     type = TemporalConv
     dilation = 1
     channels = 1
@@ -103,10 +107,11 @@ end
 
 function temporal_frames_count_out(layer::Layer)
     if is_conv(layer)
-        return floor(Int, (layer.input_size[3] - layer.kernel[3]) / layer.stride[3]) + 1
+        layer.temporal_frames_count_out = floor(Int, (layer.input_size[3] - layer.kernel[3]) / layer.stride[3]) + 1
     elseif is_pool(layer)
-        return layer.temporal_frame_count
+        layer.temporal_frames_count_out = layer.temporal_frame_count
     end
+    return layer.temporal_frames_count_out
 end
 
 function temporal_frame_size_out(layer::Layer)
@@ -150,66 +155,59 @@ end
 mutable struct TempConv{L,F,W,B}
     layer::L
     σ::F
-    weight::W
+    weights::W
     bias::B
 end
 
 # Trainable parameters.
-Flux.params(t::TempConv) = Flux.params([Flux.params(t.weight), Flux.params(t.bias)])
-Flux.trainable(t::TempConv) = (w=t.weight, b=t.bias)
+Flux.params(t::TempConv) = Flux.params([Flux.params(t.weights), Flux.params(t.bias)])
+Flux.trainable(t::TempConv) = (w=t.weights, b=t.bias)
 Flux.@functor TempConv
 
 function TempConv(L::Layer, F::Function)
-    W = convfilter(L.kernel, L.channels => L.channels)
+    W = [ convfilter(L.kernel, L.channels => L.channels) ]
     for _ in 1:L.kernel_count-1
-        W = cat(W, convfilter(L.kernel, L.channels => L.channels), dims=5)
+        push!(W, convfilter(L.kernel, L.channels => L.channels))
     end
-    B = create_bias(W[:,:,:,:,1], true, size(W, 4))
+    B = create_bias(W[1], true, size(W, 4))
     return TempConv(L, F, W, B)
 end
 
-function conv_kernel(input::AbstractArray, w::AbstractArray, s::AbstractVecOrTuple)
-    return NNlib.conv(input, w, stride=s)
+function conv_large(input::AbstractArray{T}, m::TempConv) where T <: AbstractFloat
+    map(w -> NNlib.conv(input, w, stride=m.layer.stride), m.weights)
 end
 
-function conv_kernels(input::AbstractArray, m::TempConv)
-    return cat([ conv_kernel(input, w, m.layer.stride[1:2]) for w in eachslice(m.weight, dims=5) ]..., dims=3)
+function cat_temporal(input, m::TempConv, t::Int)
+    out = cat([ input[k][:,:,t,:,:] for k in 1:length(m.weights) ]..., dims=3) 
+    new_size = size(out)
+    return reshape(out, new_size[1], new_size[2], new_size[3], m.layer.channels, new_size[4])
 end
 
-function conv_temporal(input::AbstractArray, m::TempConv)
-    return cat([ conv_kernels(input[:,:,start:start+m.layer.kernel[3]-1,:], m) for start in 1:m.layer.stride[3]:m.layer.input_size[3]-m.layer.kernel[3]+1 ]..., dims=3)
+function cat_kernels(input, m::TempConv)
+   return cat([ cat_temporal(input, m, t) for t in 1:size(input[1])[3] ]..., dims=3)
 end
 
-function conv_batches(input::AbstractArray, m::TempConv)
-    return cat([ conv_temporal(input[:,:,:,:,b], m) for b in 1:size(input)[end] ]..., dims=5)
+function format(input, m::TempConv)
+    return cat_kernels(input, m)
 end
 
-function conv_mutate(input::AbstractArray{T}, m::TempConv) where T <: AbstractFloat
-    batch_size = size(input)[end]
-    result = CuArray{T, 5}(undef, m.layer.output_size..., m.layer.channels, batch_size)
-    @inbounds for b in 1:batch_size
-        z = 0
-        @inbounds for start in 1:m.layer.stride[3]:m.layer.input_size[3]-m.layer.kernel[3]+1
-            range = start:start+m.layer.kernel[3]-1
-            @inbounds for k in eachslice(m.weight, dims=5)
-                z += 1
-                result[:,:,z,:,b] = NNlib.conv(input[:,:,range,:,b], k, stride=m.layer.stride[1:2])
-            end
-        end
-    end
-    return result
-end
+# I think this was just compilation?... Lol.
+# Doing small convolutions: 1.84GB + 296.89MB = 2.14GB
+# Doing larger convolutions: 108MB + 1.342GB  = 1.45GB
 
 function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
 
-    # Zygote.  The memory allocation is crazy.
-    result = conv_batches(input, m)
+    # Convolution.
+    # result = @time conv_non_mut(input,m)
+    result = conv_large(input,m)
 
-    # Non Zygote.
-    # result = conv_mutate(input, m)
+    # Efficient format.
+    result = format(result,m)
 
+    # Activation.
     σ = NNlib.fast_act(m.σ, result)
-    return σ.(result .+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
+    return σ.(result.+ Flux.conv_reshape_bias(m.bias, m.layer.stride))
+
 end
 
 # Generate LeNet5 with temporal convolution.
@@ -221,9 +219,9 @@ function gen_lenet_layers(inputsize)
     c1.type = TemporalConv
     c1.input_size = inputsize
     c1.kernel_count = 6
-    c1.kernel = (7,7)
-    c1.stride = (2,2)
-    c1.temporal_kernel_frames = 2
+    c1.kernel = (9,9)
+    c1.stride = (3,3)
+    c1.temporal_kernel_frames = 3
     c1.temporal_stride_frames = 1
     c1.temporal_frame_size = 2
     c1.temporal_frame_count = inputsize[3] / c1.temporal_frame_size
@@ -232,24 +230,24 @@ function gen_lenet_layers(inputsize)
     # Pool 1.
     a1 = init(c1, Meanpool)
     a1.kernel_count = 1
-    a1.kernel = (2,2,1)
-    a1.stride = (2,2,1)
+    a1.kernel = (2,2,2)
+    a1.stride = (2,2,2)
     setup(a1)
 
     # Conv 2.
     c2 = init(a1, TemporalConv)
-    c2.kernel = (3,3) 
+    c2.kernel = (2,2) 
     c2.stride = (1,1) 
     c2.kernel_count = 16
     c2.temporal_stride_frames = 1
-    c2.temporal_kernel_frames = 2
+    c2.temporal_kernel_frames = 1
     setup(c2) 
 
     # Pool 2.
     a2 = init(c2, Meanpool)
     a2.kernel_count = 1
-    a2.kernel = (2,2,1)
-    a2.stride = (2,2,1)
+    a2.kernel = (2,2,2)
+    a2.stride = (2,2,2)
     setup(a2)
 
     # Conv 3.

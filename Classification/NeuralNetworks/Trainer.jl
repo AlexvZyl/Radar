@@ -1,8 +1,6 @@
 using Flux: Train, Optimisers
 using Base: @kwdef, File
 using Flux
-using FiniteDiff
-# using Optimisers
 
 include("NetworkUtils.jl")
 
@@ -11,6 +9,7 @@ Base.@kwdef mutable struct TrainingResults
     train_loss = 0
     test_acc = 0
     test_loss = 0
+    epoch = 0
 end
 
 Base.@kwdef mutable struct TrainingState
@@ -18,26 +17,42 @@ Base.@kwdef mutable struct TrainingState
     optimal::TrainingResults = TrainingResults()
     max_train::TrainingResults = TrainingResults()
     max_test::TrainingResults = TrainingResults()
+    timeout = 100
 end
 
 function acc_score(res::TrainingResults)
     return res.train_acc + res.test_acc
 end
 
-function update(new::TrainingResults, state::TrainingState)
+function update(new::TrainingResults, state::TrainingState; epoch::Number=0, args::Args = nothing)
     state.current = new 
     
-    if new.train_acc > state.max_train.train_acc
-        state.max_train = new
-    end
-
-    if new.test_acc > state.max_test.test_acc
-        state.max_test = new
-    end
-
     if acc_score(new) > acc_score(state.optimal)
         state.optimal = new
+
+        # Verbose tracking.
+        if new.train_acc > state.max_train.train_acc
+            state.max_train = new
+        end
+        if new.test_acc > state.max_test.test_acc
+            state.max_test = new
+        end
+
+        # Logging.
+        println("Epoch: $epoch   Train: (acc=$(new.train_acc))   Test: (acc=$(new.test_acc))")
+        if isnothing(args) return
+        !ispath(args.savepath) && mkpath(args.savepath)
+            modelpath = joinpath(args.savepath, "model.bson") 
+            let model = cpu(model)
+                BSON.@save modelpath model epoch
+            end
+        end
+
+        save(state, args)
+
     end
+    
+    return (epoch - state.optimal.epoch) > state.timeout
 end
 
 function save(state::TrainingState, args::Args)
@@ -70,6 +85,7 @@ function save(res::TrainingResults, file::IOStream)
     write(file, string("Training Loss: ", res.train_loss, "\n"))
     write(file, string("Testing Accuracy: ", res.test_acc, "\n"))
     write(file, string("Testing Loss: ", res.test_loss, "\n"))
+    write(file, string("Epoch: ", res.epoch, "\n"))
     write(file, "----------------------------------------------\n")
 end
 
@@ -142,24 +158,11 @@ function train(chain_type::ChainType; kwargs...)
     batch_size = train_data_size / (training_samples_count / args.batchsize)
     @info "Batch size: $(batch_size) Mb"
 
-    # State.
-    state = TrainingState()
-
     ## TRAINING
+    state = TrainingState()
     @info "Start Training."
     report(0)
     for epoch in 1:args.epochs
-
-        # ForwardDiff.
-        # par, re = Optimisers.destructure(model)
-        # for (x, y) in train_loader
-            # x, y = x |> device, y |> device
-            # g = FiniteDiff.finite_difference_gradient(par) do
-                # ŷ = model(x)
-                # loss(ŷ, y)
-            # end
-            # Flux.Optimise.update!(opt, par, g)
-        # end
 
         # Zygote.
         for (x, y) in train_loader
@@ -173,24 +176,9 @@ function train(chain_type::ChainType; kwargs...)
 
         train = eval_loss_accuracy(train_loader, model, device)
         test = eval_loss_accuracy(test_loader, model, device)        
-        current = TrainingResults(train.acc, train.loss, test.acc, test.loss)
-        update(current, state)
-        save(state, args)
+        current = TrainingResults(train.acc, train.loss, test.acc, test.loss, epoch)
+        if update(current, state, epoch=epoch, args=args) break end
 
-        # Display model performance.
-        if epoch % args.infotime == 0 
-            report(epoch)
-        end
-
-        # Save model to file if at interval.
-        if args.checktime > 0 && epoch % args.checktime == 0
-            !ispath(args.savepath) && mkpath(args.savepath)
-            modelpath = joinpath(args.savepath, "model.bson") 
-            let model = cpu(model) ## return model to cpu before serialization
-                BSON.@save modelpath model epoch
-            end
-            @info "Model saved in \"$(modelpath)\""
-        end
     end
 
 end
