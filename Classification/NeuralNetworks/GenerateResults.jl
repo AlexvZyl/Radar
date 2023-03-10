@@ -1,3 +1,4 @@
+using GLMakie: TRIANGLE
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("Types.jl")
 include("../Utilities.jl")
@@ -65,9 +66,37 @@ function get_results()
     )
 end
 
+function sorted_frames(frames::Dict{String, TrainingResults})
+    keys_sorted = sort(collect(keys(frames)), by = x -> parse(Int, split(x, "-")[1]))
+    values = [ frames[k] for k in keys_sorted ]
+    keys_int = [ parse(Int, split(x, "-")[1]) for x in keys_sorted]
+    return keys_int, values
+end
+
 function generate_acc_graph()
+    colors = [ :red,:blue ]
     results = get_results()
-    display(results)
+    resolution = (2560,1440)
+    figure = Figure(resolution=resolution)
+    xticks = 0:5:20
+    yticks = 0:25:100
+    ax = Axis(figure[1,1], title="Network Accuracy with Varying Parameters", xlabel="Number of Doppler Map Frames", ylabel="Accuracy", xticks=xticks, yticks=yticks)
+    ylims!(0,100)
+    xlims!(0,20)
+   
+    p = "1-Person"
+    clr = 1
+    for (t, _) in results
+        for (m, frames_dict) in results[t][p]
+            frames_int, frame_results = sorted_frames(frames_dict)
+            scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], label = " "*t*" Train ", markersize=dotSize*4, linewidth=2, marker=:cross, color=colors[clr])
+                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], label = " "*t*" Test ", markersize=dotSize*4, linewidth=2, marker=:diamond, color=colors[clr])
+            clr+=1
+        end
+    end
+
+    axislegend(ax, valign = :bottom, orientation = :horizontal, padding=16)
+    save("NetworkAccuracyComparison.pdf", figure)
 end
 
 generate_acc_graph()

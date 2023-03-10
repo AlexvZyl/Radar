@@ -63,7 +63,7 @@ if glmakie
 	    	leftspinecolor = :gray90,
 	    	rightspinecolor = :gray90,
 			backgroundcolor = :gray90,
-			),
+		),
 		# fontsize = 50,
 		textcolor = :gray90
 	)
@@ -169,7 +169,7 @@ if cairomakie
 		# font = "/home/alex/GitHub/Radar/Fonts/ComputerModern/cmunrm.ttf", # Linux.
 		font = "Latin Modern Math", # Linux.
 		titlefont = "Latin Modern Math", # Linux.
-		figure_padding = (20, 20, 10, 10)
+		figure_padding = (20, 40, 10, 10)
 	)
 
 	originColor = :black
