@@ -1,5 +1,3 @@
-include("../Utilities.jl")
-include("Chains.jl")
 using MLUtils
 using Flux
 using Flux.Data: DataLoader
@@ -16,24 +14,8 @@ using CUDA
 using JLD2
 using Base.Threads
 
-# Arguments used.
-Base.@kwdef mutable struct Args
-    η = 3e-4             ## learning rate
-    λ = 0                ## L2 regularizer param, implemented as weight decay
-    batchsize = 128      ## batch size
-    epochs = 10          ## number of epochs
-    seed = 0             ## set seed > 0 for reproducibility
-    use_cuda = true      ## if true use cuda (if available)
-    infotime = 1 	     ## report every `infotime` epochs
-    checktime = 5        ## Save the model every `checktime` epochs. Set to 0 for no checkpoints.
-    tblogger = true      ## log training with tensorboard
-    split = nothing      ## Train/test split
-    frames_folder = "10-Frames"   ## The folder containing the frames to use.
-    model::ChainType = AlexNet
-    persons::Int = 2
-    temporal::Bool = true
-    save_path_parent = "Runs"
-end
+include("../Utilities.jl")
+include("Chains.jl")
 
 persons_string(args::Args) = args.persons == 1 ? "1-Person" : "2-Persons"
 temporal_string(args::Args) = args.temporal ? "Temporal" : "Standard"
@@ -211,11 +193,7 @@ function format_and_split_data(frames_data; labels = false, split_at = 0.7)
 
 end
 
-# Load the data from the jdl files and prepare them for training.
-# Preparation includes using `Flux.DataLoader()`.
-function get_data_loaders(args::Args)
-
-    @info "Preparing data..."
+function get_2persons_loaders(args::Args)
 
     # Metadata.
     steph_folders = get_elevated_folder_list()
@@ -243,6 +221,55 @@ function get_data_loaders(args::Args)
 
     return train, test, labels
 
+end
+
+function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
+    split_idx = floor(Int, args.split*size(classes_data, 5))
+    train_x, test_x = classes_data[:,:,:,:,1:split_idx], classes_data[:,:,:,:,split_idx+1:end]
+    train_labels, test_labels  = labels[1:split_idx], labels[split_idx+1:end]
+    train_y = onehotbatch(train_labels, 1:length(get_labels()))
+    test_y = onehotbatch(test_labels, 1:length(get_labels()))
+    train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
+    test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
+    return train_dl, test_dl
+end
+
+function get_1person_loaders(args::Args)
+
+    # Metadata.
+    steph_folders = get_elevated_folder_list()
+    labels = get_labels()
+
+    # Get data in a nicer format and combined classes.
+    # Output format: 
+    # Dict { 
+    #   Label::String, 
+    #   Samples::Vector{Vector{AbstractMatrix}}
+    #            (Samples,Frames,Frame)
+    # }
+    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder)
+
+    # Convert to  format that the Flux loaders can use.
+    # Sets up the IQ samples as well.
+    steph_classes, steph_labels = prepare_for_flux(steph_classes)
+
+    # Load the data for Flux.
+    train, test = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
+
+    return train, test, labels
+
+end
+
+# Load the data from the jdl files and prepare them for training.
+# Preparation includes using `Flux.DataLoader()`.
+function get_data_loaders(args::Args)
+    @info "Preparing data..."
+    if args.persons == 2 
+        return get_2persons_loaders(args)
+    elseif  args.persons == 1
+        return get_1person_loaders(args)
+    end
+    @assert false "Invalid persons argument!"
 end
 
 # Calculate the loss.

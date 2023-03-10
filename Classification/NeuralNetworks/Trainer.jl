@@ -4,22 +4,6 @@ using Flux
 
 include("NetworkUtils.jl")
 
-Base.@kwdef mutable struct TrainingResults
-    train_acc  = 0
-    train_loss = 0
-    test_acc = 0
-    test_loss = 0
-    epoch = 0
-end
-
-Base.@kwdef mutable struct TrainingState
-    current::TrainingResults = TrainingResults()
-    optimal::TrainingResults = TrainingResults()
-    max_train::TrainingResults = TrainingResults()
-    max_test::TrainingResults = TrainingResults()
-    timeout = 100
-end
-
 function acc_score(res::TrainingResults)
     return res.train_acc + res.test_acc
 end
@@ -31,10 +15,10 @@ function update(new::TrainingResults, state::TrainingState; epoch::Number=0, arg
         state.optimal = new
 
         # Verbose tracking.
-        if new.train_acc > state.max_train.train_acc
+        if (new.train_acc > state.max_train.train_acc) || ((new.train_acc == state.max_train.train_acc) && (new.test_acc > state.max_train.test_acc))
             state.max_train = new
         end
-        if new.test_acc > state.max_test.test_acc
+        if (new.test_acc > state.max_test.test_acc) || ((new.test_acc == state.max_test.test_acc) && (new.train_acc > state.max_test.train_acc))
             state.max_test = new
         end
 
@@ -125,7 +109,7 @@ function train(chain_type::ChainType; kwargs...)
     @info "Features: $(features)"
 
     # Get the model. 
-    model = create_network(chain_type, image_size, length(classes)) |> device
+    model = create_network(chain_type, image_size, length(classes), args) |> device
 
     ## Model and optimiser.
     @info "Model parameters: $(num_params(model))"

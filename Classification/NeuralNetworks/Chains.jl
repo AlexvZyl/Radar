@@ -1,14 +1,7 @@
 using MLUtils
 using Flux
-include("Temporal.jl")
 
-# Chain types.
-@enum ChainType begin 
-    LeNet5
-    LeNet5Adapted
-    AlexNet
-    VGG16
-end
+include("Temporal.jl")
 
 # Get the type as a string.
 function get_type_string(type::ChainType)
@@ -26,11 +19,11 @@ function get_type_string(type::ChainType)
 end
 
 # Create the network given the type.
-function create_network(chain_type::ChainType, image_size, n_classes)
+function create_network(chain_type::ChainType, image_size, n_classes, args::Args)
     if chain_type == LeNet5
         return create_LeNet5(image_size, n_classes)
     elseif chain_type == LeNet5Adapted
-        return create_LeNet5_Adapted(image_size, n_classes)
+        return create_LeNet5_Adapted(image_size, n_classes, args)
     elseif chain_type == AlexNet
         return create_AlexNet(image_size, n_classes)
     elseif chain_type == VGG16
@@ -84,9 +77,9 @@ function create_VGG16(imgsize, nclasses)
 end
 
 # LeNet5 adapted.
-function create_LeNet5_Adapted(imgsize, nclasses)
+function create_LeNet5_Adapted(imgsize, nclasses, args::Args)
 
-    layers = gen_lenet_layers(imgsize)
+    layers = gen_lenet_layers(imgsize, args)
 
     display("C1:")
     display(layers["c1"])

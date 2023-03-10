@@ -7,29 +7,7 @@ using Zygote
 using ChainRulesCore
 using Reduce
 
-@enum LayerType begin 
-    StdConv
-    TemporalConv
-    Meanpool
-    Maxpool
-end
-
-Base.@kwdef mutable struct Layer
-    stride = (0,0,0)
-    kernel = (0,0,0)
-    input_size = (0,0,0)
-    output_size = (0,0,0)
-    padding = (0,0,0)
-    kernel_count = 0
-    temporal_stride_frames = 0
-    temporal_kernel_frames = 0
-    temporal_frame_size = 0
-    temporal_frame_count = 0
-    temporal_frames_count_out = 0
-    type = TemporalConv
-    dilation = 1
-    channels = 1
-end
+include("Types.jl")
 
 function Base.display(layer::Layer)
     display("------------------------------------------------------------")
@@ -212,7 +190,7 @@ end
 
 # Generate LeNet5 with temporal convolution.
 
-function gen_lenet_layers(inputsize)
+function gen_lenet_layers(inputsize, args::Args)
 
     # Conv 1.
     c1 = Layer()
@@ -221,10 +199,10 @@ function gen_lenet_layers(inputsize)
     c1.kernel_count = 6
     c1.kernel = (9,9)
     c1.stride = (3,3)
-    c1.temporal_kernel_frames = 2
+    c1.temporal_kernel_frames = args.temporal ? 2 : Int(inputsize[end]/2)
     c1.temporal_stride_frames = 1
     c1.temporal_frame_size = 2
-    c1.temporal_frame_count = inputsize[3] / c1.temporal_frame_size
+    c1.temporal_frame_count = ceil(Int, inputsize[3] / c1.temporal_frame_size)
     setup(c1)
      
     # Pool 1.
