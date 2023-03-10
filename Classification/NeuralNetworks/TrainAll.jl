@@ -12,7 +12,7 @@ for p in persons
     for t in temporal
         for f in frames
             frames_folder = string(f, "-Frames")
-            train(model, split = 0.7, batchsize = batchsize, epochs = 1000, checktime = 100, infotime = 1, temporal=t, persons=p, frames_folder = frames_folder)
+            train(model, split = 0.7, batchsize = batchsize, epochs = 10, checktime = 100, infotime = 1, temporal=t, persons=p, frames_folder = frames_folder)
         end
     end
 end

@@ -23,7 +23,7 @@ Base.@kwdef mutable struct Layer
 end
 
 Base.@kwdef mutable struct TrainingResults
-    train_acc  = 0
+    train_acc = 0
     train_loss = 0
     test_acc = 0
     test_loss = 0
