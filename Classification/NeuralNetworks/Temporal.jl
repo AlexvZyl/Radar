@@ -221,7 +221,7 @@ function gen_lenet_layers(inputsize)
     c1.kernel_count = 6
     c1.kernel = (9,9)
     c1.stride = (3,3)
-    c1.temporal_kernel_frames = 3
+    c1.temporal_kernel_frames = 2
     c1.temporal_stride_frames = 1
     c1.temporal_frame_size = 2
     c1.temporal_frame_count = inputsize[3] / c1.temporal_frame_size
@@ -230,8 +230,8 @@ function gen_lenet_layers(inputsize)
     # Pool 1.
     a1 = init(c1, Meanpool)
     a1.kernel_count = 1
-    a1.kernel = (2,2,2)
-    a1.stride = (2,2,2)
+    a1.kernel = (2,2,1)
+    a1.stride = (2,2,1)
     setup(a1)
 
     # Conv 2.
@@ -246,8 +246,8 @@ function gen_lenet_layers(inputsize)
     # Pool 2.
     a2 = init(c2, Meanpool)
     a2.kernel_count = 1
-    a2.kernel = (2,2,2)
-    a2.stride = (2,2,2)
+    a2.kernel = (2,2,1)
+    a2.stride = (2,2,1)
     setup(a2)
 
     # Conv 3.

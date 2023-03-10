@@ -49,16 +49,13 @@ function update(new::TrainingResults, state::TrainingState; epoch::Number=0, arg
         end
 
         save(state, args)
-
     end
     
     return (epoch - state.optimal.epoch) > state.timeout
 end
 
 function save(state::TrainingState, args::Args)
-    # Ensure dir exists.
-    path = args.savepath
-    !ispath(path) && mkpath(path)
+    path = get_save_path(args)
 
     # Setup file.
     state_path = joinpath(path, "state.txt") 
@@ -94,7 +91,6 @@ function train(chain_type::ChainType; kwargs...)
 
     # Setup args.
     args = Args(; kwargs...)
-    args.savepath = args.savepath * get_type_string(chain_type) * "/" * args.frames_folder * "/"
     args.seed > 0 && Random.seed!(args.seed)
     use_cuda = args.use_cuda && CUDA.functional()
     args.model = chain_type
@@ -117,9 +113,9 @@ function train(chain_type::ChainType; kwargs...)
 
     ## LOGGING UTILITIES
     if args.tblogger 
-        tblogger = TBLogger(args.savepath, tb_overwrite)
+        tblogger = TBLogger(get_save_path(args), tb_overwrite)
         set_step_increment!(tblogger, 0) ## 0 auto increment since we manually set_step!
-        @info "TensorBoard logging at \"$(args.savepath)\""
+        @info "TensorBoard logging at \"$(get_save_path(args))\""
     end
 
     # Display meta data.

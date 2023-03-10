@@ -1,6 +1,6 @@
 using MLUtils
 using Flux
-include("Layers.jl")
+include("Temporal.jl")
 
 # Chain types.
 @enum ChainType begin 

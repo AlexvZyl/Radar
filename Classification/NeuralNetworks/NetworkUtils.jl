@@ -27,10 +27,21 @@ Base.@kwdef mutable struct Args
     infotime = 1 	     ## report every `infotime` epochs
     checktime = 5        ## Save the model every `checktime` epochs. Set to 0 for no checkpoints.
     tblogger = true      ## log training with tensorboard
-    savepath = "Runs/"   ## results path (relative)
     split = nothing      ## Train/test split
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
     model::ChainType = AlexNet
+    persons::Int = 2
+    temporal::Bool = true
+    save_path_parent = "Runs"
+end
+
+persons_string(args::Args) = args.persons == 1 ? "1-Person" : "2-Persons"
+temporal_string(args::Args) = args.temporal ? "Temporal" : "Standard"
+
+function get_save_path(args::Args)
+    path = args.save_path_parent * "/" * temporal_string(args) * "/" * persons_string(args) * "/" * get_type_string(args.model) * "/" * args.frames_folder * "/"
+    !ispath(path) && mkpath(path)
+    return path
 end
 
 # Labels used in the classification.
