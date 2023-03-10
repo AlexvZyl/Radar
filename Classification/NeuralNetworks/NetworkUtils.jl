@@ -1,3 +1,4 @@
+using JLD2: class
 using MLUtils
 using Flux
 using Flux.Data: DataLoader
@@ -13,6 +14,7 @@ import BSON
 using CUDA
 using JLD2
 using Base.Threads
+using Random
 
 include("../Utilities.jl")
 include("Chains.jl")
@@ -158,41 +160,6 @@ function get_one_hot_index(label)
     @assert false "Invalid label."
 end
 
-# Format the data for the DataLoader and split for training and testing.
-function format_and_split_data(frames_data; labels = false, split_at = 0.7)
-
-    frames_count = size(frames_data[1][1])[1]
-    image_size = size(frames_data[1][1][1])
-    train_x = Array{ComplexF64, 4}(undef, image_size[1], image_size[2], frames_count, 0)
-    test_x = Array{ComplexF64, 4}(undef, image_size[1], image_size[2], frames_count, 0)
-    train_y = Vector{Int32}(undef, 0)
-    test_y = Vector{Int32}(undef, 0)
-    # Combine the frames into on large matrix, with labels.
-    for (c, _) in enumerate(frames_data)
-        # Combine and split frames data.
-        combined_data = combine(frames_data[c])
-        tr_x, tst_x = splitobs(combined_data, at = split_at)
-        # Labels.
-        if labels == false
-            tr_y = [ c for _ in 1:1:size(tr_x)[4] ]
-            tst_y = [ c for _ in 1:1:size(tst_x)[4] ]
-        else
-            tr_y = [ labels[c] for _ in 1:1:size(tr_x)[4] ]
-                tst_y = [ labels[c] for _ in 1:1:size(tst_x)[4] ]
-        end
-        # Add to total.
-        train_x = cat(train_x, tr_x, dims = 4) 
-        test_x = cat(test_x, tst_x, dims = 4) 
-        train_y = cat(train_y, tr_y, dims = 1) 
-        test_y = cat(test_y, tst_y, dims = 1) 
-    end
-    classes = length(get_elevated_folder_list())
-    train_y = onehotbatch(train_y, 1:classes)
-    test_y = onehotbatch(test_y, 1:classes)
-    return train_x, train_y, test_x, test_y
-
-end
-
 function get_2persons_loaders(args::Args)
 
     # Metadata.
@@ -224,11 +191,19 @@ function get_2persons_loaders(args::Args)
 end
 
 function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
+    # Shuffle data.
+    random_idx = randperm(size(labels)[1])
+    shuffled_classes = classes_data[:,:,:,:,random_idx]
+    shuffled_labels = labels[random_idx]
+
+    # Split.
     split_idx = floor(Int, args.split*size(classes_data, 5))
-    train_x, test_x = classes_data[:,:,:,:,1:split_idx], classes_data[:,:,:,:,split_idx+1:end]
-    train_labels, test_labels  = labels[1:split_idx], labels[split_idx+1:end]
+    train_x, test_x = shuffled_classes[:,:,:,:,1:split_idx], shuffled_classes[:,:,:,:,split_idx+1:end]
+    train_labels, test_labels = shuffled_labels[1:split_idx], shuffled_labels[split_idx+1:end]
     train_y = onehotbatch(train_labels, 1:length(get_labels()))
     test_y = onehotbatch(test_labels, 1:length(get_labels()))
+
+    # Create Flux loaders.
     train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
     test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
     return train_dl, test_dl
