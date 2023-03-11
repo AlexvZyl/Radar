@@ -147,6 +147,10 @@ end
 
 # Use the Flux data loaders.
 function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
+    if args.model == AlexNet
+        classes_data = classes_data[:,:,:,1,:]
+    end
+
     y = onehotbatch(labels, 1:length(get_labels()))
     return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
 end
@@ -202,6 +206,11 @@ function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; sh
     train_labels, test_labels = shuffled_labels[1:split_idx], shuffled_labels[split_idx+1:end]
     train_y = onehotbatch(train_labels, 1:length(get_labels()))
     test_y = onehotbatch(test_labels, 1:length(get_labels()))
+
+    if args.model == AlexNet
+        train_x = train_x[:,:,:,1,:]
+        test_x = test_x[:,:,:,1,:]
+    end
 
     # Create Flux loaders.
     train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
