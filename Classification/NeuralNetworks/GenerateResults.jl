@@ -83,9 +83,12 @@ function generate_acc_graph()
     results = get_results()
     resolution = (2560,1440)
     figure = Figure(resolution=resolution)
+    legend_grid = GridLayout()
+    legend_grid[1:2,1] = [ Axis(figure; leftspinevisible=false, rightspinevisible=false, topspinevisible=false, bottomspinevisible=false, xgridvisible=false, ygridvisible=false, xticklabelsvisible=false, yticklabelsvisible=false, xticksvisible=false, yticksvisible=false) for _ in 1:2 ]
+    figure.layout[1,2] = legend_grid
     xticks = 0:5:25
     yticks = 0:25:100
-    ax = Axis(figure[1,1], title="Model Accuracies Testing With One Person", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
+    ax = Axis(figure[1,1], title="Model Accuracies (Same Person Train & Test)", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
     ylims!(0,100)
     xlims!(0,26)
     labels = []
@@ -116,20 +119,40 @@ function generate_acc_graph()
     for i in 1:3
         push!(markers, MarkerElement(color=colors[i], marker=:circle, markersize=dotSize*5))
     end
-    push!(markers, MarkerElement(color=:black, marker=:cross, markersize=dotSize*5))
-    push!(labels, " Training")
-    push!(markers, MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5))
-    push!(labels, " Testing")
     Legend(
-        figure[1,2],
+        legend_grid[1,1],
         [markers...],
         [labels...],
+        "Models",
+        valign = :bottom,
         labelfont = "Latin Modern Math",
+        titlefont = "Latin Modern Math",
         padding = 30,
-        labelsize=45
+        labelsize=45,
+        titlesize=50
+    )
+    markers = [
+        MarkerElement(color=:black, marker=:cross, markersize=dotSize*5),
+        MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5)
+    ]
+    labels = [
+        " Training"
+        " Testing"
+    ]
+    Legend(
+        legend_grid[2,1],
+        [markers...],
+        [labels...],
+        "Phases",
+        valign = :top,
+        labelfont = "Latin Modern Math",
+        titlefont = "Latin Modern Math", 
+        padding = 30,
+        labelsize=45,
+        titlesize=50
     )
 
-    save("NetworkAccuracyComparison.pdf", figure)
+    Makie.save("NetworkAccuracyComparison.pdf", figure)
 end
 
 generate_acc_graph()
