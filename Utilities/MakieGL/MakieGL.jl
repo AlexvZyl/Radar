@@ -86,8 +86,12 @@ if cairomakie
 
 	update_theme!(
 		Axis = (
-		    font = "Latin Modern Math", # Linux.
-		    titlefont = "Latin Modern Math", # Linux.
+		    font = "Latin Modern Math",
+            titlefont = "Latin Modern Math",
+            xlabelfont = "Latin Modern Math",
+            ylabelfont = "Latin Modern Math",
+            xticklabelfont = "Latin Modern Math",
+            yticklabelfont = "Latin Modern Math",
 			leftspinevisible = true,
 			rightspinevisible = true,
 			topspinevisible = true,
@@ -114,8 +118,14 @@ if cairomakie
 			titlegap = 40,
 		),
 		Axis3 = (
-		    font = "Latin Modern Math", # Linux.
-		    titlefont = "Latin Modern Math", # Linux.
+            font = "Latin Modern Math",
+            titlefont = "Latin Modern Math",
+            xlabelfont = "Latin Modern Math",
+            ylabelfont = "Latin Modern Math",
+            zlabelfont = "Latin Modern Math",
+            xticklabelfont = "Latin Modern Math",
+            yticklabelfont = "Latin Modern Math",
+            zticklabelfont = "Latin Modern Math",
 			# Visibility.
 	    	xspinesvisible = true,
 	    	yspinesvisible = true,	
@@ -159,14 +169,10 @@ if cairomakie
 			rightspinecolor = :gray90,
 			backgroundcolor = :gray90,
 			framewidth = 2,
-		    font = "Latin Modern Math", # Linux.
-		    titlefont = "Latin Modern Math", # Linux.
 		),
-		fontsize = 50, # 3D
-		# fontsize = 65, # 2D
+		# fontsize = 50, # 3D
+		fontsize = 65, # 2D
 		textcolor = :black,
-		# font = "Fonts/ComputerModern/cmunrm.ttf",  # Windows.
-		# font = "/home/alex/GitHub/Radar/Fonts/ComputerModern/cmunrm.ttf", # Linux.
 		font = "Latin Modern Math", # Linux.
 		titlefont = "Latin Modern Math", # Linux.
 		figure_padding = (20, 40, 10, 10)

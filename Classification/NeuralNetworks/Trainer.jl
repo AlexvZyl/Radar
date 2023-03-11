@@ -8,7 +8,7 @@ function acc_score(res::TrainingResults)
     return res.train_acc + res.test_acc
 end
 
-function update(new::TrainingResults, state::TrainingState; epoch::Number=0, args::Args = nothing)
+function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing)
     state.current = new 
     
     if acc_score(new) > acc_score(state.optimal)
@@ -158,7 +158,7 @@ function train(chain_type::ChainType; kwargs...)
         train = eval_loss_accuracy(train_loader, model, device)
         test = eval_loss_accuracy(test_loader, model, device)        
         current = TrainingResults(train.acc, train.loss, test.acc, test.loss, epoch)
-        if update(current, state, epoch=epoch, args=args) break end
+        if update(current, state, model, epoch=epoch, args=args) break end
 
     end
 

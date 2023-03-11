@@ -79,30 +79,56 @@ function sorted_frames(frames::Dict{String, TrainingResults})
 end
 
 function generate_acc_graph()
-    colors = [ :red,:blue,:teal ]
+    colors = [ :teal,:blue,:orange ]
     results = get_results()
     resolution = (2560,1440)
-    figure = Figure(resolution=resolution, font="Latin Modern Math")
-    xticks = 0:5:20
+    figure = Figure(resolution=resolution)
+    xticks = 0:5:25
     yticks = 0:25:100
-    ax = Axis(figure[1,1], title="Network Accuracy with Varying Parameters", xlabel="Number of Doppler Map Frames", ylabel="Accuracy", xticks=xticks, yticks=yticks)
+    ax = Axis(figure[1,1], title="Model Accuracies Testing With One Person", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
     ylims!(0,100)
-    xlims!(0,20)
+    xlims!(0,26)
+    labels = []
    
     p = "1-Person"
     clr = 1
     for (t, _) in results
-        for (_, frames_dict) in results[t][p]
+        for (m, frames_dict) in results[t][p]
             if !isnothing(frames_dict)
                 frames_int, frame_results = sorted_frames(frames_dict)
-                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*4, linewidth=2, marker=:cross, color=colors[clr])
-                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*4, linewidth=2, marker=:diamond, color=colors[clr])
+                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr])
+                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
                 clr+=1
+                if m == "AlexNet"
+                    push!(labels, " "*m)
+                elseif t == "Temporal"
+                    push!(labels, " Temporal")
+                elseif t == "Standard"
+                    push!(labels, " LeNet5")
+                end
             end
         end
     end
 
-    # axislegend(ax, valign = :bottom, orientation = :horizontal, padding=16)
+
+    # Manually create legend.
+    markers = []
+    for i in 1:3
+        push!(markers, MarkerElement(color=colors[i], marker=:circle, markersize=dotSize*5))
+    end
+    push!(markers, MarkerElement(color=:black, marker=:cross, markersize=dotSize*5))
+    push!(labels, " Training")
+    push!(markers, MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5))
+    push!(labels, " Testing")
+    Legend(
+        figure[1,2],
+        [markers...],
+        [labels...],
+        labelfont = "Latin Modern Math",
+        padding = 30,
+        labelsize=45
+    )
+
     save("NetworkAccuracyComparison.pdf", figure)
 end
 
