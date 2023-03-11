@@ -77,7 +77,7 @@ function generate_acc_graph()
     colors = [ :red,:blue ]
     results = get_results()
     resolution = (2560,1440)
-    figure = Figure(resolution=resolution)
+    figure = Figure(resolution=resolution, font="Latin Modern Math")
     xticks = 0:5:20
     yticks = 0:25:100
     ax = Axis(figure[1,1], title="Network Accuracy with Varying Parameters", xlabel="Number of Doppler Map Frames", ylabel="Accuracy", xticks=xticks, yticks=yticks)

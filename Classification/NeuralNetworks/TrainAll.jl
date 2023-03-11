@@ -2,7 +2,7 @@ include("Trainer.jl")
 
 persons = [ 1,2 ]
 temporal = [ false,true ]
-frames = [ 1,3,7,10,15,20 ]
+frames = [ 1,3,7,10,15,20,25,30 ]
 models = []
 model = LeNet5Adapted
 batchsize = 8
