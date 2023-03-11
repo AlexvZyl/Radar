@@ -1,3 +1,4 @@
+using Base: catch_stack
 using GLMakie: TRIANGLE
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("Types.jl")
@@ -45,8 +46,12 @@ function get_result(path::String, section::String)
 end
 
 function get_frame_results(dir::String)
-    frames = readdir(dir)
-    return Dict(f => get_result(joinpath(dir,f), "Optimal") for f in frames)
+    try 
+        frames = readdir(dir)
+        return Dict(f => get_result(joinpath(dir,f), "Optimal") for f in frames)
+    catch
+        return nothing         
+    end
 end
 
 function get_results()
@@ -54,7 +59,7 @@ function get_results()
     current_file_path = dirname(@__FILE__)
     types = [ "Standard", "Temporal" ] 
     persons = [ "1-Person", "2-Persons" ] 
-    models = [ "LeNet5Adapted" ] 
+    models = [ "LeNet5Adapted", "AlexNet" ] 
 
     # Load all results.
     return Dict(
@@ -74,7 +79,7 @@ function sorted_frames(frames::Dict{String, TrainingResults})
 end
 
 function generate_acc_graph()
-    colors = [ :red,:blue ]
+    colors = [ :red,:blue,:teal ]
     results = get_results()
     resolution = (2560,1440)
     figure = Figure(resolution=resolution, font="Latin Modern Math")
@@ -87,15 +92,17 @@ function generate_acc_graph()
     p = "1-Person"
     clr = 1
     for (t, _) in results
-        for (m, frames_dict) in results[t][p]
-            frames_int, frame_results = sorted_frames(frames_dict)
-            scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], label = " "*t*" Train ", markersize=dotSize*4, linewidth=2, marker=:cross, color=colors[clr])
-                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], label = " "*t*" Test ", markersize=dotSize*4, linewidth=2, marker=:diamond, color=colors[clr])
-            clr+=1
+        for (_, frames_dict) in results[t][p]
+            if !isnothing(frames_dict)
+                frames_int, frame_results = sorted_frames(frames_dict)
+                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*4, linewidth=2, marker=:cross, color=colors[clr])
+                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*4, linewidth=2, marker=:diamond, color=colors[clr])
+                clr+=1
+            end
         end
     end
 
-    axislegend(ax, valign = :bottom, orientation = :horizontal, padding=16)
+    # axislegend(ax, valign = :bottom, orientation = :horizontal, padding=16)
     save("NetworkAccuracyComparison.pdf", figure)
 end
 
