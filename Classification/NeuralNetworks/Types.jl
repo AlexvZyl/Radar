@@ -61,4 +61,5 @@ Base.@kwdef mutable struct Args
     persons::Int = 2
     temporal::Bool = true
     save_path_parent = "Runs"
+    timeout = 100
 end

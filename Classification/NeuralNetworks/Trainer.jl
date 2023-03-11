@@ -131,7 +131,7 @@ function train(chain_type::ChainType; kwargs...)
                 @info "Test"  loss=test.loss   acc=test.acc
             end
         end
-    end
+   end
 
     train_data_size = sizeof(train_loader.data[1]) / 1e6 # Mb
     @info "Train data size: $(train_data_size) Mb"
@@ -140,6 +140,7 @@ function train(chain_type::ChainType; kwargs...)
 
     ## TRAINING
     state = TrainingState()
+    state.timeout = timeout
     @info "Start Training."
     report(0)
     for epoch in 1:args.epochs
