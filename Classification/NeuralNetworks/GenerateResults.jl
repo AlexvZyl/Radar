@@ -89,11 +89,12 @@ function generate_acc_graph()
     xticks = 0:5:25
     yticks = 0:25:100
     ax = Axis(figure[1,1], title="Model Accuracies (Same Person Train & Test)", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
-    ylims!(0,100)
-    xlims!(0,26)
+    ylims!(-7,107)
+    xlims!(-1,26)
     labels = []
    
     p = "1-Person"
+    # p = "2-Persons"
     clr = 1
     for (t, _) in results
         for (m, frames_dict) in results[t][p]
@@ -112,6 +113,9 @@ function generate_acc_graph()
             end
         end
     end
+
+    vlines!([0], color=:black, linewidth=2)
+    hlines!([0], color=:black, linewidth=2)
 
 
     # Manually create legend.

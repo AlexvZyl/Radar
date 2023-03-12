@@ -10,6 +10,7 @@ end
 
 function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing)
     state.current = new 
+    @info state.current
     
     if acc_score(new) > acc_score(state.optimal)
         state.optimal = new
@@ -32,9 +33,9 @@ function update(new::TrainingResults, state::TrainingState, model; epoch::Number
             end
         end
 
-        save(state, args)
     end
-    
+
+    save(state, args)
     return (epoch - state.optimal.epoch) > state.timeout
 end
 
@@ -140,7 +141,7 @@ function train(chain_type::ChainType; kwargs...)
 
     ## TRAINING
     state = TrainingState()
-    state.timeout = timeout
+    state.timeout = args.timeout
     @info "Start Training."
     report(0)
     for epoch in 1:args.epochs

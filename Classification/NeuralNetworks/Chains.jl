@@ -105,7 +105,8 @@ function create_LeNet5_Adapted(imgsize, nclasses, args::Args)
         flux(layers["c3"]),
         # Classifier.
         MLUtils.flatten,
-        Dense(nd, ns, relu), 
+        Dense(nd, ns), 
+        relu,
         Dense(ns, nclasses),
         softmax
     )
@@ -123,6 +124,7 @@ function create_LeNet5(imgsize, nclasses)
         Dense(prod(out_conv_size), 120, relu), 
         Dense(120, 84, relu), 
         Dense(84, nclasses),
+        softmax,
     )
 end
 
@@ -130,48 +132,33 @@ end
 function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5)
     inchannels = imgsize[end]
     return Chain(
-        # Backbone.
-        Conv((11, 11), inchannels => 96, relu; stride = 4, pad = 2),
-        MaxPool((3, 3); stride = 2),
-        Conv((5, 5), 96 => 256, relu; pad = 2),
-        MaxPool((7, 7); stride = 4),
-        Conv((3, 3), 256 => 384, relu; pad = 1),
-        Conv((3, 3), 384 => 384, relu; pad = 1),
-        Conv((3, 3), 384 => 256, relu; pad = 1),
-        MaxPool((3, 3); stride = 2),
-        # Classifier.
-        MLUtils.flatten,
-        Dense(1024, 4096, relu),
-        Dropout(dropout_prob),
-        Dense(4096, nclasses, relu),
-        Dropout(dropout_prob),
-        softmax
-    )
-end
 
-#=
-function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5, maxpool1_kernel_stride = 2)
-    inchannels = imgsize[end]
-    maxpool1_kernel_x = floor(Int, (imgsize[1] - 11) / 4) + 1 - 26 * maxpool1_kernel_stride
-    maxpool1_kernel_y = floor(Int, (imgsize[2] - 11) / 4) + 1 - 26 * maxpool1_kernel_stride
-    @info "Maxpool1 kernel: ($(maxpool1_kernel_x), $(maxpool1_kernel_y))"
-    return Chain(
-        # Backbone.
-        Conv((11, 11), inchannels => 96, relu; stride = 4, pad = 2),
-        MaxPool((maxpool1_kernel_x, maxpool1_kernel_y); stride = maxpool1_kernel_stride),
-        Conv((5, 5), 96 => 256, relu; pad = 2),
-        MaxPool((3, 3); stride = 2),
-        Conv((3, 3), 256 => 384, relu; pad = 1),
-        Conv((3, 3), 384 => 384, relu; pad = 1),
-        Conv((3, 3), 384 => 256, relu; pad = 1),
-        MaxPool((3, 3); stride = 2),
-        # Classifier.
+        Conv((11, 11), inchannels=>96; stride=4),
+        relu,
+        MaxPool((3, 3); stride=2),
+
+        Conv((5, 5), 96=>256; pad=2),
+        relu,
+        MaxPool((3, 3); stride=2),
+
+        Conv((3, 3), 256=>384; pad=1),
+        relu,
+        Conv((3, 3), 384=>384; pad=1),
+        relu,
+        Conv((3, 3), 384=>256; pad=1),
+        relu,
+        MaxPool((3, 3); stride=2),
+
         MLUtils.flatten,
-        Dense(9216, 4096, relu),
+        Dense(7680, 4096),
+        relu,
         Dropout(dropout_prob),
+
+        Dense(4096, 4096),
+        relu,
+        Dropout(dropout_prob),
+
         Dense(4096, nclasses),
-        Dropout(dropout_prob),
         softmax
     )
 end
-=#

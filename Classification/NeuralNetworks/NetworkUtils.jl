@@ -3,7 +3,7 @@ using MLUtils
 using Flux
 using Flux.Data: DataLoader
 using Flux.Optimise: Optimiser, WeightDecay, Adam
-using Flux: onehotbatch, onecold, flatten
+using Flux: onehotbatch, onecold, flatten, crossentropy
 using Flux.Losses: logitcrossentropy
 using Statistics, Random
 using Logging: with_logger
@@ -257,7 +257,7 @@ function get_data_loaders(args::Args)
 end
 
 # Calculate the loss.
-loss(ŷ, y) = logitcrossentropy(ŷ, y)
+loss(ŷ, y) = crossentropy(ŷ, y)
 
 # Calculate the accuracy and loss of the network.
 function eval_loss_accuracy(loader, model, device)
