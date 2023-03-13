@@ -11,8 +11,6 @@ function get_type_string(type::ChainType)
         return "LeNet5Adapted"
     elseif type == AlexNet
         return "AlexNet"
-    elseif type == VGG16
-        return "VGG-16"
     else 
         @assert false "Invalid chain type."
     end

@@ -198,7 +198,8 @@ end
 
 function get_random_idx(labels)
     global random_idx
-    if isnothing(random_idx) return random_idx end
+    if !isnothing(random_idx) return random_idx end
+    @info "Generating random indices.  Should only occur once!"
     random_idx = randperm(size(labels)[1])
     return random_idx
 end

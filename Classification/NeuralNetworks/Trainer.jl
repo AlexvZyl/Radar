@@ -119,8 +119,9 @@ function train(chain_type::ChainType; kwargs...)
     ## Model and optimiser.
     @info "Model parameters: $(num_params(model))"
     ps = Flux.params(model)
-    opt = ADAM(args.η) # Why is my LSP upset about this?  It works fine?
-    if args.λ > 0 ## add weight decay, equivalent to L2 regularization
+    opt = ADAM(args.η)
+    # Add weight decay, equivalent to L2 regularization.
+    if args.λ > 0 
         opt = Optimiser(WeightDecay(args.λ), opt)
     end
 
