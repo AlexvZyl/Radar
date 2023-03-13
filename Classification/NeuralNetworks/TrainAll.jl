@@ -1,17 +1,19 @@
 include("Trainer.jl")
 
-persons = [ 1,2 ]
-# temporal = [ false,true ]
-temporal = [ false ]
-frames = [ 1,3,7,10,15,20,25 ]
-# models = [ LeNet5Adapted, AlexNet ]
-models = [ AlexNet ]
+persons = [ 1 ]
+temporal = [ false,true ]
+frames = [ 1,3,5,7,10,15,20,25 ]
+models = [ LeNet5Adapted, AlexNet ]
 batchsize = 5
 train_test_split = 0.7
 epochs=1000
 timeout=100
 
-# Run all itertions of the testing.
+models = [ LeNet5Adapted ]
+frames = [ 3 ]
+temporal = [ true ]
+
+# Run all itertions of the models.
 for p in persons
     for f in frames
         for m in models

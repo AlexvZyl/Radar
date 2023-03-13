@@ -26,54 +26,9 @@ function create_network(chain_type::ChainType, image_size, n_classes, args::Args
         return create_LeNet5_Adapted(image_size, n_classes, args)
     elseif chain_type == AlexNet
         return create_AlexNet(image_size, n_classes)
-    elseif chain_type == VGG16
-        return create_VGG16(image_size, n_classes)
     else
         @assert false "Invalid model type."
     end
-end
-
-# VGG-16
-function create_VGG16(imgsize, nclasses)
-    return Chain(
-        Conv((3, 3), imgsize[end] => 64, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(64),
-        Conv((3, 3), 64 => 64, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(64),
-        MaxPool((2,2)),
-        Conv((3, 3), 64 => 128, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(128),
-        Conv((3, 3), 128 => 128, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(128),
-        MaxPool((2,2)),
-        Conv((3, 3), 128 => 256, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(256),
-        Conv((3, 3), 256 => 256, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(256),
-        Conv((3, 3), 256 => 256, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(256),
-        MaxPool((2,2)),
-        Conv((3, 3), 256 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        Conv((3, 3), 512 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        Conv((3, 3), 512 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        MaxPool((2,2)),
-        Conv((3, 3), 512 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        Conv((3, 3), 512 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        Conv((3, 3), 512 => 512, relu, pad=(1, 1), stride=(1, 1)),
-        BatchNorm(512),
-        MaxPool((2,2)),
-        flatten,
-        Dense(512, 4096, relu),
-        Dropout(0.5),
-        Dense(4096, 4096, relu),
-        Dropout(0.5),
-        Dense(4096, nclasses)
-    ) 
 end
 
 # LeNet5 adapted.
@@ -132,7 +87,6 @@ end
 function create_AlexNet(imgsize, nclasses; dropout_prob = 0.5)
     inchannels = imgsize[end]
     return Chain(
-
         Conv((11, 11), inchannels=>96; stride=4),
         relu,
         MaxPool((3, 3); stride=2),

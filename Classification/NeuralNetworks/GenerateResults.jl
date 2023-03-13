@@ -100,15 +100,15 @@ function generate_acc_graph()
         for (m, frames_dict) in results[t][p]
             if !isnothing(frames_dict)
                 frames_int, frame_results = sorted_frames(frames_dict)
-                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr])
+                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
                 scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
                 clr+=1
                 if m == "AlexNet"
-                    push!(labels, " "*m)
+                    push!(labels, "  "*m)
                 elseif t == "Temporal"
-                    push!(labels, " Temporal")
+                    push!(labels, "  Temporal")
                 elseif t == "Standard"
-                    push!(labels, " LeNet5")
+                    push!(labels, "  LeNet5")
                 end
             end
         end
@@ -135,23 +135,22 @@ function generate_acc_graph()
         labelsize=45,
         titlesize=50
     )
-    markers = [
-        MarkerElement(color=:black, marker=:cross, markersize=dotSize*5),
-        MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5)
-    ]
+    points = [ Point2f(-1.5, 0.5), Point2f(2.5, 0.5) ]
+    train_legend = [ LineElement(color=:black, linewidth=4, linestyle=:dash, linepoints=points), MarkerElement(color=:black, marker=:cross, markersize=dotSize*5) ]
+    test_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5) ]
     labels = [
-        " Training"
-        " Testing"
+        "   Training"
+        "   Testing"
     ]
     Legend(
         legend_grid[2,1],
-        [markers...],
+        [ train_legend, test_legend ],
         [labels...],
         "Phases",
         valign = :top,
         labelfont = "Latin Modern Math",
         titlefont = "Latin Modern Math", 
-        padding = 30,
+        padding = (50,30,30,30),
         labelsize=45,
         titlesize=50
     )

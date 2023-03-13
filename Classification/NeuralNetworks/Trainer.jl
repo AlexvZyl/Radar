@@ -10,9 +10,10 @@ end
 
 function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing)
     state.current = new 
-    @info state.current
     
+    # New optimal training state.
     if acc_score(new) > acc_score(state.optimal)
+        consecutive = state.optimal.epoch+1 == epoch
         state.optimal = new
 
         # Verbose tracking.
@@ -24,7 +25,8 @@ function update(new::TrainingResults, state::TrainingState, model; epoch::Number
         end
 
         # Logging.
-        println("Epoch: $epoch   Train: (acc=$(new.train_acc))   Test: (acc=$(new.test_acc))")
+        if !consecutive println() end
+        @info "[$epoch]  Train: (acc=$(new.train_acc))  Test: (acc=$(new.test_acc))"
         if isnothing(args) return
         !ispath(args.savepath) && mkpath(args.savepath)
             modelpath = joinpath(args.savepath, "model.bson") 
@@ -33,6 +35,8 @@ function update(new::TrainingResults, state::TrainingState, model; epoch::Number
             end
         end
 
+    else
+        print("[", epoch, "] ")
     end
 
     save(state, args)

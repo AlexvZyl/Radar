@@ -16,6 +16,8 @@ using JLD2
 using Base.Threads
 using Random
 
+global random_idx = nothing
+
 include("../Utilities.jl")
 include("Chains.jl")
 
@@ -194,9 +196,16 @@ function get_2persons_loaders(args::Args)
 
 end
 
+function get_random_idx(labels)
+    global random_idx
+    if isnothing(random_idx) return random_idx end
+    random_idx = randperm(size(labels)[1])
+    return random_idx
+end
+
 function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
     # Shuffle data.
-    random_idx = randperm(size(labels)[1])
+    random_idx = get_random_idx(labels)
     shuffled_classes = classes_data[:,:,:,:,random_idx]
     shuffled_labels = labels[random_idx]
 

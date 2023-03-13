@@ -42,7 +42,6 @@ end
     LeNet5
     LeNet5Adapted
     AlexNet
-    VGG16
 end
 
 Base.@kwdef mutable struct Args
