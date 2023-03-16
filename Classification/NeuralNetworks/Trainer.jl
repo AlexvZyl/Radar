@@ -10,6 +10,7 @@ end
 
 function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing)
     state.current = new 
+    @info new
     
     # New optimal training state.
     if acc_score(new) > acc_score(state.optimal)
@@ -119,10 +120,12 @@ function train(chain_type::ChainType; kwargs...)
     ## Model and optimiser.
     @info "Model parameters: $(num_params(model))"
     ps = Flux.params(model)
-    opt = ADAM(args.η)
-    # Add weight decay, equivalent to L2 regularization.
+    # Weight decay.
+    opt = nothing
     if args.λ > 0 
-        opt = Optimiser(WeightDecay(args.λ), opt)
+        opt = Flux.Optimise.AdamW(args.η, (0.9, 0.999), args.λ)
+    else
+        opt = Flux.Optimise.Adam(args.η)
     end
 
     ## Reporting.
@@ -137,7 +140,7 @@ function train(chain_type::ChainType; kwargs...)
                 @info "Test"  loss=test.loss   acc=test.acc
             end
         end
-   end
+    end
 
     train_data_size = sizeof(train_loader.data[1]) / 1e6 # Mb
     @info "Train data size: $(train_data_size) Mb"

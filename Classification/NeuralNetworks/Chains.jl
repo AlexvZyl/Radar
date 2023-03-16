@@ -23,7 +23,7 @@ function create_network(chain_type::ChainType, image_size, n_classes, args::Args
     elseif chain_type == LeNet5Adapted
         return create_LeNet5_Adapted(image_size, n_classes, args)
     elseif chain_type == AlexNet
-        return create_AlexNet(image_size, n_classes)
+        return create_AlexNet(image_size, n_classes, dropout_prob=args.dropout)
     else
         @assert false "Invalid model type."
     end

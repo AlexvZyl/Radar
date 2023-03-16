@@ -78,7 +78,8 @@ function sorted_frames(frames::Dict{String, TrainingResults})
     return keys_int, values
 end
 
-function generate_acc_graph()
+function generate_acc_graph(persons::String)
+    persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
     colors = [ :teal,:blue,:orange ]
     results = get_results()
     resolution = (2560,1440)
@@ -86,18 +87,16 @@ function generate_acc_graph()
     legend_grid = GridLayout()
     legend_grid[1:2,1] = [ Axis(figure; leftspinevisible=false, rightspinevisible=false, topspinevisible=false, bottomspinevisible=false, xgridvisible=false, ygridvisible=false, xticklabelsvisible=false, yticklabelsvisible=false, xticksvisible=false, yticksvisible=false) for _ in 1:2 ]
     figure.layout[1,2] = legend_grid
-    xticks = 0:5:25
+    xticks = 0:5:20
     yticks = 0:25:100
-    ax = Axis(figure[1,1], title="Model Accuracies (Same Person Train & Test)", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
+    ax = Axis(figure[1,1], title="Model Accuracies ($persons_title Train & Test)", xlabel="Number of Doppler Map Frames", ylabel="Model Accuracy (%)", xticks=xticks, yticks=yticks)
     ylims!(-7,107)
-    xlims!(-1,26)
+    xlims!(-1,21)
     labels = []
    
-    p = "1-Person"
-    # p = "2-Persons"
     clr = 1
     for (t, _) in results
-        for (m, frames_dict) in results[t][p]
+        for (m, frames_dict) in results[t][persons]
             if !isnothing(frames_dict)
                 frames_int, frame_results = sorted_frames(frames_dict)
                 scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
@@ -155,7 +154,8 @@ function generate_acc_graph()
         titlesize=50
     )
 
-    Makie.save("NetworkAccuracyComparison.pdf", figure)
+    Makie.save("NetworkAccuracyComparison_$persons.pdf", figure)
 end
 
-generate_acc_graph()
+generate_acc_graph("1-Person")
+generate_acc_graph("2-Persons")
