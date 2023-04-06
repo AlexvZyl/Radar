@@ -40,7 +40,7 @@ end
 
 @enum ChainType begin 
     LeNet5
-    LeNet5Adapted
+    LeNet5Temporal
     AlexNet
 end
 
@@ -58,7 +58,6 @@ Base.@kwdef mutable struct Args
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
     model::ChainType = AlexNet
     persons::Int = 2
-    temporal::Bool = true
     save_path_parent = "Runs"
     timeout = 100
     dropout = 0.5

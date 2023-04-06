@@ -1,0 +1,32 @@
+Current
+----------------------------------------------
+Training Accuracy: 100.0
+Training Loss: 0.0166
+Testing Accuracy: 69.697
+Testing Loss: 0.6621
+Epoch: 92
+----------------------------------------------
+Optimal
+----------------------------------------------
+Training Accuracy: 100.0
+Training Loss: 0.0419
+Testing Accuracy: 81.8182
+Testing Loss: 0.6339
+Epoch: 41
+----------------------------------------------
+Training Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 100.0
+Training Loss: 0.0419
+Testing Accuracy: 81.8182
+Testing Loss: 0.6339
+Epoch: 41
+----------------------------------------------
+Testing Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 100.0
+Training Loss: 0.0419
+Testing Accuracy: 81.8182
+Testing Loss: 0.6339
+Epoch: 41
+----------------------------------------------

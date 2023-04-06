@@ -57,17 +57,14 @@ end
 function get_results()
     # Metadata.
     current_file_path = dirname(@__FILE__)
-    types = [ "Standard", "Temporal" ] 
     persons = [ "1-Person", "2-Persons" ] 
-    models = [ "LeNet5Adapted", "AlexNet" ] 
+    models = [ "LeNet5", "AlexNet", "LeNet5Temporal" ] 
 
     # Load all results.
     return Dict(
-        t => Dict(
             p => Dict(
-                m => get_frame_results(joinpath(current_file_path, "Runs", t, p, m)) for m in models
+                m => get_frame_results(joinpath(current_file_path, "Runs", p, m)) for m in models
             ) for p in persons
-        ) for t in types
     )
 end
 
@@ -95,27 +92,22 @@ function generate_acc_graph(persons::String)
     labels = []
    
     clr = 1
-    for (t, _) in results
-        for (m, frames_dict) in results[t][persons]
-            if !isnothing(frames_dict)
-                frames_int, frame_results = sorted_frames(frames_dict)
-                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
-                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
-                clr+=1
-                if m == "AlexNet"
-                    push!(labels, "  "*m)
-                elseif t == "Temporal"
-                    push!(labels, "  Temporal")
-                elseif t == "Standard"
-                    push!(labels, "  LeNet5")
-                end
+    for (m, frames_dict) in results[persons]
+        if !isnothing(frames_dict)
+            frames_int, frame_results = sorted_frames(frames_dict)
+            scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
+            scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
+            clr+=1
+            if m == "LeNet5Temporal"
+                push!(labels, "  LeNet5 Temporal")
+            else
+                push!(labels, "  "*m)
             end
         end
     end
 
     vlines!([0], color=:black, linewidth=2)
     hlines!([0], color=:black, linewidth=2)
-
 
     # Manually create legend.
     markers = []

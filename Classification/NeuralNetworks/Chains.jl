@@ -7,8 +7,8 @@ include("Temporal.jl")
 function get_type_string(type::ChainType)
     if type == LeNet5
         return "LeNet5"
-    elseif type == LeNet5Adapted
-        return "LeNet5Adapted"
+    elseif type == LeNet5Temporal
+        return "LeNet5Temporal"
     elseif type == AlexNet
         return "AlexNet"
     else 
@@ -20,8 +20,8 @@ end
 function create_network(chain_type::ChainType, image_size, n_classes, args::Args)
     if chain_type == LeNet5
         return create_LeNet5(image_size, n_classes)
-    elseif chain_type == LeNet5Adapted
-        return create_LeNet5_Adapted(image_size, n_classes, args)
+    elseif chain_type == LeNet5Temporal
+        return create_LeNet5_temporal(image_size, n_classes)
     elseif chain_type == AlexNet
         return create_AlexNet(image_size, n_classes, dropout_prob=args.dropout)
     else
@@ -30,10 +30,11 @@ function create_network(chain_type::ChainType, image_size, n_classes, args::Args
 end
 
 # LeNet5 adapted.
-function create_LeNet5_Adapted(imgsize, nclasses, args::Args)
+function create_LeNet5_temporal(imgsize, nclasses)
 
-    layers = gen_lenet_layers(imgsize, args)
+    layers = gen_lenet_layers(imgsize)
 
+    #=
     display("C1:")
     display(layers["c1"])
     display("A1:")
@@ -44,6 +45,7 @@ function create_LeNet5_Adapted(imgsize, nclasses, args::Args)
     display(layers["a2"])
     display("C3:")
     display(layers["c3"])
+    =#
 
     nd = Int(prod(layers["c3"].output_size) * layers["c3"].channels)
     ns = floor(Int, 0.7*nd)
@@ -67,17 +69,25 @@ end
 
 # LeNet5 original.
 function create_LeNet5(imgsize, nclasses)
-    out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 16)
     return Chain(
-        Conv((5, 5), imgsize[end]=>6, relu),
-        MaxPool((2, 2)),
-        Conv((5, 5), 6=>16, relu),
-        MaxPool((2, 2)),
+        #--
+        Conv((9, 9), imgsize[end]=>6, stride=3),
+        relu,
+        MeanPool((3, 3), stride=3),
+        #--
+        Conv((5, 5), 6=>16),
+        relu,
+        MeanPool((2, 2), stride=2),
+        #--
+        Conv((5,5), 16=>120),
+        relu,
         flatten,
-        Dense(prod(out_conv_size), 120, relu), 
-        Dense(120, 84, relu), 
+        #--
+        Dense(1680, 84), 
+        relu,
         Dense(84, nclasses),
         softmax,
+        #--
     )
 end
 

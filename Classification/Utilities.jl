@@ -168,9 +168,9 @@ function get_janke_folder_list()
         "WalkingTowards_Janke",
         "WalkingAwayStick_Janke",
         "WalkingTowardsStick_Janke",
-        # "JoggingAway_Janke",
-        # "JoggingTowards_Janke",
-        # "JoggingAwayStick_Janke",
-        # "JoggingTowardsStick_Janke"
+        "JoggingAway_Janke",
+        "JoggingTowards_Janke",
+        "JoggingAwayStick_Janke",
+        "JoggingTowardsStick_Janke"
     ]
 end

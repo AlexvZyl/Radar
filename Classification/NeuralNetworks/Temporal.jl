@@ -101,10 +101,16 @@ function temporal_frame_size_out(layer::Layer)
 end
 
 function setup(layer::Layer)
+    if layer.type == TemporalConv
+        # layer.temporal_kernel_frames = ceil(Int, layer.temporal_frame_count/4)
+        layer.temporal_kernel_frames = 2
+        layer.temporal_stride_frames = 1
+    end
     kernel(layer)
     stride(layer)
     padding(layer)
     output_size(layer)
+    display(layer)
 end
 
 function init(existing::Layer, type::LayerType)
@@ -169,14 +175,9 @@ function format(input, m::TempConv)
     return cat_kernels(input, m)
 end
 
-# I think this was just compilation?... Lol.
-# Doing small convolutions: 1.84GB + 296.89MB = 2.14GB
-# Doing larger convolutions: 108MB + 1.342GB  = 1.45GB
-
 function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
 
     # Convolution.
-    # result = @time conv_non_mut(input,m)
     result = conv_large(input,m)
 
     # Efficient format.
@@ -189,8 +190,7 @@ function (m::TempConv)(input::AbstractArray{T}) where T <: AbstractFloat
 end
 
 # Generate LeNet5 with temporal convolution.
-
-function gen_lenet_layers(inputsize, args::Args)
+function gen_lenet_layers(inputsize)
 
     # Conv 1.
     c1 = Layer()
@@ -199,8 +199,6 @@ function gen_lenet_layers(inputsize, args::Args)
     c1.kernel_count = 6
     c1.kernel = (9,9)
     c1.stride = (3,3)
-    c1.temporal_kernel_frames = args.temporal ? 2 : Int(inputsize[end]/2)
-    c1.temporal_stride_frames = 1
     c1.temporal_frame_size = 2
     c1.temporal_frame_count = ceil(Int, inputsize[3] / c1.temporal_frame_size)
     setup(c1)
@@ -217,8 +215,6 @@ function gen_lenet_layers(inputsize, args::Args)
     c2.kernel = (2,2) 
     c2.stride = (1,1) 
     c2.kernel_count = 16
-    c2.temporal_stride_frames = 1
-    c2.temporal_kernel_frames = 1
     setup(c2) 
 
     # Pool 2.
@@ -231,10 +227,8 @@ function gen_lenet_layers(inputsize, args::Args)
     # Conv 3.
     c3 = init(a2, TemporalConv)
     c3.kernel = c3.input_size
-    c3.stride = (1,1) 
+    c3.stride = (1,1)
     c3.kernel_count = 120
-    c3.temporal_stride_frames = 1
-    c3.temporal_kernel_frames = 2
     setup(c3) 
 
     return Dict([

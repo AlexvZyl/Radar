@@ -22,10 +22,9 @@ include("../Utilities.jl")
 include("Chains.jl")
 
 persons_string(args::Args) = args.persons == 1 ? "1-Person" : "2-Persons"
-temporal_string(args::Args) = args.temporal ? "Temporal" : "Standard"
 
 function get_save_path(args::Args)
-    path = args.save_path_parent * "/" * temporal_string(args) * "/" * persons_string(args) * "/" * get_type_string(args.model) * "/" * args.frames_folder * "/"
+    path = args.save_path_parent * "/" * persons_string(args) * "/" * get_type_string(args.model) * "/" * args.frames_folder * "/"
     !ispath(path) && mkpath(path)
     return path
 end
@@ -149,7 +148,7 @@ end
 
 # Use the Flux data loaders.
 function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
-    if args.model == AlexNet
+    if (args.model == AlexNet) || (args.model == LeNet5)
         classes_data = classes_data[:,:,:,1,:]
     end
 
@@ -199,7 +198,7 @@ end
 function get_random_idx(labels)
     global random_idx
     if !isnothing(random_idx) return random_idx end
-    @info "Generating random indices.  Should only occur once!"
+    @warn "Generating random indices.  Should only occur once!"
     random_idx = randperm(size(labels)[1])
     return random_idx
 end
@@ -217,7 +216,7 @@ function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; sh
     train_y = onehotbatch(train_labels, 1:length(get_labels()))
     test_y = onehotbatch(test_labels, 1:length(get_labels()))
 
-    if args.model == AlexNet
+    if (args.model == AlexNet) || (args.model == LeNet5)
         train_x = train_x[:,:,:,1,:]
         test_x = test_x[:,:,:,1,:]
     end
