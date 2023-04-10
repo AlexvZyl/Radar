@@ -1,5 +1,3 @@
-using Base: catch_stack
-using GLMakie: TRIANGLE
 include("../../Utilities/MakieGL/MakieGL.jl")
 include("Types.jl")
 include("../Utilities.jl")
@@ -79,8 +77,7 @@ function generate_acc_graph(persons::String)
     persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
     colors = [ :teal,:blue,:orange ]
     results = get_results()
-    resolution = (2560,1440)
-    figure = Figure(resolution=resolution)
+    figure = Figure(resolution=(2560,1440))
     legend_grid = GridLayout()
     legend_grid[1:2,1] = [ Axis(figure; leftspinevisible=false, rightspinevisible=false, topspinevisible=false, bottomspinevisible=false, xgridvisible=false, ygridvisible=false, xticklabelsvisible=false, yticklabelsvisible=false, xticksvisible=false, yticksvisible=false) for _ in 1:2 ]
     figure.layout[1,2] = legend_grid
