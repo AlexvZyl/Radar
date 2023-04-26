@@ -3,6 +3,23 @@ include("Utilities.jl")
 using Statistics
 using JLD2
 
+update_theme!(
+    Axis = (
+        yticklabelpad = 20,
+	    ylabelpadding = 30,
+        xlabelpadding = 20,
+	    xtickwidth = 3,
+	    ytickwidth = 3,
+	    xticksize = 24,
+	    yticksize = 24,
+	    xtickalign = 0,
+	    ytickalign = 1,
+	    spinewidth = 3,
+	    titlegap = 40
+    ),
+	figure_padding = (10, 50, 10, 10)
+)
+
 function clustered_map(folder::String, file::String, title::String, save_name::String)
 
     # Create the figure and axis. 
@@ -53,11 +70,11 @@ ground_file_number = "000"
 ground_folder = "WalkingTowards"
 ground_file = get_file_name(ground_folder, ground_file_number)
 ground_file_save = "MP_CLUSTERING_GROUND.pdf"
-clustered_map(ground_folder, ground_file, "Ground Level", ground_file_save)
+clustered_map(ground_folder, ground_file, "Clustering at Ground Level", ground_file_save)
 
 # Elevated.
 elevated_file_number = "002"
 elevated_folder = "WalkingTowards_Elevated_90deg"
 elevated_file = get_file_name(elevated_folder, elevated_file_number)
 elevated_file_save = "MP_CLUSTERING_ELEVATED.pdf"
-clustered_map(elevated_folder, elevated_file, "Elevated Level", elevated_file_save)
+clustered_map(elevated_folder, elevated_file, "Clustering at an Elevated Level", elevated_file_save)
