@@ -3,7 +3,7 @@ include("../../Utilities/MakieGL/MakieGL.jl")
 include("PostProcessor.jl")
 
 update_theme!(
-	font = "Latin Modern Math", # Linux.
+	font = "Latin Modern Math" # Linux.
 )
 
 # Input.
@@ -24,15 +24,16 @@ update_theme!(
 # file_number = "008" 
 # file_name = "Direct_Doppler_Map_No_Clutter.pdf"
 
+
 # Comparing Different height for multipath effect.
 # On ground.
 # file_number = "000"
 # folder = "WalkingTowards"
 # file_name = "MP_EFFECT_GROUND.pdf"
+# Elevated.
+file_number = "000"
+folder = "Walking_Away_Aleza"
+file_name = "MP_EFFECT_ELEVATED.pdf"
 
-# Testings.
-file_number = "002"
-folder = "JoggingAwayStick_Janke"
-file_name = "Test.pdf"
 figure = process_intput(folder, file_number, snr_min = 0, pulsesToLoad = 0)
 save(file_name, figure)

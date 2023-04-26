@@ -13,7 +13,7 @@ function generate_fopen_figures(range::Number, resolution::Number, freq)
      
     # Setup figure.
     fig = Figure(resolution = (2560,1440))
-    ax = Axis(fig[1,1], xlabel="Distance (m)", ylabel="Signal Power (dB)", title="FOPEN Models")
+    ax = Axis(fig[1,1], xlabel="Foliage Thickness (m)", ylabel="Attenuation (dB)", title="Foliage Signal Attenuation")
     vlines!([0], color=:black, linewidth=3)
     hlines!([0], color=:black, linewidth=3)
 
@@ -26,7 +26,7 @@ function generate_fopen_figures(range::Number, resolution::Number, freq)
     colors = get_colors()
     for (m,model) in enumerate(models)
         for (i,_) in enumerate(freq)
-            scatterlines!(ax, d, results[m][i], markersize=dotSize*3, linewidth=2, marker=model.marker, color=colors[i], linestyle=model.line_style)
+            scatterlines!(ax, d, results[m][i], markersize=dotSize*4, linewidth=2, marker=model.marker, color=colors[i], linestyle=model.line_style)
         end
     end
 
@@ -49,7 +49,7 @@ function generate_fopen_figures(range::Number, resolution::Number, freq)
     Legend(
         legend_grid[2,1],
         [ legend(m, points) for m in models ],
-        [ string(" ", model.string) for model in models ],
+        [ string(model.string) for model in models ],
         "Models",
         valign = :top,
         labelfont = "Latin Modern Math",

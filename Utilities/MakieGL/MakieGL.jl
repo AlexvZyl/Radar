@@ -159,7 +159,9 @@ if cairomakie
 			viewmode = :fit,
 			),
 		Legend = (
-			leftspinevisible = true,
+            labelfont = "Latin Modern Math",
+            titlefont = "Latin Modern Math",
+            leftspinevisible = true,
 			rightspinevisible = true,
 			topspinevisible = true,
 			bottomspinevisible = true,
