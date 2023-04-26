@@ -1,12 +1,15 @@
 include("../Utilities/MakieGL/MakieGL.jl")
+include("Utilities.jl")
 using Statistics
 using JLD2
 
-function clustered_map(file::String, title::String, save_name::String)
+function clustered_map(folder::String, file::String, title::String, save_name::String)
 
     # Create the figure and axis. 
-    figure = Figure()
+    figure = Figure(resolution=(1920,1080))
     Axis(figure[1,1], title = title, xlabel = "Distance (m)", ylabel = "Velocity (m/s)")
+
+    map_dir, cluster_dir, _, _, _, _ = get_directories(folder)
         
     # Load the data.
     cluster_file_data = load(cluster_dir * file)
@@ -38,17 +41,7 @@ function clustered_map(file::String, title::String, save_name::String)
             distance_data[i] = adjacency_matrix[1, index] 
             velocity_data[i] = adjacency_matrix[2, index] 
         end
-        position = [ mean(distance_data), mean(velocity_data) ]    
-        poly_size = [ 8, 0.13 ] 
-        poly_vertices = Point2f[
-            ( position[1] - poly_size[1], position[2] - poly_size[2] ),
-            ( position[1] + poly_size[1], position[2] - poly_size[2] ),
-            ( position[1] + poly_size[1], position[2] + poly_size[2] ),
-            ( position[1] - poly_size[1], position[2] + poly_size[2] ),
-        ]
         scatter!(distance_data, velocity_data)
-        poly!(poly_vertices, color = (:black, 0.7))
-        text!(position[1], position[2], text = string(i), textsize = 20, align = (:center, :center))
     end
 
     save(save_name, figure)
@@ -60,11 +53,11 @@ ground_file_number = "000"
 ground_folder = "WalkingTowards"
 ground_file = get_file_name(ground_folder, ground_file_number)
 ground_file_save = "MP_CLUSTERING_GROUND.pdf"
-clustered_map(ground_file, "Ground Level", ground_file_save)
+clustered_map(ground_folder, ground_file, "Ground Level", ground_file_save)
 
 # Elevated.
-elevated_file_number = "000"
-elevated_folder = "Walking_Away_Aleza"
+elevated_file_number = "002"
+elevated_folder = "WalkingTowards_Elevated_90deg"
 elevated_file = get_file_name(elevated_folder, elevated_file_number)
 elevated_file_save = "MP_CLUSTERING_ELEVATED.pdf"
-clustered_map(elevated_file, "Ground Level", elevated_file_save)
+clustered_map(elevated_folder, elevated_file, "Elevated Level", elevated_file_save)
