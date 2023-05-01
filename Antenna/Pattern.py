@@ -3,16 +3,16 @@ import matplotlib.pyplot as mp
 import math
 import numpy as np
 
-def find_eff_region(theta, gain):
+def find_eff_region(theta, gain, dB):
     zero_index = math.ceil(len(theta)/2)
     print(zero_index)
     theta_1_ind = zero_index
     theta_2_ind = zero_index
-    while(gain[theta_1_ind] > -3):
+    while(gain[theta_1_ind] > dB):
         theta_1_ind += 1
-    while(gain[theta_2_ind] > -3):
+    while(gain[theta_2_ind] > dB):
         theta_2_ind -= 1
-    return theta[theta_1_ind], theta[theta_2_ind], gain[theta_1_ind], gain[theta_2_ind]
+    return theta[theta_1_ind], theta[theta_2_ind]
 
 # Load data.
 data = pd.read_csv("Data/ASP.csv")
@@ -40,10 +40,14 @@ ax.set_ylim(-40, 5)
 mp.title("LP0965 Radiation Pattern (1.1 GHz)")
 
 # Plot effective region.
-theta_1, theta_2, gain_1, gain_2 = find_eff_region(theta_int, gain_int)
-mp.polar([0, theta_1], [-40, 5], color = 'gray', alpha = 0.65)
-mp.polar([0, theta_2], [-40, 5], color = 'gray', alpha = 0.65)
-ax.fill([theta_1, theta_2, theta_2, theta_1], [-40, -40, 50, 50], color='gray', alpha=0.45)
+theta_1, theta_2 = find_eff_region(theta_int, gain_int, -3)
+theta_3, theta_4= find_eff_region(theta_int, gain_int, -6)
+mp.polar([0, theta_1], [-40, 5], color = 'gray', alpha = 0.6)
+mp.polar([0, theta_2], [-40, 5], color = 'gray', alpha = 0.6)
+mp.polar([0, theta_3], [-40, 5], color = 'gray', alpha = 0.5)
+mp.polar([0, theta_4], [-40, 5], color = 'gray', alpha = 0.5)
+ax.fill([theta_1, theta_2, theta_2, theta_1], [-40, -40, 50, 50], color='gray', alpha=0.3)
+ax.fill([theta_3, theta_4, theta_4, theta_3], [-40, -40, 50, 50], color='gray', alpha=0.2)
 
 # Plot entire pattern.
 mp.polar(theta_int, gain_int)
