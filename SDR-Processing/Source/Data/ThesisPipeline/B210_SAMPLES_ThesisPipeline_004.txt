@@ -1,0 +1,54 @@
+---------------------------------------------------------------------------------------
+|                                  Details                                            |
+---------------------------------------------------------------------------------------
+
+Time of transmission: Sat Nov 12 11:43:42 2022
+TX error: None
+RX error: None
+OTW format: sc16
+CPU format: fc64
+
+The data is packed as I Q I Q samples.
+Each sample size is given by the CPU format.
+OTW format is not required for parsing the .bin file, 
+since this describes how data is transferred on the SDR.
+The .bin file does not contain any type of headers, it is just IQ samples.
+
+---------------------------------------------------------------------------------------
+|                               Radar Settings                                        |
+---------------------------------------------------------------------------------------
+
+TX sampling rate: 22 MHz
+RX sampling rate: 22 MHz
+TX wave frequency: 1100 MHz
+RX wave frequency: 1100 MHz
+Wave bandwidth: 20 MHz
+TX gain: 20 dB
+RX gain: 20 dB
+TX filter BW: 22 MHz
+RX filter BW: 22 MHz
+Transmission duration: 1 s
+PRF: 100000 pulses/s
+Total pulses: 100000
+Radar max range: 1001.58 m
+Radar deadzone: 497.383 m
+Radar Waveform Samples: 73 
+Radar Pulse Samples: 220 
+Wave type: Linear Frequency Chirp
+Window function: None
+RX DC Offset Start: -4.65309e-06 [I] + -4.50159e-06 [Q]
+RX DC Offset End: -4.57576e-06 [I] + -4.30233e-06 [Q]
+Streamer Advance: 0.05 s
+DC Frequency Offset Target: 0 Hz
+DC Frequency Offset Actual: 0 Hz
+
+---------------------------------------------------------------------------------------
+|                                     Note                                            |
+---------------------------------------------------------------------------------------
+
+Done
+
+---------------------------------------------------------------------------------------
+|                                      EOF                                            |
+---------------------------------------------------------------------------------------
+
