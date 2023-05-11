@@ -61,4 +61,5 @@ Base.@kwdef mutable struct Args
     save_path_parent = "Runs"
     timeout = 100
     dropout = 0.5
+    tree = false
 end

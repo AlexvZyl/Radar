@@ -149,9 +149,12 @@ function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle 
     if (args.model == AlexNet) || (args.model == LeNet5)
         classes_data = classes_data[:,:,:,1,:]
     end
-
     y = onehotbatch(labels, 1:length(get_labels()))
-    return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
+    if args.tree
+        return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
+    else
+        return classes_data, y
+    end
 end
 
 # Get the index related to the label.
@@ -185,12 +188,16 @@ function get_2persons_loaders(args::Args)
     steph_classes, steph_labels = prepare_for_flux(steph_classes)
     janke_classes, janke_labels = prepare_for_flux(janke_classes)
 
-    # Load the data for Flux.
-    train = flux_load(steph_classes, steph_labels, args, shuffle = true)
-    test = flux_load(janke_classes, janke_labels, args)
-
-    return train, test, labels
-
+    if args.tree
+        # Load the data for Flux.
+        train = flux_load(steph_classes, steph_labels, args, shuffle = true)
+        test = flux_load(janke_classes, janke_labels, args)
+        return train, test, labels
+    else
+        train_x, train_y = flux_load(steph_classes, steph_labels, args, shuffle = true)
+        test_x, test_y = flux_load(janke_classes, janke_labels, args)
+        return train_x, train_y, test_x, test_y, labels
+    end
 end
 
 function get_random_idx(labels)
@@ -219,10 +226,13 @@ function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; sh
         test_x = test_x[:,:,:,1,:]
     end
 
-    # Create Flux loaders.
-    train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
-    test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
-    return train_dl, test_dl
+    if !args.tree
+        train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
+        test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
+        return train_dl, test_dl
+    else
+        return train_x, train_y, test_x, test_y
+    end
 end
 
 function get_1person_loaders(args::Args)
@@ -245,10 +255,13 @@ function get_1person_loaders(args::Args)
     steph_classes, steph_labels = prepare_for_flux(steph_classes)
 
     # Load the data for Flux.
-    train, test = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
-
-    return train, test, labels
-
+    if !args.tree
+        train, test = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
+        return train, test, labels
+    else
+        train_x, train_y, test_x, test_y = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
+        return train_x, train_y, test_x, test_y, labels
+    end
 end
 
 # Load the data from the jdl files and prepare them for training.
