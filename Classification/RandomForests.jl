@@ -2,8 +2,14 @@ using ScikitLearn
 using DecisionTree
 include("NeuralNetworks/NetworkUtils.jl")
 
-function array_to_matrix(array::AbstractArray{T,N}) where {T,N}
-    return array
+function prepare_for_tree_(array::AbstractArray{T,N}) where {T,N}
+    ar_size = size(array)
+    new_2d = (ar_size[1], ar_size[2]*ar_size[3])
+    new = Array{T,N-1}(undef, new_2d..., ar_size[end])
+    for d in 1:ar_size[N]    
+        new[:,:,d] = reshape(array[:,:,:,d], new_2d...)
+    end
+    return new
 end
 
 function prepare_data(args::Args)
@@ -12,10 +18,8 @@ function prepare_data(args::Args)
     test_y = Vector(Int.(test_y.indices))
     train_y = [ labels[i] for i in train_y ]
     test_y = [ labels[i] for i in test_y ]
-    display(size(train_x))
-    train_x = array_to_matrix(train_x)
-    display(size(train_x))
-    test_x = array_to_matrix(test_x)
+    train_x = prepare_for_tree_(train_x)
+    test_x = prepare_for_tree_(test_x)
     return test_x, test_y, train_x, train_y
 end
 
