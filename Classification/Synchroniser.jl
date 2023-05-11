@@ -3,7 +3,7 @@ include("DopplerMap.jl")
 include("Utilities.jl")
 using JLD2
 
-const path 	= "/home/alex/GitHub/SDR-Interface/build/Data/"
+const path 	= "/home/alex/Repositories/SDR-Interface/build/Data/"
 
 # Take the raw data, syncronise it, and save the raw data again.
 function sync_raw_data(folder::String, file::String)

@@ -6,7 +6,7 @@ function raw_to_doppler_map(folder::String, files_to_load::Vector{String} = [])
     print("Processing raw data into doppler maps...")
 
     # Location of the data collected by the SDR.
-    path = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/"
+    path = "/home/alex/Repositories/SDR-Interface/build/Data/" * folder * "/"
 
     # Load the required files (without path).
     # If no files are specified load the entire directory.

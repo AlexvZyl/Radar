@@ -96,7 +96,7 @@ function load_classes_from_folders(folders::Vector{String}, subdirectory::String
             doppler_frames[label] = Vector{Vector{AbstractMatrix}}(undef, length(files))
         end
         for file in files
-            doppler_frames[label][index] =  load(file)["Doppler FFT Frames"] 
+            doppler_frames[label][index] =  JLD2.load(file)["Doppler FFT Frames"] 
             index += 1
         end
     end
@@ -112,9 +112,7 @@ function prepare_for_flux(classes_data::Dict{String, Vector{Vector{AbstractMatri
     # Get meta data.
     image_size = size(first(classes_data)[2][1][1])
     frame_count = length(first(classes_data)[2][1])
-    if seperate_channels 
-        frame_count *= 2 
-    end
+    if seperate_channels frame_count *= 2 end
 
     # Calculate total samples.
     total_samples = 0

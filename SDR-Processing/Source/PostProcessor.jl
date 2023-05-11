@@ -183,7 +183,7 @@ using Statistics
 function process_intput(folder::String, fileNumber::String; pulsesToLoad = 0, snr_min::Number = 13)
 
     # File data.
-    path 			= "/home/alex/GitHub/SDR-Interface/build/Data/"
+    path 			= "/home/alex/Radar/SDR-Interface/build/Data/"
     filePrefix 		= "B210_SAMPLES_" * folder * "_"
     file 			= path * folder * "/" * filePrefix * fileNumber
     fileBin 		= file * ".bin"

@@ -10,7 +10,7 @@ folder 			 = "JoggingAway_Elevated_90deg_Stick"
 file_number 	 = "001"
 
 # Fixed metdata.
-path 			 = "/home/alex/GitHub/Radar/Classification/Data/"
+path 			 = "/home/alex/Repositories/Radar/Classification/Data/"
 file_prefix 	 = "/B210_SAMPLES_" * folder * "_"
 
 # Load doppler frames.

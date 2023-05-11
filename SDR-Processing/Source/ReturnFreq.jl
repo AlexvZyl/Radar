@@ -43,7 +43,8 @@ rx_signal = vcat([
 rx_signal = vcat(rx_signal, zeros(ComplexF32, 1000))
 tx_signal = vcat(tx_signal, zeros(ComplexF32, 1000))
 
-#plotSignal(figure, rx_signal, [1,1], meta_data.sampling_freq)
-plotPowerSpectra(figure, rx_signal, [1,1], meta_data.sampling_freq, dB = true)
-#plotPowerSpectra(figure, tx_signal, [1,1], meta_data.sampling_freq, dB = true)
+plotPowerSpectra(figure, rx_signal, [1,1], meta_data.sampling_freq, dB = true, title="RX Signal Frequency Spectrum")
 save("RX_Sampled_Signal_Freq.pdf", figure)
+
+#plotPowerSpectra(figure, tx_signal, [1,1], meta_data.sampling_freq, dB = true, title="TX Signal Frequency Spectrum")
+#save("TX_Sampled_Signal_Freq.pdf", figure)

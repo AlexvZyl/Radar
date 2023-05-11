@@ -70,7 +70,7 @@ function generate_frames(folder::String, files_to_load::Vector{String} = []; fra
             frames = create_frames(meta_data, frame_count, frame_overlap_ratio)
             
             # Calculate the doppler frames.
-            raw_file = "/home/alex/GitHub/SDR-Interface/build/Data/" * folder * "/" * splitdir(file)[2][1:end-4]
+            raw_file = "/home/alex/Repositories/SDR-Interface/build/Data/" * folder * "/" * splitdir(file)[2][1:end-4]
             doppler_frames, distance_vector, velocity_vector = calculate_doppler_map(raw_file, frames)
             
             # Destination file.                                                    
