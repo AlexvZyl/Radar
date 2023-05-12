@@ -3,6 +3,10 @@ using ScikitLearn
 using DecisionTree
 include("NeuralNetworks/NetworkUtils.jl")
 
+function evaluate(model, x, y)
+    return sum(predict(model, x) .== y) / length(y)
+end
+
 function prepare_for_tree(array::AbstractArray{T,N}) where {T,N}
     ar_size = size(array)
     new_size = reduce(*, ar_size[1:end-1])
@@ -24,9 +28,9 @@ end
 
 function random_forests(args::Args)
     train_x, train_y, test_x, test_y = prepare_data(args)
-    model = DecisionTreeClassifier()
+    model = RandomForestClassifier()
     fit!(model, train_x, train_y)
-    accuracy = sum(predict(model, test_x) .== test_y) / length(test_y)
+    accuracy = evaluate(model, test_x, test_y)
     println("accuracy: $accuracy")
 end
 

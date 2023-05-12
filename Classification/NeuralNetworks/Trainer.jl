@@ -4,9 +4,7 @@ using Flux
 
 include("NetworkUtils.jl")
 
-function acc_score(res::TrainingResults)
-    return res.train_acc + res.test_acc
-end
+function acc_score(res::TrainingResults) return res.train_acc + res.test_acc end
 
 function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing)
     state.current = new 
