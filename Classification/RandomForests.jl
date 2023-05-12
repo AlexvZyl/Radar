@@ -2,6 +2,7 @@ using Base: product
 using ScikitLearn
 using DecisionTree
 using Base.Threads
+using CUDA
 include("NeuralNetworks/NetworkUtils.jl")
 include("NeuralNetworks/Trainer.jl")
 
@@ -74,15 +75,16 @@ function train_random_forests(args::Args)
     state = TrainingState()
     state.timeout = Inf
     grid_seach = grid()
-    epoch = 0
+    # search = ScikitLearn.GridSearch.RandomizedSearchCV()
     total_epochs = length(grid_seach["n_trees"])*length(grid_seach["min_samples_leaf"])*length(grid_seach["min_samples_split"])*length(grid_seach["min_purity_increase"])
 
     # Grid search.
+    epoch = 0
     for n_trees in grid_seach["n_trees"]
         for min_samples_leaf in grid_seach["min_samples_leaf"]
             for min_samples_split in grid_seach["min_samples_split"]
                 @threads for min_puroty_increase in grid_seach["min_purity_increase"]
-                    model = create_model(TreeParameters(n_trees, min_samples_leaf, min_samples_split, min_puroty_increase)) 
+                    model = create_model(TreeParameters(n_trees, min_samples_leaf, min_samples_split, min_puroty_increase))
                     train(model, train_x, train_y, test_x, test_y, state, epoch) 
                     epoch+=1
                 end
