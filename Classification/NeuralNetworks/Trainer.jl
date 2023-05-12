@@ -1,7 +1,6 @@
 using Flux: Train, Optimisers
 using Base: @kwdef, File
 using Flux
-
 include("NetworkUtils.jl")
 
 function acc_score(res::TrainingResults) return res.train_acc + res.test_acc end
@@ -44,7 +43,6 @@ function save(state::TrainingState, args::Args)
 
     # Setup file.
     state_path = joinpath(path, "state.txt") 
-    # rm(state_path)
     touch(state_path)
     file = open(state_path, "w")
 

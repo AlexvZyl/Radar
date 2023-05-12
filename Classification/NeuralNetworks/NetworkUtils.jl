@@ -24,7 +24,8 @@ include("Chains.jl")
 persons_string(args::Args) = args.persons == 1 ? "1-Person" : "2-Persons"
 
 function get_save_path(args::Args)
-    path = args.save_path_parent * "/" * persons_string(args) * "/" * get_type_string(args.model) * "/" * args.frames_folder * "/"
+    type = args.tree ? "RandomForest" : get_type_string(args.model)
+    path = args.save_path_parent * "/" * persons_string(args) * "/" * type * "/" * args.frames_folder * "/"
     !ispath(path) && mkpath(path)
     return path
 end

@@ -58,7 +58,7 @@ Base.@kwdef mutable struct Args
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
     model::ChainType = AlexNet
     persons::Int = 2
-    save_path_parent = "Runs"
+    save_path_parent = "/home/alex/Repositories/Radar/Classification/NeuralNetworks/Runs"
     timeout = 100
     dropout = 0.5
     tree = false

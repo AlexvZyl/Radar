@@ -2,6 +2,7 @@ using Base: product
 using ScikitLearn
 using DecisionTree
 include("NeuralNetworks/NetworkUtils.jl")
+include("NeuralNetworks/Trainer.jl")
 
 function evaluate(model, x, y)
     return sum(predict(model, x) .== y) / length(y)
@@ -27,12 +28,22 @@ function prepare_data(args::Args)
 end
 
 function random_forests(args::Args)
+    # Setup.
     train_x, train_y, test_x, test_y = prepare_data(args)
     model = RandomForestClassifier()
-    fit!(model, train_x, train_y)
-    accuracy = evaluate(model, test_x, test_y)
-    println("accuracy: $accuracy")
+    state = TrainingState()
+    state.timeout = args.timeout
+    
+    # Train.
+    for epoch in 1:args.epochs
+        fit!(model, train_x, train_y)
+        train_acc = evaluate(model, train_x, train_y)
+        test_acc = evaluate(model, test_x, test_y)
+        current = TrainingResults(train_acc, 0, test_acc, 0 ,epoch)
+        if update(current, state, model, epoch=epoch, args=args) break end
+    end
+
 end
 
-args = Args(tree=true, persons=1, split=0.7, batchsize=8, epochs=1000, frames_folder="5-Frames")
+args = Args(tree=true, persons=1, split=0.7, batchsize=8, epochs=10, frames_folder="5-Frames")
 random_forests(args)
