@@ -34,8 +34,10 @@ for p in persons
                 train(m, split=train_test_split, batchsize=batchsize, epochs=epochs, persons=p, frames_folder=frames_folder, timeout=timeout, λ=AlexNet_weight, η=AlexNet_learning_rate, dropout=dropout)
             elseif m == LeNet5
                 train(m, split=train_test_split, batchsize=batchsize, epochs=epochs, persons=p, frames_folder=frames_folder, timeout=timeout, λ=LeNet5_weight, η=LeNet5_learning_rate, dropout=dropout)
-            else
+            elseif m == LeNet5Temporal
                 train(m, split=train_test_split, batchsize=batchsize, epochs=epochs, persons=p, frames_folder=frames_folder, timeout=timeout, λ=LeNet5Temporal_weight, η=LeNet5Temporal_learning_rate, dropout=dropout)
+            else
+                # Train tree?
             end
         end
     end

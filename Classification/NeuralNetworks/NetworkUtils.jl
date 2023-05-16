@@ -151,7 +151,7 @@ function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle 
         classes_data = classes_data[:,:,:,1,:]
     end
     y = onehotbatch(labels, 1:length(get_labels()))
-    if args.tree
+    if !args.tree
         return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
     else
         return classes_data, y
@@ -189,7 +189,7 @@ function get_2persons_loaders(args::Args)
     steph_classes, steph_labels = prepare_for_flux(steph_classes)
     janke_classes, janke_labels = prepare_for_flux(janke_classes)
 
-    if args.tree
+    if !args.tree
         # Load the data for Flux.
         train = flux_load(steph_classes, steph_labels, args, shuffle = true)
         test = flux_load(janke_classes, janke_labels, args)

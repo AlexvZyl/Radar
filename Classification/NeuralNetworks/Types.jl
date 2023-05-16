@@ -62,4 +62,5 @@ Base.@kwdef mutable struct Args
     timeout = 100
     dropout = 0.5
     tree = false
+    tree_epochs = 3000
 end

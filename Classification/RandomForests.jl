@@ -10,6 +10,7 @@ global current_epoch = 0
 
 struct TreeParameters
     n_trees
+    n_subfeatures
     min_samples_leaf
     min_samples_split
     partial_sampling
@@ -18,6 +19,7 @@ end
 function create_model(params::TreeParameters)
     return RandomForestClassifier(
         n_trees=params.n_trees, 
+        n_subfeatures=params.n_subfeatures,
         partial_sampling=params.partial_sampling,
         min_samples_leaf=params.min_samples_leaf, 
         min_samples_split=params.min_samples_split, 
@@ -26,10 +28,11 @@ end
 
 function grid()
     return Dict(
-        "n_trees" => 1:1:100,
-        "partial_sampling" => 0.1:0.1:1,
-        "min_samples_leaf" => 1:1:100,
-        "min_samples_split" => 2:1:100
+        "n_trees" => 20:20:200,
+        "n_subfeatures" => 100:100:1000,
+        "partial_sampling" => 0.1:0.1:0.9,
+        "min_samples_leaf" => 2:2:20,
+        "min_samples_split" => 2:2:20
     )
 end
 
@@ -75,21 +78,18 @@ function train_random_forests(args::Args)
     train_x, train_y, test_x, test_y = prepare_data(args)
     training_state.timeout = Inf
     grid_search = grid()
-    sampler = BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])
     sampler = RandomSampler()
 
-    @thyperopt for i = args.epochs,
+    @thyperopt for i = args.tree_epochs,
                    sampler = sampler,
                    n_trees = grid_search["n_trees"],
+                   n_subfeatures = grid_search["n_subfeatures"],
                    min_samples_leaf = grid_search["min_samples_leaf"],
                    min_samples_split = grid_search["min_samples_split"],
                    partial_sampling = grid_search["partial_sampling"]
-        params = TreeParameters(n_trees, min_samples_leaf, min_samples_split, partial_sampling)
+        params = TreeParameters(n_trees, n_subfeatures, min_samples_leaf, min_samples_split, partial_sampling)
         model = create_model(params)
         return train(model, train_x, train_y, test_x, test_y, args)
     end
 
 end
-
-args = Args(tree=true, persons=1, split=0.7, frames_folder="1-Frames", epochs=10000)
-train_random_forests(args)
