@@ -79,6 +79,10 @@ function train_random_forests(args::Args)
     training_state.timeout = Inf
     grid_search = grid()
     sampler = RandomSampler()
+    global current_epoch
+    global training_state
+    current_epoch = 0
+    training_state = TrainingState()
 
     @thyperopt for i = args.tree_epochs,
                    sampler = sampler,

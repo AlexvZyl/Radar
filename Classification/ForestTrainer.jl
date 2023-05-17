@@ -2,7 +2,8 @@ include("RandomForests.jl")
 
 persons = [ 1, 2 ]
 frames = [ 1,3,5,7,10,15,20 ]
-tree_epochs = 2
+tree_epochs = 2000
+tree_epochs = 10
 train_test_split = 0.7
 
 for p in persons
