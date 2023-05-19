@@ -56,7 +56,7 @@ function get_results()
     # Metadata.
     current_file_path = dirname(@__FILE__)
     persons = [ "1-Person", "2-Persons" ] 
-    models = [ "LeNet5", "AlexNet", "LeNet5Temporal" ] 
+    models = [ "LeNet5", "AlexNet", "LeNet5Temporal", "RandomForest" ] 
 
     # Load all results.
     return Dict(
@@ -75,7 +75,7 @@ end
 
 function generate_acc_graph(persons::String)
     persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
-    colors = [ :teal,:blue,:orange ]
+    colors = [ :teal,:blue,:orange,:purple ]
     results = get_results()
     figure = Figure(resolution=(2560,1440))
     legend_grid = GridLayout()
@@ -97,6 +97,8 @@ function generate_acc_graph(persons::String)
             clr+=1
             if m == "LeNet5Temporal"
                 push!(labels, "  LeNet5 Temporal")
+            elseif m == "RandomForest"
+                push!(labels, "  Random Forest")
             else
                 push!(labels, "  "*m)
             end
@@ -108,7 +110,7 @@ function generate_acc_graph(persons::String)
 
     # Manually create legend.
     markers = []
-    for i in 1:3
+    for i in 1:4
         push!(markers, MarkerElement(color=colors[i], marker=:circle, markersize=dotSize*5))
     end
     Legend(
@@ -147,4 +149,4 @@ function generate_acc_graph(persons::String)
 end
 
 generate_acc_graph("1-Person")
-generate_acc_graph("2-Persons")
+#generate_acc_graph("2-Persons")

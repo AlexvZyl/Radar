@@ -84,6 +84,7 @@ function train_random_forests(args::Args)
     current_epoch = 0
     training_state = TrainingState()
 
+    @info "Starting hyperopt..."
     @thyperopt for i = args.tree_epochs,
                    sampler = sampler,
                    n_trees = grid_search["n_trees"],
