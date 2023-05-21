@@ -22,9 +22,11 @@ function update(new::TrainingResults, state::TrainingState, model; epoch::Number
 
         # Logging.
         @info "Optimal" state.optimal
-        if isnothing(args) return
-        !ispath(args.savepath) && mkpath(args.savepath)
-            modelpath = joinpath(args.savepath, "model.bson") 
+        if isnothing(args) return end
+        path = get_save_path(args)
+        !ispath(path) && mkpath(path)
+        if !args.tree
+            modelpath = joinpath(path, "model.bson") 
             let model = cpu(model)
                 BSON.@save modelpath model epoch
             end
@@ -163,5 +165,4 @@ function train(chain_type::ChainType; kwargs...)
         if update(current, state, model, epoch=epoch, args=args) break end
 
     end
-
 end

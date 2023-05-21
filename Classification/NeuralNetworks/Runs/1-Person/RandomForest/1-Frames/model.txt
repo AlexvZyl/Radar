@@ -1,0 +1,8 @@
+Optimal parameters for random forests.
+--------------------------------------
+Epoch: 5
+N Trees: 60
+N Subfeatures: 900
+Partial Sampling: 0.7
+Min Samples Leaf: 4
+Min Samples Split: 10

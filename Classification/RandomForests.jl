@@ -62,15 +62,37 @@ function prepare_data(args::Args)
     return train_x, train_y, test_x, test_y
 end
 
-function train(model::RandomForestClassifier, train_x, train_y, test_x, test_y, args)
+function train(model::RandomForestClassifier, train_x, train_y, test_x, test_y, args, params)
     global current_epoch
     fit!(model, train_x, train_y)
     train_acc, train_loss = evaluate(model, train_x, train_y)
     test_acc, test_loss = evaluate(model, test_x, test_y)
     current = TrainingResults(train_acc, train_loss, test_acc, test_loss, current_epoch)
     update(current, training_state, model, epoch=current_epoch, args=args, progress=false)
+    save(training_state, params, args)
     current_epoch += 1
     return -(test_acc+train_acc)
+end
+
+function is_optimal(state::TrainingState)
+    return state.optimal.epoch == state.current.epoch
+end
+
+function save(state, params, args)
+    if !is_optimal(state) return end
+    path = get_save_path(args)
+    path = joinpath(path, "model.txt") 
+    touch(path)
+    file = open(path, "w")
+    write(file, "Optimal parameters for random forests.")
+    write(file, "\n--------------------------------------")
+    write(file, "\nEpoch: " * string(state.optimal.epoch))
+    write(file, "\nN Trees: " * string(params.n_trees))
+    write(file, "\nN Subfeatures: " * string(params.n_subfeatures))
+    write(file, "\nPartial Sampling: " * string(params.partial_sampling))
+    write(file, "\nMin Samples Leaf: " * string(params.min_samples_leaf))
+    write(file, "\nMin Samples Split: " * string(params.min_samples_split))
+    close(file)
 end
 
 function train_random_forests(args::Args)
@@ -94,7 +116,7 @@ function train_random_forests(args::Args)
                    partial_sampling = grid_search["partial_sampling"]
         params = TreeParameters(n_trees, n_subfeatures, min_samples_leaf, min_samples_split, partial_sampling)
         model = create_model(params)
-        return train(model, train_x, train_y, test_x, test_y, args)
+        return train(model, train_x, train_y, test_x, test_y, args, params)
     end
 
 end

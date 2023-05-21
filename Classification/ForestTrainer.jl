@@ -1,8 +1,8 @@
 include("RandomForests.jl")
 
-persons = [ 1, 2 ]
-frames = [ 1,3,5,7,10,15,20 ]
-tree_epochs = 2500
+persons = [ 1 ]
+frames = [ 1, 10 ]
+tree_epochs = 10000
 train_test_split = 0.7
 
 for p in persons
