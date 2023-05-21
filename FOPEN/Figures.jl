@@ -13,7 +13,7 @@ function generate_fopen_figures(range::Number, resolution::Number, freq)
      
     # Setup figure.
     fig = Figure(resolution = (2560,1440))
-    ax = Axis(fig[1,1], xlabel="Foliage Depth (m)", ylabel="Attenuation (dB)", title="Foliage Signal Attenuation")
+    ax = Axis(fig[1,1], xlabel="Distance Propagated Through Foliage (m)", ylabel="Attenuation (dB)", title="Foliage Signal Attenuation")
     vlines!([0], color=:black, linewidth=3)
     hlines!([0], color=:black, linewidth=3)
 
