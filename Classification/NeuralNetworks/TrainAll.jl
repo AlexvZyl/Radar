@@ -27,8 +27,8 @@ LeNet5Temporal_learning_rate=3e-4
 
 # Testing.
 persons = [ 1 ]
-frames = [ 5 ]
-models = [ LeNet5Temporal, LeNet5StandardTemporal ]
+frames = [ 15 ]
+models = [ LeNet5StandardTemporal ]
 
 # Run all itertions of the models.
 for p in persons

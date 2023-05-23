@@ -103,7 +103,7 @@ end
 function setup(layer::Layer)
     if layer.type == TemporalConv
         # layer.temporal_kernel_frames = ceil(Int, layer.temporal_frame_count/4)
-        layer.temporal_kernel_frames = 2
+        layer.temporal_kernel_frames = 3
         layer.temporal_stride_frames = 1
     end
     kernel(layer)
