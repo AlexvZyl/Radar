@@ -37,7 +37,9 @@ function get_result(path::String, section::String; model_size = false)
     file_path = joinpath(path,"state.txt")
     if !isfile(file_path)
         @warn "File does not exist at $file_path."
-        return TrainingResults(0,0,0,0,0)
+        if !model_size return TrainingResults(0,0,0,0,0)
+        else return 0
+        end
     end
 
     open(file_path, "r") do file
@@ -178,7 +180,7 @@ function model_size(persons::String)
     for (m, frames_dict) in results[persons]
         if !isnothing(frames_dict)
             frames_int, size = sorted_frames(frames_dict)
-            size = [ s != nothing ? s/1000000 : 0 for s in size ]
+            size = [ s !== nothing ? s/1000000 : 0 for s in size ]
             scatterlines!(ax, frames_int, size, markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
             scatterlines!(ax, frames_int, size, markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
             clr+=1
@@ -216,3 +218,4 @@ end
 # generate_acc_graph("1-Person")
 # generate_acc_graph("2-Persons")
 model_size("1-Person")
+model_size("2-Persons")
