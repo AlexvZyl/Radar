@@ -57,6 +57,7 @@ function save(state::TrainingState, args::Args)
     save(state.max_train, file)
     write(file, "Testing Maximum Accuracy\n")
     save(state.max_test, file)
+    write(file, "\nModel parameters: ", string(args.model_params))
 
     close(file)
 end
@@ -113,7 +114,8 @@ function train(chain_type::ChainType; kwargs...)
     model = create_network(chain_type, image_size, length(classes), args) |> device
 
     ## Model and optimiser.
-    @info "Model parameters: $(num_params(model))"
+    args.model_params = num_params(model)
+    @info "Model parameters: $(args.model_params)"
     ps = Flux.params(model)
     # Weight decay.
     opt = nothing

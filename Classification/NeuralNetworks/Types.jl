@@ -40,6 +40,7 @@ end
 
 @enum ChainType begin 
     LeNet5
+    LeNet5StandardTemporal
     LeNet5Temporal
     AlexNet
 end
@@ -63,4 +64,5 @@ Base.@kwdef mutable struct Args
     dropout = 0.5
     tree = false
     tree_epochs = 3000
+    model_params = nothing
 end

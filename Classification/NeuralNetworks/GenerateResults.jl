@@ -75,7 +75,7 @@ end
 
 function generate_acc_graph(persons::String)
     persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
-    colors = [ :teal,:blue,:orange,:purple ]
+    colors = [ :teal,:blue,:orange,:purple,:green ]
     results = get_results()
     figure = Figure(resolution=(2560,1440))
     legend_grid = GridLayout()
@@ -97,6 +97,8 @@ function generate_acc_graph(persons::String)
             clr+=1
             if m == "LeNet5Temporal"
                 push!(labels, "  LeNet5 Temporal")
+            elseif m == "LeNet5StandardTemporal"
+                push!(labels, "  LeNet5 Standard Temporal")
             elseif m == "RandomForest"
                 push!(labels, "  Random Forest")
             else
@@ -110,7 +112,7 @@ function generate_acc_graph(persons::String)
 
     # Manually create legend.
     markers = []
-    for i in 1:4
+    for i in 1:5
         push!(markers, MarkerElement(color=colors[i], marker=:circle, markersize=dotSize*5))
     end
     Legend(
