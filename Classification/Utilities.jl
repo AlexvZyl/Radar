@@ -171,6 +171,7 @@ function get_janke_folder_list()
         "JoggingAway_Janke",
         "JoggingTowards_Janke",
         "JoggingAwayStick_Janke",
-        "JoggingTowardsStick_Janke"
+        "JoggingTowardsStick_Janke",
+        "Clutter"
     ]
 end

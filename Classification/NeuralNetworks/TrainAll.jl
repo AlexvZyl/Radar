@@ -1,12 +1,12 @@
 include("Trainer.jl")
 
-persons = [ 1 ]
+persons = [ 2 ]
 frames = [ 1,3,5,7,10,15,20 ]
 models = [ LeNet5, AlexNet, LeNet5StandardTemporal, LeNet5Temporal ]
 batchsize = 10
 train_test_split = 0.7
 epochs=1000
-timeout=50
+timeout=75
 
 # LeNet5.
 LeNet5_weight = 0
@@ -26,9 +26,13 @@ LeNet5Temporal_weight = 0
 LeNet5Temporal_learning_rate=3e-4
 
 # Testing.
-persons = [ 1 ]
-frames = [ 15 ]
-models = [ LeNet5StandardTemporal ]
+# persons = [ 2 ]
+# frames = [ 1 ]
+# models = [ LeNet5 ]
+
+# LeNet5 Standard Temporal for 2 persons.
+LeNet5StandardTemporal_weight = 0
+LeNet5StandardTemporal_learning_rate=7e-4
 
 # Run all itertions of the models.
 for p in persons

@@ -1,16 +1,20 @@
+using MLJ: CategoricalArrays
 using Flux: Train, Optimisers
 using Base: @kwdef, File
 using Flux
+using MLJ
+using CategoricalArrays
 include("NetworkUtils.jl")
 
 function acc_score(res::TrainingResults) return res.train_acc + res.test_acc end
 
-function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing, progress = true)
+function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing, progress = true, cf = nothing)
     state.current = new 
     
     # New optimal training state.
     if acc_score(new) > acc_score(state.optimal)
         state.optimal = new
+        state.optimal_confusion_matrix = cf
 
         # Verbose tracking.
         if (new.train_acc > state.max_train.train_acc) || ((new.train_acc == state.max_train.train_acc) && (new.test_acc > state.max_train.test_acc))
@@ -58,6 +62,7 @@ function save(state::TrainingState, args::Args)
     write(file, "Testing Maximum Accuracy\n")
     save(state.max_test, file)
     write(file, "\nModel parameters: ", string(args.model_params))
+    write(file, "\nOptimal Confusion matrix: ", string(state.optimal_confusion_matrix))
 
     close(file)
 end
@@ -127,8 +132,8 @@ function train(chain_type::ChainType; kwargs...)
 
     ## Reporting.
     function report(epoch)
-        train = eval_loss_accuracy(train_loader, model, device)
-        test = eval_loss_accuracy(test_loader, model, device)        
+        train, _ = eval_loss_accuracy(train_loader, model, device)
+        test, _ = eval_loss_accuracy(test_loader, model, device)        
         println("Epoch: $epoch   Train: $(train)   Test: $(test)")
         if args.tblogger
             set_step!(tblogger, epoch)
@@ -161,10 +166,14 @@ function train(chain_type::ChainType; kwargs...)
             Flux.Optimise.update!(opt, ps, gs)
         end
 
-        train = eval_loss_accuracy(train_loader, model, device)
-        test = eval_loss_accuracy(test_loader, model, device)        
+        train, _ = eval_loss_accuracy(train_loader, model, device)
+        test, y_hat_test = eval_loss_accuracy(test_loader, model, device)        
+        y_total = vcat([ onecold(l[2]) for l in test_loader ]...)
+        y_total = CategoricalArray(y_total, ordered=true)
+        y_hat_test = CategoricalArray(y_hat_test, ordered=true)
+        cf = ConfusionMatrix()(y_hat_test, y_total)
         current = TrainingResults(train.acc, train.loss, test.acc, test.loss, epoch)
-        if update(current, state, model, epoch=epoch, args=args) break end
+        if update(current, state, model, epoch=epoch, args=args, cf=cf) break end
 
     end
 end

@@ -160,20 +160,30 @@ function generate_acc_graph(persons::String)
 end
 
 # TODO: Model size graph.
-function model_size(persons::String)
+function model_size(persons::String; zoomed = false)
     persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
     colors = [ :teal,:blue,:orange,:purple ]
+    if zoomed
+        colors = [ :blue,:orange,:purple ]
+    end
 
     figure = Figure(resolution=(2560,1440))
     legend_grid = GridLayout()
     legend_grid[1,1] = [ Axis(figure; leftspinevisible=false, rightspinevisible=false, topspinevisible=false, bottomspinevisible=false, xgridvisible=false, ygridvisible=false, xticklabelsvisible=false, yticklabelsvisible=false, xticksvisible=false, yticksvisible=false) ]
     figure.layout[1,2] = legend_grid
-    # xticks = 0:5:20
-    # yticks = 0:25:100
-    ax = Axis(figure[1,1], title="Model Sizes ($persons_title Train & Test)", xlabel="Number of Doppler Map Frames", ylabel="Model Size (million parameters)")#, xticks=xticks, yticks=yticks)
-    # ylims!(-7,107)
-    # xlims!(-1,21)
-   
+    xticks = 0:5:20
+    yticks = 0:10:55
+    if zoomed
+        yticks = 0:0.5:4
+    end
+    ax = Axis(figure[1,1], title="Classifier Model Sizes", xlabel="Number of Doppler Map Frames", ylabel="Size (million parameters)", xticks=xticks, yticks=yticks)
+    ylims!(-5,55)
+    if zoomed
+        ylims!(-0.5,4)
+    end
+    xlims!(-1,21)
+
+       
     results = get_results(model_size=true)
     labels = []
     clr = 1
@@ -184,7 +194,8 @@ function model_size(persons::String)
             scatterlines!(ax, frames_int, size, markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
             scatterlines!(ax, frames_int, size, markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
             clr+=1
-            if m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
+            if zoomed && m == "AlexNet" clr = clr-1
+            elseif m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
             elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 Std Temp")
             else push!(labels, "  "*m)
             end
@@ -212,10 +223,14 @@ function model_size(persons::String)
         labelsize=45,
         titlesize=50
     )
-    Makie.save("Model_Sizes_$persons.pdf", figure)
+    if !zoomed
+        Makie.save("Model_Sizes_$(persons).pdf", figure)
+    else
+        Makie.save("Model_Sizes_$(persons)_zoomed.pdf", figure)
+    end
 end
 
 # generate_acc_graph("1-Person")
-# generate_acc_graph("2-Persons")
-model_size("1-Person")
-model_size("2-Persons")
+generate_acc_graph("2-Persons")
+# model_size("1-Person")
+# model_size("1-Person", zoomed=true)

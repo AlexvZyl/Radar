@@ -36,6 +36,7 @@ Base.@kwdef mutable struct TrainingState
     max_train::TrainingResults = TrainingResults()
     max_test::TrainingResults = TrainingResults()
     timeout = 100
+    optimal_confusion_matrix = nothing 
 end
 
 @enum ChainType begin 

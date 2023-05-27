@@ -81,7 +81,7 @@ function combine(class_samples::Vector{Vector{AbstractMatrix}})
 end
 
 # Load the doppler frames from the folder into a vector.
-function load_classes_from_folders(folders::Vector{String}, subdirectory::String = "")
+function load_classes_from_folders(folders::Vector{String}, subdirectory::String = ""; split_clutter = true, clutter_ratio = 0.7)
 
     doppler_frames = Dict{String, Vector{Vector{AbstractMatrix}}}()
 
@@ -99,6 +99,11 @@ function load_classes_from_folders(folders::Vector{String}, subdirectory::String
         for file in files
             doppler_frames[label][index] =  JLD2.load(file)["Doppler FFT Frames"] 
             index += 1
+        end
+        if split_clutter && label == "Clutter"
+            len = length(doppler_frames[label])
+            ind = sample(1:len, floor(Int32, len*clutter_ratio), replace=false)
+            doppler_frames[label] = doppler_frames[label][ind]
         end
     end
 
@@ -152,7 +157,7 @@ function flux_load(classes_data::Array{Float64, 5}, labels, args::Args; shuffle 
     end
     y = onehotbatch(labels, 1:length(get_labels()))
     if !args.tree
-        return DataLoader((classes_data, y), batchsize = args.batchsize, shuffle = shuffle) 
+        return DataLoader((data=classes_data, label=y), batchsize = args.batchsize, shuffle = shuffle) 
     else
         return classes_data, y
     end
@@ -181,8 +186,8 @@ function get_2persons_loaders(args::Args)
     #   Samples::Vector{Vector{AbstractMatrix}}
     #            (Samples,Frames,Frame)
     # }
-    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder)
-    janke_classes = load_classes_from_folders(janke_folders, args.frames_folder) 
+    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder, split_clutter = true, clutter_ratio = 0.7)
+    janke_classes = load_classes_from_folders(janke_folders, args.frames_folder, split_clutter = true, clutter_ratio = 0.3) 
 
     # Convert to  format that the Flux loaders can use.
     # Sets up the IQ samples as well.
@@ -249,7 +254,7 @@ function get_1person_loaders(args::Args)
     #   Samples::Vector{Vector{AbstractMatrix}}
     #            (Samples,Frames,Frame)
     # }
-    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder)
+    steph_classes = load_classes_from_folders(steph_folders, args.frames_folder, split_clutter=false)
 
     # Convert to  format that the Flux loaders can use.
     # Sets up the IQ samples as well.
@@ -285,12 +290,15 @@ function eval_loss_accuracy(loader, model, device)
     l = 0f0
     acc = 0
     ntot = 0
+    ŷ_total = []
     for (x, y) in loader
         x, y = x |> device, y |> device
         ŷ = model(x)
         l += loss(ŷ, y) * size(x)[end]        
-        acc += sum(onecold(ŷ |> cpu) .== onecold(y |> cpu))
+        ŷ = onecold(ŷ) |> cpu
+        acc += sum(ŷ .== onecold(y |> cpu))
         ntot += size(x)[end]
+        ŷ_total = append!(ŷ_total, ŷ)
     end
-    return (loss = l/ntot |> round4, acc = acc/ntot*100 |> round4)
+    return (loss = l/ntot |> round4, acc = acc/ntot*100 |> round4), ŷ_total
 end

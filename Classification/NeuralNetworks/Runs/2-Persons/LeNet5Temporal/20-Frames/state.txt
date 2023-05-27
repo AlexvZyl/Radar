@@ -1,32 +1,35 @@
 Current
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0492
-Testing Accuracy: 25.0
-Testing Loss: 1.8419
-Epoch: 31
+Training Loss: 0.0008
+Testing Accuracy: 34.2105
+Testing Loss: 3.6369
+Epoch: 82
 ----------------------------------------------
 Optimal
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.1196
-Testing Accuracy: 31.25
-Testing Loss: 1.6818
-Epoch: 19
+Training Loss: 0.1406
+Testing Accuracy: 36.8421
+Testing Loss: 2.0421
+Epoch: 6
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.1196
-Testing Accuracy: 31.25
-Testing Loss: 1.6818
-Epoch: 19
+Training Loss: 0.1406
+Testing Accuracy: 36.8421
+Testing Loss: 2.0421
+Epoch: 6
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.1196
-Testing Accuracy: 31.25
-Testing Loss: 1.6818
-Epoch: 19
+Training Loss: 0.1406
+Testing Accuracy: 36.8421
+Testing Loss: 2.0421
+Epoch: 6
 ----------------------------------------------
+
+Model parameters: 3824252
+Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([9 0 6 3 0; 0 8 1 6 5; 0 0 0 0 0; 0 0 0 0 0; 0 0 0 0 0], ["1", "2", "3", "4", "5"])
