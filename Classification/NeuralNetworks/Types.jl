@@ -25,6 +25,8 @@ end
 Base.@kwdef mutable struct TrainingResults
     train_acc = 0
     train_loss = 0
+    val_acc = 0
+    val_loss = 0
     test_acc = 0
     test_loss = 0
     epoch = 0
@@ -34,9 +36,11 @@ Base.@kwdef mutable struct TrainingState
     current::TrainingResults = TrainingResults()
     optimal::TrainingResults = TrainingResults()
     max_train::TrainingResults = TrainingResults()
+    max_val::TrainingResults = TrainingResults()
     max_test::TrainingResults = TrainingResults()
     timeout = 100
-    optimal_confusion_matrix = nothing 
+    validation_optimal_cf = nothing 
+    testing_optimal_cf = nothing 
 end
 
 @enum ChainType begin 
@@ -56,7 +60,9 @@ Base.@kwdef mutable struct Args
     infotime = 1 	     ## report every `infotime` epochs
     checktime = 5        ## Save the model every `checktime` epochs. Set to 0 for no checkpoints.
     tblogger = true      ## log training with tensorboard
-    split = nothing      ## Train/test split
+    train_ratio = nothing
+    val_ratio = nothing
+    test_ratio = nothing
     frames_folder = "10-Frames"   ## The folder containing the frames to use.
     model::ChainType = AlexNet
     persons::Int = 2

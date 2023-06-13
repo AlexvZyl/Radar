@@ -196,9 +196,9 @@ function get_2persons_loaders(args::Args)
 
     if !args.tree
         # Load the data for Flux.
-        train = flux_load(steph_classes, steph_labels, args, shuffle = true)
+        train, val = flux_load_split(steph_classes, steph_labels, args, shuffle = true, train_val_only = true)
         test = flux_load(janke_classes, janke_labels, args)
-        return train, test, labels
+        return train, val, test, labels
     else
         train_x, train_y = flux_load(steph_classes, steph_labels, args, shuffle = true)
         test_x, test_y = flux_load(janke_classes, janke_labels, args)
@@ -214,31 +214,68 @@ function get_random_idx(labels)
     return random_idx
 end
 
-function flux_load_split(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
+function flux_load_split(classes_data::Array{Float64, 5}, labels, args_in::Args; shuffle = false, train_val_only=false)
+    # Shuffle data.
+    random_idx = get_random_idx(labels)
+    shuffled_classes = classes_data[:,:,:,:,random_idx]
+    shuffled_labels = labels[random_idx]
+
+    args = deepcopy(args_in)
+    if train_val_only
+        args.train_ratio += args.test_ratio
+        args.test_ratio = 0
+    end
+
+    # Split
+    split_idx_train_val = floor(Int, (args.train_ratio+args.val_ratio)*size(classes_data, 5))
+    split_idx_train = floor(Int, (args.train_ratio)*size(classes_data, 5))
+
+    # x
+    train_x = shuffled_classes[:,:,:,:,1:split_idx_train]
+    val_x   = shuffled_classes[:,:,:,:,split_idx_train+1:split_idx_train_val]
+    test_x  = shuffled_classes[:,:,:,:,split_idx_train_val+1:end]
+
+    # y
+    train_labels = shuffled_labels[1:split_idx_train]
+    val_labels   = shuffled_labels[split_idx_train+1:split_idx_train_val]
+    test_labels  = shuffled_labels[split_idx_train_val+1:end]
+    train_y = onehotbatch(train_labels, 1:length(get_labels()))
+    val_y = onehotbatch(val_labels, 1:length(get_labels()))
+    test_y = nothing
+    if !train_val_only
+        test_y = onehotbatch(test_labels, 1:length(get_labels()))
+    end
+
+    if (args.model == AlexNet) || (args.model == LeNet5)
+        train_x = train_x[:,:,:,1,:]
+        val_x = val_x[:,:,:,1,:]
+        test_x = test_x[:,:,:,1,:]
+    end
+
+    train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
+    val_dl = DataLoader((val_x, val_y), batchsize = args.batchsize, shuffle = shuffle) 
+    test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
+    if !train_val_only
+        return train_dl, val_dl, test_dl
+    else
+        return train_dl, val_dl
+    end
+end
+
+function flux_load_split_tree(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
     # Shuffle data.
     random_idx = get_random_idx(labels)
     shuffled_classes = classes_data[:,:,:,:,random_idx]
     shuffled_labels = labels[random_idx]
 
     # Split.
-    split_idx = floor(Int, args.split*size(classes_data, 5))
+    split_idx = floor(Int, args.train_ratio*size(classes_data, 5))
     train_x, test_x = shuffled_classes[:,:,:,:,1:split_idx], shuffled_classes[:,:,:,:,split_idx+1:end]
     train_labels, test_labels = shuffled_labels[1:split_idx], shuffled_labels[split_idx+1:end]
     train_y = onehotbatch(train_labels, 1:length(get_labels()))
     test_y = onehotbatch(test_labels, 1:length(get_labels()))
 
-    if (args.model == AlexNet) || (args.model == LeNet5)
-        train_x = train_x[:,:,:,1,:]
-        test_x = test_x[:,:,:,1,:]
-    end
-
-    if !args.tree
-        train_dl = DataLoader((train_x, train_y), batchsize = args.batchsize, shuffle = shuffle) 
-        test_dl = DataLoader((test_x, test_y), batchsize = args.batchsize) 
-        return train_dl, test_dl
-    else
-        return train_x, train_y, test_x, test_y
-    end
+    return train_x, train_y, test_x, test_y
 end
 
 function get_1person_loaders(args::Args)
@@ -262,8 +299,8 @@ function get_1person_loaders(args::Args)
 
     # Load the data for Flux.
     if !args.tree
-        train, test = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
-        return train, test, labels
+        train, val, test = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
+        return train, val, test, labels
     else
         train_x, train_y, test_x, test_y = flux_load_split(steph_classes, steph_labels, args, shuffle = true)
         return train_x, train_y, test_x, test_y, labels

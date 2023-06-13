@@ -1,35 +1,54 @@
 Current
 ----------------------------------------------
-Training Accuracy: 100.0
-Training Loss: 0.0094
-Testing Accuracy: 31.5789
-Testing Loss: 3.6575
-Epoch: 116
+Training Accuracy: 96.3855
+Training Loss: 0.4557
+Validation Accuracy: 66.6667
+Validation Loss: 0.8875
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 32
 ----------------------------------------------
 Optimal
 ----------------------------------------------
-Training Accuracy: 98.0769
-Training Loss: 0.2761
-Testing Accuracy: 42.1053
-Testing Loss: 2.3278
-Epoch: 40
+Training Accuracy: 95.1807
+Training Loss: 0.4917
+Validation Accuracy: 71.4286
+Validation Loss: 0.9385
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 30
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
-Training Accuracy: 98.0769
-Training Loss: 0.2761
-Testing Accuracy: 42.1053
-Testing Loss: 2.3278
-Epoch: 40
+Training Accuracy: 95.1807
+Training Loss: 0.4917
+Validation Accuracy: 71.4286
+Validation Loss: 0.9385
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 30
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
-Training Accuracy: 90.3846
-Training Loss: 0.4814
-Testing Accuracy: 44.7368
-Testing Loss: 2.1444
+Training Accuracy: 95.1807
+Training Loss: 0.4917
+Validation Accuracy: 71.4286
+Validation Loss: 0.9385
+Testing Accuracy: 0
+Testing Loss: 0
 Epoch: 30
 ----------------------------------------------
 
 Model parameters: 197031
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([7 2 4 5 0; 0 4 0 4 0; 1 0 0 0 0; 1 2 3 0 5; 0 0 0 0 0], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([1 4 3 0 0; 2 1 0 1 1; 1 1 0 1 1; 1 0 1 1 1; 0 0 0 0 0], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: nothing

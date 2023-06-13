@@ -6,21 +6,26 @@ using MLJ
 using CategoricalArrays
 include("NetworkUtils.jl")
 
-function acc_score(res::TrainingResults) return res.train_acc + res.test_acc end
+function acc_score(res::TrainingResults) return res.train_acc + res.val_acc end
 
-function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing, progress = true, cf = nothing)
+function update(new::TrainingResults, state::TrainingState, model; epoch::Number=0, args::Args = nothing, progress = true, val_cf = nothing)
     state.current = new 
     
     # New optimal training state.
     if acc_score(new) > acc_score(state.optimal)
         state.optimal = new
-        state.optimal_confusion_matrix = cf
+        state.validation_optimal_cf = val_cf
 
         # Verbose tracking.
         if (new.train_acc > state.max_train.train_acc) || ((new.train_acc == state.max_train.train_acc) && (new.test_acc > state.max_train.test_acc))
             state.max_train = new
         end
-        if (new.test_acc > state.max_test.test_acc) || ((new.test_acc == state.max_test.test_acc) && (new.train_acc > state.max_test.train_acc))
+        if (new.val_acc > state.max_val.val_acc) || ((new.val_acc == state.max_val.val_acc) && (new.train_acc > state.max_test.train_acc))
+            state.max_test = new
+        end
+
+        # Actually optimal.
+        if (new.test_acc > state.max_test.test_acc)
             state.max_test = new
         end
 
@@ -59,10 +64,14 @@ function save(state::TrainingState, args::Args)
     save(state.optimal, file)
     write(file, "Training Maximum Accuracy\n")
     save(state.max_train, file)
+    write(file, "Validation Maximum Accuracy\n")
+    save(state.max_val, file)
     write(file, "Testing Maximum Accuracy\n")
     save(state.max_test, file)
+
     write(file, "\nModel parameters: ", string(args.model_params))
-    write(file, "\nOptimal Confusion matrix: ", string(state.optimal_confusion_matrix))
+    write(file, "\nValidation Confusion matrix: ", string(state.validation_optimal_cf))
+    write(file, "\nTesting Confusion matrix: ", string(state.testing_optimal_cf))
 
     close(file)
 end
@@ -71,6 +80,8 @@ function save(res::TrainingResults, file::IOStream)
     write(file, "----------------------------------------------\n")
     write(file, string("Training Accuracy: ", res.train_acc, "\n"))
     write(file, string("Training Loss: ", res.train_loss, "\n"))
+    write(file, string("Validation Accuracy: ", res.val_acc, "\n"))
+    write(file, string("Validation Loss: ", res.val_loss, "\n"))
     write(file, string("Testing Accuracy: ", res.test_acc, "\n"))
     write(file, string("Testing Loss: ", res.test_loss, "\n"))
     write(file, string("Epoch: ", res.epoch, "\n"))
@@ -96,10 +107,10 @@ function train(chain_type::ChainType; kwargs...)
     end
 
     # Get the data.
-    @info "Train ratio: $(args.split)"
-    train_loader, test_loader, classes = get_data_loaders(args)
-    training_samples_count = size(train_loader.data[1])[end]
-    @info "Training samples: $(training_samples_count)"
+    @info "Train/Val/Test: $(args.train_ratio)/$(args.val_ratio)/$(args.test_ratio)"
+    train_loader, val_loader, test_loader, classes = get_data_loaders(args)
+    @info "Training samples: $(size(train_loader.data[1])[end])"
+    @info "Validation samples: $(size(val_loader.data[1])[end])"
     @info "Testing samples: $(size(test_loader.data[1])[end])"
 
     ## LOGGING UTILITIES
@@ -133,26 +144,21 @@ function train(chain_type::ChainType; kwargs...)
     ## Reporting.
     function report(epoch)
         train, _ = eval_loss_accuracy(train_loader, model, device)
-        test, _ = eval_loss_accuracy(test_loader, model, device)        
-        println("Epoch: $epoch   Train: $(train)   Test: $(test)")
+        val, _ = eval_loss_accuracy(val_loader, model, device)        
+        println("Epoch: $epoch   Train: $(train)   Test: $(val)")
         if args.tblogger
             set_step!(tblogger, epoch)
             with_logger(tblogger) do
                 @info "Train" loss=train.loss  acc=train.acc
-                @info "Test"  loss=test.loss   acc=test.acc
+                @info "Validation"  loss=val.loss   acc=val.acc
             end
         end
     end
 
-    train_data_size = sizeof(train_loader.data[1]) / 1e6 # Mb
-    @info "Train data size: $(train_data_size) Mb"
-    batch_size = train_data_size / (training_samples_count / args.batchsize)
-    @info "Batch size: $(batch_size) Mb"
-
     ## TRAINING
     state = TrainingState()
     state.timeout = args.timeout
-    @info "Start Training."
+    @info "Starting Training."
     report(0)
     for epoch in 1:args.epochs
 
@@ -167,13 +173,27 @@ function train(chain_type::ChainType; kwargs...)
         end
 
         train, _ = eval_loss_accuracy(train_loader, model, device)
-        test, y_hat_test = eval_loss_accuracy(test_loader, model, device)        
-        y_total = vcat([ onecold(l[2]) for l in test_loader ]...)
-        y_total = CategoricalArray(y_total, ordered=true)
-        y_hat_test = CategoricalArray(y_hat_test, ordered=true)
-        cf = ConfusionMatrix()(y_hat_test, y_total)
-        current = TrainingResults(train.acc, train.loss, test.acc, test.loss, epoch)
-        if update(current, state, model, epoch=epoch, args=args, cf=cf) break end
+        val, y_hat_val = eval_loss_accuracy(val_loader, model, device)        
+        val_cf = confusion_mat(val_loader, y_hat_val)
+        current = TrainingResults(train.acc, train.loss, val.acc, val.loss, 0, 0, epoch)
+        if update(current, state, model, epoch=epoch, args=args, val_cf=val_cf)
+            # Now get the testing accuracy.
+            optimal_model = BSON.load(get_save_path(args) * "model.bson")[:model] |> gpu
+            test, y_hat_test = eval_loss_accuracy(test_loader, optimal_model, device)
+            test_cf = confusion_mat(test_loader, y_hat_test)
+            state.optimal.test_acc   = test.acc
+            state.optimal.test_loss  = test.loss
+            state.testing_optimal_cf = test_cf
+            save(state, args)
+            break 
+        end
 
     end
+end
+
+function confusion_mat(loader, hat)
+    y_total = vcat([ onecold(l[2]) for l in loader ]...)
+    y_total = CategoricalArray(y_total, ordered=true)
+    y_hat_val = CategoricalArray(hat, ordered=true)
+    return ConfusionMatrix()(y_hat_val, y_total)
 end

@@ -110,7 +110,7 @@ function generate_acc_graph(persons::String)
             scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
             clr+=1
             if m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
-            elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 Std Temp")
+            elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 3D Conv")
             else push!(labels, "  "*m)
             end
         end
@@ -196,7 +196,7 @@ function model_size(persons::String; zoomed = false)
             clr+=1
             if zoomed && m == "AlexNet" clr = clr-1
             elseif m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
-            elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 Std Temp")
+            elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 3D Conv")
             else push!(labels, "  "*m)
             end
         end
