@@ -1,35 +1,54 @@
 Current
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.1033
-Testing Accuracy: 48.4848
-Testing Loss: 1.4803
-Epoch: 153
+Training Loss: 0.1085
+Validation Accuracy: 80.9524
+Validation Loss: 0.6585
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 150
 ----------------------------------------------
 Optimal
 ----------------------------------------------
-Training Accuracy: 97.4026
-Training Loss: 0.4291
-Testing Accuracy: 57.5758
-Testing Loss: 1.198
-Epoch: 77
+Training Accuracy: 100.0
+Training Loss: 0.3794
+Validation Accuracy: 85.7143
+Validation Loss: 0.7677
+Testing Accuracy: 75.0
+Testing Loss: 0.9297
+Epoch: 74
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
-Training Accuracy: 97.4026
-Training Loss: 0.4291
-Testing Accuracy: 57.5758
-Testing Loss: 1.198
-Epoch: 77
+Training Accuracy: 100.0
+Training Loss: 0.3851
+Validation Accuracy: 80.9524
+Validation Loss: 0.7713
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 73
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
-Training Accuracy: 97.4026
-Training Loss: 0.4291
-Testing Accuracy: 57.5758
-Testing Loss: 1.198
-Epoch: 77
+Training Accuracy: 100.0
+Training Loss: 0.3794
+Validation Accuracy: 85.7143
+Validation Loss: 0.7677
+Testing Accuracy: 75.0
+Testing Loss: 0.9297
+Epoch: 74
 ----------------------------------------------
 
 Model parameters: 626372
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([4 2 0 0 0; 2 4 0 0 1; 1 0 2 2 0; 0 0 4 7 0; 1 0 1 0 2], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([0 1 1 1 0; 1 0 1 1 2; 2 1 2 0 0; 1 1 0 0 0; 0 3 1 0 2], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: MLJBase.ConfusionMatrixObject{5}([2 0 0 0 0; 0 4 0 0 0; 0 0 2 2 0; 1 0 0 0 1; 0 0 0 0 0], ["1", "2", "3", "4", "5"])

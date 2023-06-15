@@ -1,35 +1,54 @@
 Current
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0001
-Testing Accuracy: 72.7273
-Testing Loss: 0.9569
-Epoch: 89
+Training Loss: 0.0
+Validation Accuracy: 95.2381
+Validation Loss: 0.3178
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 88
 ----------------------------------------------
 Optimal
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.003
-Testing Accuracy: 72.7273
-Testing Loss: 0.9712
-Epoch: 13
+Training Loss: 0.0005
+Validation Accuracy: 95.2381
+Validation Loss: 0.3343
+Testing Accuracy: 75.0
+Testing Loss: 0.7592
+Epoch: 12
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.003
-Testing Accuracy: 72.7273
-Testing Loss: 0.9712
-Epoch: 13
+Training Loss: 0.0451
+Validation Accuracy: 76.1905
+Validation Loss: 0.4277
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 7
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.003
-Testing Accuracy: 72.7273
-Testing Loss: 0.9712
-Epoch: 13
+Training Loss: 0.0005
+Validation Accuracy: 95.2381
+Validation Loss: 0.3343
+Testing Accuracy: 75.0
+Testing Loss: 0.7592
+Epoch: 12
 ----------------------------------------------
 
 Model parameters: 1876515
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([5 1 0 0 0; 2 5 0 0 0; 1 0 4 2 0; 0 0 3 7 0; 0 0 0 0 3], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([2 0 0 0 1; 1 2 3 0 0; 0 2 0 1 3; 0 1 1 0 0; 1 1 1 1 0], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: MLJBase.ConfusionMatrixObject{5}([2 0 0 0 0; 0 4 0 0 0; 1 0 1 1 0; 0 0 0 1 0; 0 0 1 0 1], ["1", "2", "3", "4", "5"])

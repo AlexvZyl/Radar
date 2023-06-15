@@ -1,35 +1,54 @@
 Current
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0054
-Testing Accuracy: 57.5758
-Testing Loss: 1.017
-Epoch: 181
+Training Loss: 0.0037
+Validation Accuracy: 76.1905
+Validation Loss: 1.001
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 211
 ----------------------------------------------
 Optimal
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0319
-Testing Accuracy: 60.6061
-Testing Loss: 0.9476
-Epoch: 105
+Training Loss: 0.013
+Validation Accuracy: 76.1905
+Validation Loss: 0.9078
+Testing Accuracy: 50.0
+Testing Loss: 1.3415
+Epoch: 135
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0319
-Testing Accuracy: 60.6061
-Testing Loss: 0.9476
-Epoch: 105
+Training Loss: 0.3166
+Validation Accuracy: 57.1429
+Validation Loss: 0.8897
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 47
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0319
-Testing Accuracy: 60.6061
-Testing Loss: 0.9476
-Epoch: 105
+Training Loss: 0.013
+Validation Accuracy: 76.1905
+Validation Loss: 0.9078
+Testing Accuracy: 50.0
+Testing Loss: 1.3415
+Epoch: 135
 ----------------------------------------------
 
 Model parameters: 193143
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([6 1 2 0 0; 2 4 0 1 0; 0 0 3 2 0; 0 1 2 4 0; 0 0 0 2 3], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([1 0 1 0 3; 0 3 0 0 1; 2 0 1 1 0; 0 0 2 0 0; 1 3 1 1 0], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: MLJBase.ConfusionMatrixObject{5}([2 0 0 0 0; 0 3 0 0 0; 0 1 0 1 1; 0 0 1 1 0; 1 0 1 0 0], ["1", "2", "3", "4", "5"])

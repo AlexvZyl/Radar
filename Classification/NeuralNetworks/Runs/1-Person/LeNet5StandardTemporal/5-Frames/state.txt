@@ -1,35 +1,54 @@
 Current
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0
-Testing Accuracy: 84.8485
-Testing Loss: 0.6979
-Epoch: 271
+Training Loss: 0.0001
+Validation Accuracy: 90.4762
+Validation Loss: 0.3676
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 95
 ----------------------------------------------
 Optimal
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0
-Testing Accuracy: 84.8485
-Testing Loss: 0.7073
-Epoch: 195
+Training Loss: 0.0031
+Validation Accuracy: 90.4762
+Validation Loss: 0.267
+Testing Accuracy: 83.3333
+Testing Loss: 0.7539
+Epoch: 19
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0
-Testing Accuracy: 84.8485
-Testing Loss: 0.7073
-Epoch: 195
+Training Loss: 0.0855
+Validation Accuracy: 85.7143
+Validation Loss: 0.4855
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 10
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0
-Testing Accuracy: 84.8485
-Testing Loss: 0.7073
-Epoch: 195
+Training Loss: 0.0031
+Validation Accuracy: 90.4762
+Validation Loss: 0.267
+Testing Accuracy: 83.3333
+Testing Loss: 0.7539
+Epoch: 19
 ----------------------------------------------
 
 Model parameters: 436515
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([7 0 1 0 0; 1 6 0 0 0; 0 0 5 1 0; 0 0 1 7 0; 0 0 0 1 3], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([0 1 0 0 3; 1 3 1 1 0; 0 0 2 1 0; 1 1 1 0 0; 2 1 1 0 1], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: MLJBase.ConfusionMatrixObject{5}([3 0 0 0 0; 0 4 0 0 0; 0 0 1 1 0; 0 0 0 1 0; 0 0 1 0 1], ["1", "2", "3", "4", "5"])
