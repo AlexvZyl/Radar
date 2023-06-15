@@ -37,9 +37,9 @@ LeNet5StandardTemporal_weight = 0
 LeNet5StandardTemporal_learning_rate=7e-4
 
 # Testing.
-persons = [ 2 ] 
-frames = [ 5 ]
-models = [ LeNet5 ]
+# persons = [ 1 ] 
+# frames = [ 1 ]
+# models = [ LeNet5 ]
 
 # Run all itertions of the models.
 for p in persons

@@ -37,7 +37,7 @@ function get_result(path::String, section::String; model_size = false)
     file_path = joinpath(path,"state.txt")
     if !isfile(file_path)
         @warn "File does not exist at $file_path."
-        if !model_size return TrainingResults(0,0,0,0,0)
+        if !model_size return TrainingResults(0,0,0,0,0,0,0)
         else return 0
         end
     end
@@ -47,6 +47,8 @@ function get_result(path::String, section::String; model_size = false)
             return TrainingResults(
                 parse_number(file, section, "Training Accuracy"),
                 parse_number(file, section, "Training Loss"),
+                parse_number(file, section, "Validation Accuracy"),
+                parse_number(file, section, "Validation Loss"),
                 parse_number(file, section, "Testing Accuracy"),
                 parse_number(file, section, "Testing Loss"),
                 parse_number(file, section, "Epoch", Int32)
@@ -106,8 +108,9 @@ function generate_acc_graph(persons::String)
     for (m, frames_dict) in results[persons]
         if !isnothing(frames_dict)
             frames_int, frame_results = sorted_frames(frames_dict)
-            scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr], linestyle=:dash)
-            scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
+            # scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:circle, color=colors[clr], linestyle=:dash)
+            # scatterlines!(ax, frames_int, [ x.val_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
+            scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr])
             clr+=1
             if m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
             elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 3D Conv")
@@ -137,15 +140,17 @@ function generate_acc_graph(persons::String)
         titlesize=50
     )
     points = [ Point2f(-1.5, 0.5), Point2f(2.5, 0.5) ]
-    train_legend = [ LineElement(color=:black, linewidth=4, linestyle=:dash, linepoints=points), MarkerElement(color=:black, marker=:cross, markersize=dotSize*5) ]
-    test_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5) ]
+    train_legend = [ LineElement(color=:black, linewidth=4, linestyle=:dash, linepoints=points), MarkerElement(color=:black, marker=:circle, markersize=dotSize*5) ]
+    val_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5) ]
+    test_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:cross, markersize=dotSize*5) ]
     labels = [
         "   Training"
+        "   Validation"
         "   Testing"
     ]
     Legend(
         legend_grid[2,1],
-        [ train_legend, test_legend ],
+        [ train_legend, val_legend, test_legend ],
         [labels...],
         "Phases",
         valign = :top,
@@ -230,7 +235,7 @@ function model_size(persons::String; zoomed = false)
     end
 end
 
-# generate_acc_graph("1-Person")
-generate_acc_graph("2-Persons")
+generate_acc_graph("1-Person")
+# generate_acc_graph("2-Persons")
 # model_size("1-Person")
 # model_size("1-Person", zoomed=true)

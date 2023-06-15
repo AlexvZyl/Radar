@@ -262,7 +262,7 @@ function flux_load_split(classes_data::Array{Float64, 5}, labels, args_in::Args;
     end
 end
 
-function flux_load_split_tree(classes_data::Array{Float64, 5}, labels, args::Args; shuffle = false)
+function flux_load_split_tree(classes_data::Array{Float64, 5}, labels, args::Args)
     # Shuffle data.
     random_idx = get_random_idx(labels)
     shuffled_classes = classes_data[:,:,:,:,random_idx]
