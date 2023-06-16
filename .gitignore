@@ -3,3 +3,4 @@
 .vscode
 *.bson
 *.archlinux
+nohup.out
