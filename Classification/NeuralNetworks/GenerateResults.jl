@@ -89,7 +89,7 @@ function sorted_frames(frames::Dict)
     return keys_int, values
 end
 
-function generate_acc_graph(persons::String)
+function generate_acc_graph(persons::String; testing::Bool = false)
     persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
     colors = [ :teal,:blue,:orange,:purple ]
     results = get_results()
@@ -108,9 +108,12 @@ function generate_acc_graph(persons::String)
     for (m, frames_dict) in results[persons]
         if !isnothing(frames_dict)
             frames_int, frame_results = sorted_frames(frames_dict)
-            # scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:circle, color=colors[clr], linestyle=:dash)
-            # scatterlines!(ax, frames_int, [ x.val_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
-            scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr])
+            if !testing
+                scatterlines!(ax, frames_int, [ x.train_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:circle, color=colors[clr], linestyle=:dash)
+                scatterlines!(ax, frames_int, [ x.val_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:diamond, color=colors[clr])
+            else
+                scatterlines!(ax, frames_int, [ x.test_acc for x in frame_results ], markersize=dotSize*5, linewidth=3, marker=:cross, color=colors[clr])
+            end
             clr+=1
             if m == "LeNet5Temporal" push!(labels, "  LeNet5 Temporal")
             elseif m == "LeNet5StandardTemporal" push!(labels, "  LeNet5 3D Conv")
@@ -143,14 +146,11 @@ function generate_acc_graph(persons::String)
     train_legend = [ LineElement(color=:black, linewidth=4, linestyle=:dash, linepoints=points), MarkerElement(color=:black, marker=:circle, markersize=dotSize*5) ]
     val_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:diamond, markersize=dotSize*5) ]
     test_legend = [ LineElement(color=:black, linewidth=5, linepoints=points), MarkerElement(color=:black, marker=:cross, markersize=dotSize*5) ]
-    labels = [
-        "   Training"
-        "   Validation"
-        "   Testing"
-    ]
+    legends = !testing ? [ train_legend, val_legend ] : [ test_legend ]
+    labels = !testing ? [ "   Training", "   Validation" ] : [ "   Testing" ]
     Legend(
         legend_grid[2,1],
-        [ train_legend, val_legend, test_legend ],
+        legends, 
         [labels...],
         "Phases",
         valign = :top,
@@ -161,16 +161,14 @@ function generate_acc_graph(persons::String)
         titlesize=50
     )
 
-    Makie.save("NetworkAccuracyComparison_$persons.pdf", figure)
+    phase_name = !testing ? "Training" : "Validation"
+    Makie.save("NetworkAccuracyComparison_$(persons)_$(phase_name).pdf", figure)
 end
 
 # TODO: Model size graph.
 function model_size(persons::String; zoomed = false)
-    persons_title = persons=="1-Person" ? "Same Person" : "Separate Persons"
     colors = [ :teal,:blue,:orange,:purple ]
-    if zoomed
-        colors = [ :blue,:orange,:purple ]
-    end
+    if zoomed colors = [ :blue,:orange,:purple ] end
 
     figure = Figure(resolution=(2560,1440))
     legend_grid = GridLayout()
@@ -187,7 +185,6 @@ function model_size(persons::String; zoomed = false)
         ylims!(-0.5,4)
     end
     xlims!(-1,21)
-
        
     results = get_results(model_size=true)
     labels = []
@@ -235,7 +232,7 @@ function model_size(persons::String; zoomed = false)
     end
 end
 
-generate_acc_graph("1-Person")
+generate_acc_graph("1-Person"; testing = false)
 # generate_acc_graph("2-Persons")
 # model_size("1-Person")
 # model_size("1-Person", zoomed=true)
