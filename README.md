@@ -1,4 +1,4 @@
-# Radar
+# 📡 Radar
 
 Techniques and algorithms implemented during my Master's thesis.
 
