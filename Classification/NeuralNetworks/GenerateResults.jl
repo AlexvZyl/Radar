@@ -161,7 +161,7 @@ function generate_acc_graph(persons::String; testing::Bool = false)
         titlesize=50
     )
 
-    phase_name = !testing ? "Training" : "Validation"
+    phase_name = !testing ? "Training" : "Testing"
     Makie.save("NetworkAccuracyComparison_$(persons)_$(phase_name).pdf", figure)
 end
 
@@ -232,7 +232,10 @@ function model_size(persons::String; zoomed = false)
     end
 end
 
-generate_acc_graph("1-Person"; testing = false)
-# generate_acc_graph("2-Persons")
-# model_size("1-Person")
-# model_size("1-Person", zoomed=true)
+# generate_acc_graph("1-Person"; testing = false)
+# generate_acc_graph("1-Person"; testing = true)
+# generate_acc_graph("2-Persons"; testing = false)
+# generate_acc_graph("2-Persons"; testing = true)
+
+model_size("1-Person")
+model_size("1-Person", zoomed=true)

@@ -24,11 +24,6 @@ function update(new::TrainingResults, state::TrainingState, model; epoch::Number
             state.max_test = new
         end
 
-        # Actually optimal.
-        if (new.test_acc > state.max_test.test_acc)
-            state.max_test = new
-        end
-
         # Logging.
         @info "Optimal" state.optimal
         if isnothing(args) return end
