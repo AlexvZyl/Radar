@@ -2,34 +2,53 @@ Current
 ----------------------------------------------
 Training Accuracy: 100.0
 Training Loss: 0.0
-Testing Accuracy: 31.5789
-Testing Loss: 6.0389
-Epoch: 86
+Validation Accuracy: 95.2381
+Validation Loss: 0.0434
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 88
 ----------------------------------------------
 Optimal
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0135
-Testing Accuracy: 31.5789
-Testing Loss: 3.8599
-Epoch: 10
+Training Loss: 0.0478
+Validation Accuracy: 100.0
+Validation Loss: 0.0811
+Testing Accuracy: 39.4737
+Testing Loss: 3.3233
+Epoch: 12
 ----------------------------------------------
 Training Maximum Accuracy
 ----------------------------------------------
 Training Accuracy: 100.0
-Training Loss: 0.0135
-Testing Accuracy: 31.5789
-Testing Loss: 3.8599
-Epoch: 10
+Training Loss: 0.0478
+Validation Accuracy: 100.0
+Validation Loss: 0.0811
+Testing Accuracy: 39.4737
+Testing Loss: 3.3233
+Epoch: 12
+----------------------------------------------
+Validation Maximum Accuracy
+----------------------------------------------
+Training Accuracy: 0
+Training Loss: 0
+Validation Accuracy: 0
+Validation Loss: 0
+Testing Accuracy: 0
+Testing Loss: 0
+Epoch: 0
 ----------------------------------------------
 Testing Maximum Accuracy
 ----------------------------------------------
-Training Accuracy: 89.4231
-Training Loss: 0.3067
-Testing Accuracy: 34.2105
-Testing Loss: 2.6155
-Epoch: 6
+Training Accuracy: 100.0
+Training Loss: 0.0478
+Validation Accuracy: 100.0
+Validation Loss: 0.0811
+Testing Accuracy: 39.4737
+Testing Loss: 3.3233
+Epoch: 12
 ----------------------------------------------
 
 Model parameters: 916515
-Optimal Confusion matrix: MLJBase.ConfusionMatrixObject{5}([8 0 6 1 0; 0 0 0 2 1; 1 8 1 6 4; 0 0 0 0 0; 0 0 0 0 0], ["1", "2", "3", "4", "5"])
+Validation Confusion matrix: MLJBase.ConfusionMatrixObject{5}([1 2 0 2 1; 3 1 0 0 1; 0 0 2 0 1; 2 0 1 0 0; 0 2 0 1 1], ["1", "2", "3", "4", "5"])
+Testing Confusion matrix: MLJBase.ConfusionMatrixObject{5}([9 2 6 4 0; 0 0 1 0 0; 0 6 0 5 5; 0 0 0 0 0; 0 0 0 0 0], ["1", "2", "3", "4", "5"])
