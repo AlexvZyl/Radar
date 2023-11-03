@@ -43,14 +43,14 @@ F(α, ρ = 1) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 # (N/A)
 # Calculate the loss due to the propagation factor.
 # F: Propagation factor.
-loss(F) = F^4
+loss(F) = 16 * F^4
 
 #------------------#
 # Flat Earth Model #
 #------------------#
 
 # Calculate the propogation factor based on the flat earth model.
-F(ht, hr, R, f) = ( 2 * π * ht * hr ) / ( λ(f) * R )
+F(ht, hr, R, f) = 2 * sin( ( 2 * π * ht * hr ) / ( λ(f) * R ) )
 
 #-------------------#
 # Round Earth Model #
@@ -161,8 +161,9 @@ end
 # R: Distance between target and radar.
 # f: Carrier frequency.
 function calculate_multipath_loss_flat_earth(ht::Number, hr::Number, R::Number, f::Number; dB::Bool = true)
-    if !dB return F(ht, hr, R, f) end
-    return 20*log10(F(ht, hr, R, f))
+    loss_amp = loss(F(ht, hr, R, f))
+    if !dB return loss_amp end
+    return 20*log10(loss_amp)
 end
 
 # Plot the effect of the multipath.
