@@ -43,7 +43,7 @@ F(α, ρ = 1) = sqrt( 1 + ρ^2 + 2 * ρ * cos(α) )
 # (N/A)
 # Calculate the loss due to the propagation factor.
 # F: Propagation factor.
-loss(F) = 16 * F^4
+loss(x) = x^4
 
 #------------------#
 # Flat Earth Model #
@@ -410,40 +410,42 @@ function calculate_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRang
 end
 
 # Plot the multipath loss heatmap varying the target height.
-function plot_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, ht_range::AbstractRange, hr::Number, f::Number; dB::Bool = true, dB_range = (-40, 0))
+function plot_multipath_heatmap_flat_earth_vary_target(R_range::AbstractRange, ht_range::AbstractRange, hr::Number, f::Number; dB::Bool = true)
 
     # Setup plotting.
     figure = Figure(resolution = (1920, 1080))
-    axis = Axis(figure[1,1], xlabel = "Target Ground Distance", ylabel = "Target Height Above Ground", title = "Multipath Loss (Radar Height = " * string(hr) * "m)")
+    Axis(figure[1,1], xlabel = "Target Ground Distance", ylabel = "Target Height Above Ground", title = "Multipath Loss (Radar Height = " * string(hr) * "m)")
 
     # Plot the heatmap.
     loss_map = calculate_multipath_heatmap_flat_earth_vary_target(R_range, ht_range, hr, f, dB = dB)
-    hm = heatmap!(figure[1,1], R_range, ht_range, loss_map, colorrange = dB_range)
+    color_range = (0, 1)
+    hm = heatmap!(figure[1,1], R_range, ht_range, loss_map, colorrange = color_range)
     xlims!(R_range[1], R_range[end])
     ylims!(ht_range[1], ht_range[end])
-    colorbar_label = "Multipath Loss (dB)"
-    if !dB colorbar_label = "Multipath Loss" end
-    Colorbar(figure[1, 2], hm, label = colorbar_label)
+    colorbar_label = "Multipath Factor (dB)"
+    if !dB colorbar_label = "Multipath Factor (F^4)" end
+    Colorbar(figure[1, 2], hm, label = colorbar_label, colorrange = color_range, labelfont="Latin Modern Math OTF", ticklabelfont="Latin Modern Math OTF")
 
     return figure
 
 end
 
 # Plot the multipath loss heatmap varying the radar height.
-function plot_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true, dB_range = (-40, 0))
+function plot_multipath_heatmap_flat_earth_vary_radar(R_range::AbstractRange, hr_range::AbstractRange, ht::Number, f::Number; dB::Bool = true)
 
     # Setup plotting.
     figure = Figure(resolution = (1920, 1080))
-    axis = Axis(figure[1,1], xlabel = "Target Ground Distance", ylabel = "Radar Height Above Ground", title = "Multipath Effect on SNR (Target Height = " * string(ht) * "m)")
+    _ = Axis(figure[1,1], xlabel = "Target Ground Distance", ylabel = "Radar Height Above Ground", title = "Multipath Effect on SNR (Target Height = " * string(ht) * "m)")
 
     # Plot the heatmap.
     loss_map = calculate_multipath_heatmap_flat_earth_vary_radar(R_range, hr_range, ht, f, dB = dB)
-    heatmap!(figure[1,1], R_range, hr_range, loss_map, colorrange = dB_range)
+    color_range = (0, 1)
+    heatmap!(figure[1,1], R_range, hr_range, loss_map, colorrange = color_range)
     ylims!(hr_range[1], hr_range[end])
     xlims!(R_range[1], R_range[end])
-    colorbar_label = "Multipath Loss (dB)"
-    if !dB colorbar_label = "Multipath Loss" end
-    Colorbar(figure[1, 2], label = colorbar_label, colorrange = dB_range)
+    colorbar_label = "Multipath Factor (dB)"
+    if !dB colorbar_label = "Multipath Factor (F^4)" end
+    Colorbar(figure[1, 2], label = colorbar_label, colorrange = color_range, labelfont="Latin Modern Math OTF", ticklabelfont="Latin Modern Math OTF")
 
     return figure
 

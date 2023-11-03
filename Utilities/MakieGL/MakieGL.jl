@@ -86,12 +86,12 @@ if cairomakie
 
 	update_theme!(
 		Axis = (
-		    font = "Latin Modern Math",
-            titlefont = "Latin Modern Math",
-            xlabelfont = "Latin Modern Math",
-            ylabelfont = "Latin Modern Math",
-            xticklabelfont = "Latin Modern Math",
-            yticklabelfont = "Latin Modern Math",
+		    font = "Latin Modern Math OTF",
+            titlefont = "Latin Modern Math OTF",
+            xlabelfont = "Latin Modern Math OTF",
+            ylabelfont = "Latin Modern Math OTF",
+            xticklabelfont = "Latin Modern Math OTF",
+            yticklabelfont = "Latin Modern Math OTF",
 			leftspinevisible = true,
 			rightspinevisible = true,
 			topspinevisible = true,
@@ -159,8 +159,13 @@ if cairomakie
 			viewmode = :fit,
 			),
 		Legend = (
-            labelfont = "Latin Modern Math",
-            titlefont = "Latin Modern Math",
+            font = "Latin Modern Math OTF",
+            titlefont = "Latin Modern Math OTF",
+            xlabelfont = "Latin Modern Math OTF",
+            ylabelfont = "Latin Modern Math OTF",
+            xticklabelfont = "Latin Modern Math OTF",
+            yticklabelfont = "Latin Modern Math OTF",
+            labelfont = "Latin Modern Math OTF",
             leftspinevisible = true,
 			rightspinevisible = true,
 			topspinevisible = true,
@@ -175,8 +180,14 @@ if cairomakie
 		# fontsize = 50, # 3D
 		fontsize = 65, # 2D
 		textcolor = :black,
-		font = "Latin Modern Math", # Linux.
-		titlefont = "Latin Modern Math", # Linux.
+        font = "Latin Modern Math OTF",
+        titlefont = "Latin Modern Math OTF",
+        xlabelfont = "Latin Modern Math OTF",
+        ylabelfont = "Latin Modern Math OTF",
+        xticklabelfont = "Latin Modern Math OTF",
+        yticklabelfont = "Latin Modern Math OTF",
+        labelfont = "Latin Modern Math OTF",
+
 		figure_padding = (20, 40, 10, 10)
 	)
 
